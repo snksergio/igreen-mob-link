@@ -190,6 +190,7 @@
 
 .badgeOrange {
   background: var(--bg-warning-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-warning-subtle);
   color: var(--bg-warning);
 }
 
@@ -229,6 +230,10 @@
   transition:
     background-color 0.15s ease,
     transform 0.15s ease;
+}
+
+.shareGlyph {
+  background-color: var(--share-icon);
 }
 
 .share:hover .shareIcon {

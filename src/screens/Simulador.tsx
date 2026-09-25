@@ -144,7 +144,7 @@ export function Simulador() {
 
                   <div className={styles.preview}>
                     <p className={cn('t-body-lg-semibold', styles.previewTitle)}>O que você vai ver na simulação</p>
-                    <PreviewItem icon={<Img src={ICONS.dollarCircle} size={18} />}>
+                    <PreviewItem icon={<Icon src={ICONS.dollarCircle} size={18} color="var(--fg-main)" />}>
                       Retorno mensal projetado para o aporte que você escolher
                     </PreviewItem>
                     <PreviewItem icon={<Icon src={ICONS.id} size={18} color="var(--fg-main)" />}>

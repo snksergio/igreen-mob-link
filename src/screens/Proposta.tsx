@@ -269,7 +269,7 @@ function ShareButton({ icon, label, href, onClick }: { icon: string; label: stri
   const content = (
     <>
       <span className={styles.shareIcon}>
-        <Img src={icon} size={20} />
+        <Icon src={icon} size={20} className={styles.shareGlyph} />
       </span>
       <span className={styles.caption}>{label}</span>
     </>

@@ -303,6 +303,7 @@
 
 .flag_warning {
   background: var(--bg-warning-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-warning-subtle);
   color: var(--fg-warning-strong);
 }
 

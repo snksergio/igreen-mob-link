@@ -31,10 +31,17 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-:root[data-theme='dark'] input:-webkit-autofill {
+/*
+ * Autopreenchimento do navegador: o Chrome pinta o campo com um fundo próprio (azulado). A sombra interna
+ * cobre esse fundo com a cor do input do tema, e o texto segue a cor normal.
+ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--fg-strong);
-  box-shadow: 0 0 0 1000px var(--bg-surface) inset;
+  box-shadow: 0 0 0 1000px var(--bg-input) inset;
   caret-color: var(--fg-strong);
+  transition: background-color 9999s ease-out 0s;
 }
 
 p,
