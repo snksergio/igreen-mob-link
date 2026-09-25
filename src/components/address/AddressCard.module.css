@@ -1,0 +1,134 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 17px; /* 18px do Figma - 1px de borda (stroke inside) */
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-base);
+  animation: appear 0.3s ease-out;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.iconBox {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: var(--primitives-neutral-100);
+  border-radius: var(--radius-sm);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.street {
+  color: var(--fg-strong);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  color: var(--fg-main);
+}
+
+.edit {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s ease;
+}
+
+.edit:hover {
+  background: var(--bg-muted);
+}
+
+.mapWrap {
+  position: relative;
+}
+
+.mapFallback {
+  height: 162px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #eceef1;
+}
+
+/* Prévia inteira clicável: abre o mapa ampliado com a edição do endereço */
+.mapButton {
+  position: absolute;
+  inset: 0;
+  z-index: 800;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease;
+}
+
+.mapButton:hover {
+  background: rgba(17, 17, 17, 0.04);
+}
+
+.mapButton:focus-visible {
+  outline: 2px solid var(--border-primary);
+  outline-offset: 2px;
+}
+
+.expand {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  color: var(--fg-strong);
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.mapButton:hover .expand {
+  background: var(--bg-primary);
+  border-color: var(--bg-primary);
+  color: var(--fg-on-primary);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}

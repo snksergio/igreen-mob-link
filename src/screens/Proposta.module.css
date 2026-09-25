@@ -1,0 +1,470 @@
+.page {
+  --bg: #f4f2f0;
+  /* largura máxima da imagem do carro (em monitores grandes ela não cresce além disso) */
+  --hero-w: min(100vw, 1180px);
+  /* altura da área do vídeo: proporção da imagem no desktop, mais alta no celular (carro maior) */
+  --hero-h: calc(var(--hero-w) / 2.178);
+  /*
+   * Topo e base do vídeo se dissolvem no fundo por máscara no próprio elemento (e não por degradês por cima):
+   * o fundo da página aparece nas bordas, e o vídeo não vai para a camada de overlay de hardware do navegador,
+   * que no Windows mostra as cores do vídeo um pouco diferentes da página (as "faixas/sombras" acima e abaixo do carro).
+   */
+  --fade-y: linear-gradient(to bottom, transparent 0, transparent 7%, #000 23%, #000 70%, transparent 85%);
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-bottom: 120px;
+  background: var(--bg);
+  overflow-x: clip;
+}
+
+/* ---------- Cabeçalho ---------- */
+.header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 16px 0;
+  text-align: center;
+  animation: rise 0.6s ease-out both;
+}
+
+.logo {
+  width: 88px;
+  height: 28px;
+}
+
+.title {
+  margin-top: 42px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 46px;
+  line-height: 48px;
+  letter-spacing: -0.06em;
+  color: #2c2a26;
+}
+
+.accent {
+  color: var(--fg-primary);
+}
+
+.subtitle {
+  max-width: 334px;
+  margin-top: 24px;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: -0.02em;
+  color: #74706b;
+}
+
+/* ---------- Imagem ---------- */
+.hero {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(var(--hero-h) * -0.098); /* respiro entre o subtítulo e os prédios */
+  pointer-events: none;
+}
+
+.heroImg {
+  display: block;
+  width: var(--hero-w);
+  max-width: none;
+  margin: 0 auto;
+  height: var(--hero-h);
+  object-fit: cover;
+  object-position: center;
+  -webkit-mask-image: var(--fade-y);
+  mask-image: var(--fade-y);
+  animation: heroIn 0.9s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* ---------- Conteúdo ---------- */
+.content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: calc(100% - 32px);
+  max-width: 480px;
+  margin: calc(var(--hero-h) * -0.292) auto 0; /* card sobe até quase encostar nos pneus */
+  animation: rise 0.6s 0.25s ease-out both;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.valueCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), #fff 21.429%);
+  backdrop-filter: blur(2px);
+  box-shadow: var(--shadow-card);
+}
+
+.valueText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.caption {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: -0.02em;
+  color: #8f98a6;
+  white-space: nowrap;
+}
+
+.value {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 32px;
+  letter-spacing: -0.03em;
+  color: #000;
+}
+
+.badges {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 18px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.badgeGreen {
+  background: #e8f5ee;
+  color: var(--fg-primary);
+}
+
+.badgeOrange {
+  background: var(--bg-warning-subtle);
+  color: var(--bg-warning);
+}
+
+.fullButton {
+  width: 100%;
+  flex: none;
+}
+
+/* ---------- Compartilhar ---------- */
+.shareCard {
+  display: flex;
+  padding: 20px;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.share {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 1px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.shareIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.share:hover .shareIcon {
+  background: var(--border);
+  transform: translateY(-1px);
+}
+
+/* ---------- Detalhes ---------- */
+.detailsTitle {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.02em;
+  color: #74706b;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 18px 20px;
+  text-align: left;
+}
+
+.cardOpen .cardHeader {
+  padding: 20px;
+}
+
+.cardText {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 1px;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardTitle {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 18px;
+  letter-spacing: -0.01em;
+  color: var(--fg-strong);
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 8px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: -0.01em;
+  color: var(--fg-main);
+}
+
+.cardMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.cardMetaItem img {
+  flex-shrink: 0;
+}
+
+.cardMetaText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chevron {
+  background-color: var(--fg-main);
+  transition: transform 0.2s ease;
+}
+
+.cardOpen .chevron {
+  transform: rotate(180deg);
+}
+
+.cardBody {
+  padding: 0 8px 8px;
+  animation: rise 0.2s ease-out;
+}
+
+.checks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
+  list-style: none;
+  background: var(--bg-muted);
+  border-radius: var(--radius-lg);
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 12px 12px 12px;
+}
+
+.detailGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: -0.02em;
+  color: #8f98a6;
+}
+
+.check b {
+  font-weight: 700;
+}
+
+.checkIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 1000px;
+  background: var(--bg-primary);
+}
+
+.toast {
+  position: fixed;
+  z-index: 1100;
+  left: 50%;
+  bottom: 32px;
+  padding: 12px 18px;
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  animation: toastIn 0.25s ease-out;
+}
+
+/* Em telas mais largas que a imagem, esfuma também as laterais para fundir com o fundo */
+@media (min-width: 1181px) {
+  .heroImg {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%), var(--fade-y);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%), var(--fade-y);
+    mask-composite: intersect;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes heroIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+
+/* Celular: área do vídeo mais alta — corta só as laterais vazias do piso e o carro aparece maior */
+@media (max-width: 767px) {
+  .page {
+    --hero-h: calc(var(--hero-w) / 1.45);
+  }
+}
+
+@media (max-width: 560px) {
+  .header {
+    padding-top: 36px;
+  }
+
+  .title {
+    margin-top: 28px;
+    font-size: 34px;
+    line-height: 38px;
+  }
+
+  .subtitle {
+    margin-top: 16px;
+    font-size: 15px;
+  }
+
+  .content {
+    width: calc(100% - 40px);
+  }
+
+  .shareCard {
+    padding: 16px 8px;
+  }
+
+  .cardHeader,
+  .cardOpen .cardHeader {
+    gap: 10px;
+    padding: 16px;
+  }
+}
+
+/* Celulares bem estreitos (ex.: Galaxy Fold fechado) */
+@media (max-width: 340px) {
+  .content {
+    width: calc(100% - 24px);
+  }
+
+  /* botão com rótulo curto para não quebrar */
+  .buttonRest {
+    display: none;
+  }
+
+  .shareCard {
+    padding: 14px 4px;
+  }
+
+  .share .caption {
+    font-size: 11px;
+  }
+}

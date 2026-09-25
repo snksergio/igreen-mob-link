@@ -1,0 +1,78 @@
+.button {
+  position: relative;
+  display: flex;
+  flex: 1 0 0;
+  min-width: 1px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: var(--h-form-lg);
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-base);
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease,
+    opacity 0.15s ease;
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.primary {
+  background: var(--bg-primary);
+  color: var(--fg-on-primary);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--bg-primary-hover);
+}
+
+.primary:active:not(:disabled) {
+  background: var(--bg-primary-active);
+}
+
+.secondary {
+  background: var(--bg-secondary);
+  border-color: var(--border);
+  color: var(--fg-on-secondary);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--bg-muted);
+}
+
+.footer {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+}
+
+.spinner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.7s linear infinite;
+}
+
+.hiddenLabel {
+  visibility: hidden;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,519 @@
+/* ================= Desktop (frame "Inicio" 1440×1024) ================= */
+.page {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 107px clamp(24px, 9.5vw, 137px) 64px;
+  background: #000;
+  overflow: hidden;
+  color: #fff;
+}
+
+/*
+ * Imagem com 100% da altura, alinhada à direita. O lado esquerdo da foto já é preto,
+ * então o fundo preto completa a largura sem cortar o carro em monitores largos.
+ */
+.background {
+  position: absolute;
+  /* camada própria: os degradês (::before/::after) nunca passam por cima do texto nem bloqueiam o botão */
+  z-index: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  aspect-ratio: 3065 / 2048;
+  background: var(--hero-desktop) center / cover no-repeat;
+  pointer-events: none;
+  animation: bgIn 1.2s ease-out both;
+}
+
+/* Com vídeo: começa preto e acende (sem imagem de fundo nem animação de entrada) */
+.backgroundVideo {
+  background: #000;
+  animation: none;
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Emenda suave entre a borda esquerda da foto e o fundo preto */
+.background::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0 auto 0 0;
+  width: 18%;
+  background: linear-gradient(to right, #000, rgba(0, 0, 0, 0));
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 476px;
+}
+
+/* Entrada em sequência, estilo Framer Motion: sobe, desfoca e aparece */
+.reveal {
+  animation: revealIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(0.15s + var(--i, 0) * 0.11s);
+}
+
+.line {
+  display: block;
+}
+
+.logo {
+  width: 91px;
+  height: 29px;
+  margin-left: -1px;
+  background: #1ce275;
+  -webkit-mask: var(--logo) center / contain no-repeat;
+  mask: var(--logo) center / contain no-repeat;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin-top: 25px;
+  padding: 0 14px 0 3px;
+  background: rgba(0, 168, 89, 0.05);
+  border: 1px solid #00a859;
+  border-radius: var(--radius-full);
+  font-family: var(--font-inter);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.badgePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px 0 8px;
+  background: #00a859;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  line-height: 12px;
+}
+
+.badgeText {
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.copyDesktop {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.copyMobile {
+  display: none;
+}
+
+.title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 48px;
+  line-height: 52px;
+  letter-spacing: -0.04em;
+  color: #fff;
+}
+
+.accent {
+  color: #1ce275;
+}
+
+.lead {
+  max-width: 400px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: -0.01em;
+  color: #c4e2d4;
+  opacity: 0.5;
+}
+
+/* ---------- +R$ 1,2 mi ---------- */
+.stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 90px 0 0 1px;
+}
+
+.battery {
+  position: relative;
+  flex-shrink: 0;
+  width: 91px;
+  height: 100px;
+  overflow: hidden;
+  transform: scaleX(-1);
+}
+
+.battery img {
+  position: absolute;
+  top: 0;
+  left: -60.44%;
+  width: 219.78%;
+  max-width: none;
+  height: 100%;
+}
+
+.statsText {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.statsHeadline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statsValue {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 18px;
+  letter-spacing: 0.01em;
+}
+
+.statsLabel {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 12px;
+  letter-spacing: 0.01em;
+  opacity: 0.4;
+}
+
+.progressBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(2px);
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: #00a859;
+  border-radius: var(--radius-full);
+}
+
+.statsValue,
+.progressPct {
+  font-variant-numeric: tabular-nums;
+}
+
+.progressLabel {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 12px;
+  letter-spacing: 0.01em;
+}
+
+.progressPct {
+  color: #00a859;
+}
+
+/* ---------- CTA ---------- */
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  height: 60px;
+  margin-top: 79px;
+  padding: 16px 0;
+  background: #00a859;
+  border-radius: var(--radius-base);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.03);
+  font-family: var(--font-inter);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: -0.03em;
+  color: #fff;
+  white-space: nowrap;
+  container-type: inline-size;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.ctaInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@container (max-width: 250px) {
+  .ctaInner {
+    gap: 8px;
+    font-size: 15px;
+  }
+}
+
+@container (max-width: 222px) {
+  .ctaRest {
+    display: none;
+  }
+}
+
+.cta:hover {
+  background: var(--bg-primary-hover);
+}
+
+.cta:hover img {
+  transform: translateX(3px);
+}
+
+.cta img {
+  transition: transform 0.2s ease;
+}
+
+.cta:active {
+  transform: translateY(1px);
+}
+
+/* Em desktops estreitos a foto passa por trás do texto: escurece a esquerda para manter a leitura */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .background::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.45) 40%, rgba(0, 0, 0, 0) 62%);
+  }
+}
+
+/* Notebooks: a altura útil costuma ficar entre 600 e 900px — a tela encolhe o respiro antes de rolar */
+@media (min-width: 768px) and (max-height: 900px) {
+  .page {
+    padding-top: 80px;
+    padding-bottom: 48px;
+  }
+
+  .stats {
+    margin-top: 64px;
+  }
+
+  .cta {
+    margin-top: 56px;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 820px) {
+  .page {
+    padding-top: 56px;
+    padding-bottom: 40px;
+  }
+
+  .badge {
+    margin-top: 20px;
+  }
+
+  .copyDesktop {
+    gap: 18px;
+    margin-top: 24px;
+  }
+
+  .title {
+    font-size: 42px;
+    line-height: 46px;
+  }
+
+  .stats {
+    margin-top: 48px;
+  }
+
+  .cta {
+    margin-top: 44px;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 700px) {
+  .page {
+    padding-top: 36px;
+    padding-bottom: 28px;
+  }
+
+  .badge {
+    margin-top: 16px;
+  }
+
+  .copyDesktop {
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .title {
+    font-size: 38px;
+    line-height: 42px;
+  }
+
+  .stats {
+    margin-top: 32px;
+  }
+
+  .battery {
+    width: 80px;
+    height: 88px;
+  }
+
+  .cta {
+    height: 56px;
+    margin-top: 32px;
+  }
+}
+
+@keyframes bgIn {
+  from {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes revealIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(6px);
+  }
+}
+
+/* ================= Mobile (frame "Mobile - Inicio" 385×800) ================= */
+@media (max-width: 767px) {
+  .page {
+    display: block;
+    padding: 0;
+    background: #010303;
+  }
+
+  /*
+   * Imagem alinhada ao topo, como no Figma (385×800). Em celulares mais altos que essa proporção ela cresce
+   * junto com a altura (cortando só as laterais), para não sobrar um vazio entre a foto e o texto.
+   * --w = largura da imagem: 113vw no Figma, ou 54,4% da altura quando a tela é mais alongada.
+   */
+  .background {
+    --w: max(113vw, 54.4vh);
+    inset: auto;
+    top: calc(var(--w) * -0.1726);
+    left: calc(43.5vw - var(--w) * 0.5);
+    width: var(--w);
+    height: auto;
+    aspect-ratio: 435 / 773;
+    background-image: var(--hero-mobile);
+    background-position: center;
+    background-size: cover;
+  }
+
+  @supports (height: 1svh) {
+    .background {
+      --w: max(113vw, 54.4svh);
+    }
+  }
+
+  .content {
+    justify-content: flex-end;
+    gap: 24px;
+    max-width: none;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: 94.5vw 32px 41px;
+  }
+
+  .logo {
+    margin-left: 0;
+    background: #fff;
+  }
+
+  .background::before {
+    display: none;
+  }
+
+  .badge {
+    margin-top: 0;
+  }
+
+  .copyDesktop,
+  .stats {
+    display: none;
+  }
+
+  .copyMobile {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .title {
+    font-size: 32px;
+    line-height: 34px;
+  }
+
+  .accent {
+    color: #00a859;
+  }
+
+  .lead {
+    max-width: none;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 22px;
+  }
+
+  .cta {
+    margin-top: 0;
+  }
+}
+
+/* Celulares bem estreitos (ex.: Galaxy Fold fechado) */
+@media (max-width: 340px) {
+  .content {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .title {
+    font-size: 28px;
+    line-height: 31px;
+  }
+
+  .badge {
+    gap: 6px;
+    padding-right: 10px;
+    font-size: 11px;
+  }
+
+  .badgePill {
+    padding: 0 8px 0 6px;
+  }
+}

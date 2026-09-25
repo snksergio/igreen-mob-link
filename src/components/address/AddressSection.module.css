@@ -1,0 +1,50 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+}
+
+.cepRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+}
+
+.cepRow > :first-child {
+  width: 100%;
+}
+
+.reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-top: -18px; /* compensa o gap enquanto está fechado */
+  transition:
+    grid-template-rows 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.25s ease,
+    margin-top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.revealOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 0;
+}
+
+.revealInner {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 0;
+  overflow: hidden;
+  /* espaço para o anel de foco (4px) dos campos não ser cortado */
+  margin: -4px;
+  padding: 4px;
+}
+
+.reveal:not(.revealOpen) .revealInner {
+  visibility: hidden;
+}

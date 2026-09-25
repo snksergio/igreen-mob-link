@@ -1,0 +1,340 @@
+/* ---------- Card verde ---------- */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background-color: #0a8a3c;
+  background-size: cover;
+  background-position: center;
+}
+
+.heroValue {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overline {
+  font-family: var(--font-inter);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: -0.01em;
+  color: var(--fg-highlight);
+  white-space: nowrap;
+}
+
+.amount {
+  font-family: var(--font-inter);
+  font-weight: 800;
+  font-size: 32px;
+  line-height: normal;
+  color: var(--fg-on-primary);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cents {
+  font-weight: 700;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.comma {
+  font-weight: 600;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: #fff;
+  border-radius: var(--radius-xl-flag);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: -0.01em;
+  color: var(--fg-primary-strong);
+  white-space: nowrap;
+}
+
+/* ---------- No ano / Em 5 anos ---------- */
+.stats {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.stat {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 1px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-base);
+  overflow: hidden;
+}
+
+.statIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-icon);
+}
+
+.statText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.statLabel {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.01em;
+  color: var(--fg-muted);
+}
+
+.statValue {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  color: var(--fg-stat);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Divisão do faturamento ---------- */
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.breakdownTitle {
+  color: var(--fg-main);
+}
+
+.breakdownBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.barWrap {
+  position: relative;
+}
+
+.bar {
+  display: flex;
+  width: 100%;
+  height: 15px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-muted);
+}
+
+.segment {
+  height: 100%;
+  cursor: pointer;
+  outline: none;
+  transition:
+    width 0.35s ease,
+    opacity 0.2s ease,
+    filter 0.2s ease;
+}
+
+/* Ao passar o mouse, o segmento ativo ganha destaque e os demais esmaecem */
+.barFocus .segment {
+  opacity: 0.35;
+}
+
+.barFocus .segmentActive {
+  opacity: 1;
+  filter: saturate(1.15);
+}
+
+.segment:focus-visible {
+  box-shadow: inset 0 0 0 2px #fff;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 5;
+  bottom: calc(100% + 10px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  background: var(--fg-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  color: #fff;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: tipIn 0.16s ease-out;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  border: 6px solid transparent;
+  border-top-color: var(--fg-strong);
+  transform: translateX(-50%);
+}
+
+.tooltipLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.tooltipValue {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.72);
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltipValue b {
+  color: #fff;
+  font-weight: 700;
+}
+
+@keyframes tipIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: -0.01em;
+  color: var(--fg-main);
+  white-space: nowrap;
+}
+
+.legendItem {
+  cursor: default;
+  transition: opacity 0.2s ease;
+}
+
+.legendDim {
+  opacity: 0.45;
+}
+
+.swatch {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+/* ---------- Linhas distribuível / sua parte ---------- */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-base);
+  color: var(--fg-strong);
+}
+
+.rowPrimary {
+  background: var(--bg-primary-subtle);
+  color: var(--fg-primary);
+}
+
+.rowLabel {
+  flex: 1 0 0;
+  min-width: 1px;
+}
+
+.rowValue {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 400px) {
+  .stats {
+    flex-direction: column;
+  }
+
+  .stat {
+    flex: none;
+  }
+
+  .amount {
+    font-size: 28px;
+  }
+
+  .hero {
+    padding: 20px;
+  }
+
+  .chips {
+    gap: 6px;
+  }
+
+  .chip {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+}

@@ -1,0 +1,243 @@
+.page {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 56px 16px 96px;
+}
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  max-width: 940px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 42px;
+  width: 100%;
+  max-width: 480px;
+  view-transition-name: sim-form;
+  animation: enter 0.35s ease-out;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.bodyResult {
+  gap: 26px;
+}
+
+/* ---------- Entrada por CPF ---------- */
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-base);
+}
+
+.previewTitle {
+  color: var(--fg-strong);
+}
+
+.previewItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.previewIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.previewText {
+  flex: 1 0 0;
+  min-width: 1px;
+  color: var(--fg-main);
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--bg-primary-subtle);
+  border-radius: var(--radius-base);
+  color: var(--fg-primary);
+}
+
+.note p {
+  flex: 1 0 0;
+  min-width: 1px;
+}
+
+.noteDot {
+  margin-top: 3px;
+}
+
+/* ---------- Resultado ---------- */
+.blocoAporte {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.aporte {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.suffixDot {
+  white-space: pre;
+}
+
+.suffixMuted {
+  color: var(--fg-main);
+}
+
+.blocoModo {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modoHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.overlineLabel {
+  letter-spacing: 0.08em;
+  color: var(--fg-main);
+}
+
+.modoHelper {
+  color: var(--fg-muted);
+}
+
+.premissas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-base);
+  color: var(--fg-main);
+}
+
+/* ---------- Painel de projeção ---------- */
+.panel {
+  flex-shrink: 0;
+  width: 420px;
+  margin-top: 116px;
+  background: var(--bg-background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-base);
+  overflow: hidden;
+  view-transition-name: sim-panel;
+}
+
+.panelTop {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 19px 19px 24px; /* stroke inside do Figma */
+}
+
+.panelMiddle {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 19px 19px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.panelBottom {
+  padding: 19px;
+  border-top: 1px solid var(--border);
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+::view-transition-group(sim-form) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+::view-transition-new(sim-panel) {
+  animation: panelIn 0.45s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (max-width: 999px) {
+  .layout {
+    max-width: 480px;
+  }
+
+  .panel {
+    width: 100%;
+    margin-top: 0;
+    animation: enter 0.35s ease-out;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: 32px 20px 56px;
+  }
+
+  .column {
+    gap: 32px;
+  }
+
+  .panelTop,
+  .panelMiddle,
+  .panelBottom {
+    padding: 16px;
+  }
+}

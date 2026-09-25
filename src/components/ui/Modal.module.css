@@ -1,0 +1,193 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 16px;
+  overflow-y: auto;
+  background: rgba(17, 17, 17, 0.56);
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  margin: auto 0;
+  padding: 40px 36px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  animation: popIn 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.compact {
+  padding: 40px 30px;
+}
+
+/* Conteúdo controla o próprio layout (ex.: mapa + formulário) */
+.flush {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.close {
+  position: absolute;
+  z-index: 900;
+  top: 26px;
+  right: 26px;
+  display: flex;
+  border-radius: 8px;
+}
+
+.closeIcon {
+  background-color: var(--fg-main);
+}
+
+.close:hover .closeIcon {
+  background-color: var(--fg-strong);
+}
+
+.header {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  width: 100%;
+  padding-right: 24px;
+}
+
+.headerIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: var(--bg-primary-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.headerText {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 1px;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--fg-strong);
+}
+
+.subtitle {
+  color: var(--fg-muted);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+@media (max-width: 560px) {
+  /* bottom sheet: encosta embaixo quando cabe e rola a partir do topo quando é mais alto que a tela */
+  .overlay {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 24px 0 0;
+  }
+
+  .dialog,
+  .compact {
+    gap: 24px;
+    margin: auto 0 0;
+    padding: 28px 20px calc(24px + env(safe-area-inset-bottom));
+    border-radius: 24px 24px 0 0;
+    animation-name: slideUp;
+  }
+
+  /* "alça" de bottom sheet */
+  .dialog::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: 36px;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--border);
+    transform: translateX(-50%);
+  }
+
+  .flush {
+    gap: 0;
+    padding: 0;
+  }
+
+  .flush::before {
+    display: none;
+  }
+
+  /* Cabeçalho compacto: ícone menor ao lado do título, texto menor */
+  .header {
+    gap: 12px;
+    align-items: center;
+    padding-right: 36px;
+  }
+
+  .headerIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .headerIcon > span {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .headerText {
+    gap: 2px;
+  }
+
+  .headerText :global(.t-modal-title) {
+    font-size: 19px;
+    line-height: 24px;
+    letter-spacing: -0.03em;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  .close {
+    top: 18px;
+    right: 16px;
+  }
+
+  /* No modal com mapa, o X fica sobre o mapa: ganha fundo branco */
+  .flush .close {
+    padding: 5px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: var(--shadow-md);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}

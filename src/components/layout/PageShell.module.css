@@ -1,0 +1,192 @@
+.page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  justify-content: center;
+  padding: 56px 16px 96px;
+  background: var(--bg-surface);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 42px;
+  width: 100%;
+  max-width: 480px;
+  animation: enter 0.35s ease-out;
+}
+
+.headerController {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Responsável pelo cadastro: informativo, com menos destaque que o conteúdo */
+.responsavel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 30px;
+  padding: 2px 12px 2px 2px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  animation: enter 0.4s 0.15s ease-out both;
+}
+
+.avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-primary-subtle);
+  color: var(--fg-primary);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+
+.respName {
+  overflow: hidden;
+  max-width: 180px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.01em;
+  color: var(--fg-main);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.isotipo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  transition: transform 0.15s ease;
+}
+
+.isotipo:hover {
+  transform: scale(1.04);
+}
+
+.stepper {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  border-radius: 96px;
+  overflow: hidden;
+}
+
+.stepItem {
+  flex: 1 0 0;
+  min-width: 1px;
+  height: 6px;
+  background: var(--bg-muted);
+  transition: background-color 0.4s ease;
+}
+
+.stepActive {
+  background: var(--bg-primary);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+  padding-bottom: 32px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 12px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-full);
+  color: var(--fg-main);
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.titleRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  color: var(--fg-strong);
+}
+
+.subtitle {
+  color: var(--fg-muted);
+}
+
+.highlight {
+  color: var(--fg-primary);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: 32px 20px 56px;
+  }
+
+  .column {
+    gap: 32px;
+  }
+
+  .headerController {
+    gap: 24px;
+  }
+}

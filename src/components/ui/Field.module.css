@@ -1,0 +1,215 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.label {
+  color: var(--fg-main);
+  transition: color 0.15s ease;
+}
+
+.control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: var(--h-form-lg);
+  padding: 0 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-base);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  cursor: text;
+}
+
+.muted {
+  background: var(--bg-muted);
+}
+
+.readOnly {
+  cursor: default;
+}
+
+.valueWrap {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+}
+
+.withSuffix {
+  gap: 0;
+}
+
+.sizer {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+}
+
+/* Input que cresce com o conteúdo, para o sufixo ficar colado ao valor */
+.autosize {
+  display: inline-grid;
+  flex: 0 1 auto;
+  align-items: center;
+}
+
+.autosize::after {
+  content: attr(data-value) ' ';
+  grid-area: 1 / 1;
+  visibility: hidden;
+  white-space: pre;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+.autosize .input {
+  grid-area: 1 / 1;
+  /* width 0 + min-width 100%: a coluna do grid é dimensionada só pelo texto (::after) */
+  width: 0;
+  min-width: 100%;
+}
+
+.input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--fg-strong);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--fg-subtle);
+  opacity: 1;
+}
+
+.input:read-only {
+  cursor: default;
+}
+
+.suffix {
+  flex-shrink: 0;
+  color: var(--fg-main);
+  white-space: pre;
+}
+
+.icon {
+  background-color: var(--fg-subtle);
+}
+
+[data-filled] .icon {
+  background-color: var(--fg-main);
+}
+
+.check {
+  background-color: var(--fg-primary);
+}
+
+.message {
+  width: 100%;
+  color: var(--fg-main);
+}
+
+/* ---------- Estados ---------- */
+.field:focus-within .label,
+.active .label {
+  color: var(--fg-primary);
+}
+
+.field:focus-within .control,
+.active .control {
+  border-color: var(--border-primary);
+  box-shadow: 0 0 0 var(--ring-base) var(--ring-primary);
+}
+
+.field:focus-within .icon,
+.active .icon {
+  background-color: var(--fg-primary);
+}
+
+.error .label,
+.error:focus-within .label,
+.error .message {
+  color: var(--fg-critical);
+}
+
+.error .control,
+.error:focus-within .control {
+  border-color: var(--border-critical);
+  box-shadow: 0 0 0 var(--ring-base) var(--ring-critical);
+}
+
+.warning .label,
+.warning .message {
+  color: var(--fg-warning);
+}
+
+.warning .control {
+  border-color: var(--border-warning);
+  box-shadow: 0 0 0 var(--ring-base) var(--ring-warning);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--fg-primary);
+  border-right-color: transparent;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.row {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.row > * {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+@media (max-width: 420px) {
+  .row {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stackMobile {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  /* sobrepõe a largura fixa (inline) dos campos */
+  .stackMobile > * {
+    flex: none !important;
+    width: 100% !important;
+  }
+}

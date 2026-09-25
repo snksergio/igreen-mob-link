@@ -1,0 +1,13 @@
+.icon {
+  display: inline-block;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask: var(--icon-src) center / contain no-repeat;
+  mask: var(--icon-src) center / contain no-repeat;
+  transition: background-color 0.15s ease;
+}
+
+.img {
+  flex-shrink: 0;
+  object-fit: contain;
+}

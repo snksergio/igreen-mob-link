@@ -1,0 +1,90 @@
+/*
+ * Tokens do Design System "Novo Link Cadastro iGreen" (Figma 2WqfX52j45tC2eXEcQqUKZ).
+ * Hierarquia: primitives -> semantic. Os componentes usam apenas os tokens semânticos.
+ */
+:root {
+  /* ---------- Primitives ---------- */
+  --primitives-brand-50: #ebfbf1;
+  --primitives-brand-600: #00a859;
+  --primitives-brand-700: #008949;
+  --primitives-neutral-0: #ffffff;
+  --primitives-neutral-100: #f3f4f6;
+  --primitives-neutral-200: #e9eaec;
+  --primitives-neutral-300: #cbd0d4;
+  --primitives-neutral-500: #9ca3af;
+  --primitives-neutral-600: #7e8994;
+  --primitives-neutral-950: #111111;
+
+  /* ---------- Semantic: backgrounds ---------- */
+  --bg-surface: var(--primitives-neutral-0);
+  --bg-background: var(--primitives-neutral-0);
+  --bg-secondary: var(--primitives-neutral-0);
+  --bg-muted: var(--primitives-neutral-100);
+  --bg-fill: var(--primitives-neutral-600);
+  --bg-primary: var(--primitives-brand-600);
+  --bg-primary-hover: #009a52;
+  --bg-primary-active: #008949;
+  --bg-primary-subtle: var(--primitives-brand-50);
+  --bg-warning-subtle: #fff8ea;
+  --bg-warning: #d36e00;
+
+  /* ---------- Semantic: foregrounds ---------- */
+  --fg-strong: var(--primitives-neutral-950);
+  --fg-main: var(--primitives-neutral-600);
+  --fg-muted: var(--primitives-neutral-500);
+  --fg-subtle: var(--primitives-neutral-300);
+  --fg-primary: var(--primitives-brand-600);
+  --fg-primary-strong: var(--primitives-brand-700);
+  --fg-on-primary: #ffffff;
+  --fg-on-secondary: var(--primitives-neutral-600);
+  --fg-on-dark: #ffffff;
+  --fg-critical: #ef4444;
+  --fg-warning: #d97706;
+  --fg-warning-strong: #381706;
+  --fg-highlight: #00e405;
+  --fg-stat: #252528;
+
+  /* ---------- Semantic: borders & rings ---------- */
+  --border: var(--primitives-neutral-200);
+  --border-muted: var(--primitives-neutral-100);
+  --border-primary: var(--primitives-brand-600);
+  --border-critical: #dc2626;
+  --border-warning: #d97706;
+  --ring-base: 4px;
+  --ring-primary: rgba(0, 168, 89, 0.15);
+  --ring-critical: rgba(239, 68, 68, 0.15);
+  --ring-warning: rgba(217, 119, 6, 0.15);
+
+  /* ---------- Radius ---------- */
+  --radius-md: 6px;
+  --radius-sm: 10px;
+  --radius-xl-flag: 12px;
+  --radius-base: 14px;
+  --radius-lg: 18px;
+  --radius-page: 24px;
+  --radius-xl: 32px;
+  --radius-full: 100px;
+
+  /* ---------- Sizes ---------- */
+  --h-form-lg: 52px;
+  --h-form-md: 46px;
+
+  /* ---------- Shadows ---------- */
+  --shadow-base: 0 1px 1px 0 rgba(156, 163, 175, 0.1);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-icon: 0 1px 1px 0 rgba(0, 0, 0, 0.02);
+  --shadow-card: 0 3px 5px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* ---------- Typography ---------- */
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* ---------- Faturamento (gráfico de divisão) ---------- */
+  --chart-energy: #9aa8a2;
+  --chart-taxes: #c7b299;
+  --chart-admin: #dcc7ad;
+  --chart-maintenance: #cbd3ce;
+  --chart-result: #00a651;
+}
