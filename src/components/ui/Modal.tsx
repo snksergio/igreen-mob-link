@@ -46,7 +46,12 @@ export function Modal({ open, onClose, label, width = 552, padding = 'form', chi
       }
     }
     document.addEventListener('keydown', onKey)
-    requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLElement>('input, button:not([data-close])')?.focus())
+    // Com mouse, foca o primeiro campo; no toque, foca o próprio diálogo (sem abrir o teclado e sem pular o scroll)
+    const touch = window.matchMedia('(pointer: coarse)').matches
+    requestAnimationFrame(() => {
+      const target = touch ? dialogRef.current : dialogRef.current?.querySelector<HTMLElement>('input, button:not([data-close])')
+      target?.focus({ preventScroll: true })
+    })
     return () => {
       document.body.style.overflow = overflow
       document.removeEventListener('keydown', onKey)
@@ -62,14 +67,15 @@ export function Modal({ open, onClose, label, width = 552, padding = 'form', chi
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
+        tabIndex={-1}
         aria-label={label}
         className={cn(styles.dialog, padding === 'compact' && styles.compact, padding === 'flush' && styles.flush)}
         style={{ maxWidth: width }}
       >
-        {children}
         <button type="button" data-close className={styles.close} onClick={onClose} aria-label="Fechar">
           <Icon src={ICONS.close} size={24} className={styles.closeIcon} />
         </button>
+        {children}
       </div>
     </div>,
     document.body,

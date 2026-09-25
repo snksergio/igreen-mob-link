@@ -108,6 +108,10 @@ function MapEditor({ onClose, onConfirm, address, title, subtitle, icon }: Omit<
 
   return (
     <div className={styles.layout}>
+      {/* No celular o título vem antes do mapa */}
+      <div className={styles.mobileHeader}>
+        <DialogHeader icon={icon} title={title} subtitle={subtitle} />
+      </div>
       <div className={styles.mapCol}>
         <Suspense fallback={<div className={styles.map} />}>
           <MapView lat={draft.lat} lng={draft.lng} zoom={16} wheelZoom onPick={onPick} loading={status === 'locating'} className={styles.map} />
@@ -118,7 +122,9 @@ function MapEditor({ onClose, onConfirm, address, title, subtitle, icon }: Omit<
         </p>
       </div>
       <div className={styles.formCol}>
-        <DialogHeader icon={icon} title={title} subtitle={subtitle} />
+        <div className={styles.desktopHeader}>
+          <DialogHeader icon={icon} title={title} subtitle={subtitle} />
+        </div>
         <AddressFields form={form} onSubmit={confirm} />
         <FooterGroup className={styles.footer}>
           <Button variant="secondary" onClick={onClose}>

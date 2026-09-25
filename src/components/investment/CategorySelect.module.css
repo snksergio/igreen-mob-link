@@ -46,6 +46,7 @@
 .rowInner {
   min-height: 0;
   overflow: hidden;
+  overflow: clip; /* hidden rolaria por dentro ao focar um campo (ex.: "Próximo" do teclado) */
 }
 
 .row {

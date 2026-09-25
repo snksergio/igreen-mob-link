@@ -45,6 +45,8 @@ function withTransition(update: () => void) {
 export function Simulador() {
   const { state, patch, simulation, go } = useCadastro()
   const sim = state.simulacao
+  // Foco automático no CPF só com mouse: no celular abriria o teclado assim que a tela aparece
+  const [autoFocus] = useState(() => window.matchMedia('(hover: hover) and (pointer: fine)').matches)
   const [cpfError, setCpfError] = useState<string | null>(null)
   const aporteRef = useRef<HTMLDivElement>(null)
   const cpfValid = isValidCpf(sim.cpf)
@@ -104,7 +106,7 @@ export function Simulador() {
     <main className={cn(styles.page, sim.liberada && styles.revealed)}>
       <div className={styles.layout}>
         <div className={styles.column}>
-          <HeaderController />
+          <HeaderController label="SIMULAÇÃO" />
           <form
             className={styles.form}
             noValidate
@@ -137,7 +139,7 @@ export function Simulador() {
                     icon={ICONS.id}
                     valid={cpfValid}
                     error={cpfError}
-                    autoFocus
+                    autoFocus={autoFocus}
                   />
 
                   <div className={styles.preview}>

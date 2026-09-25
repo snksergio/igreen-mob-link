@@ -7,6 +7,8 @@
   justify-content: center;
   padding: 48px 16px;
   overflow-y: auto;
+  /* a rolagem do modal não "vaza" para a página de trás */
+  overscroll-behavior: contain;
   background: rgba(17, 17, 17, 0.56);
   backdrop-filter: blur(2px);
   animation: fadeIn 0.2s ease-out;
@@ -15,6 +17,8 @@
 .dialog {
   position: relative;
   display: flex;
+  /* nunca encolhe para caber na tela: o overlay é que rola (sem isso o modal com mapa cortava o conteúdo) */
+  flex-shrink: 0;
   flex-direction: column;
   gap: 32px;
   width: 100%;
@@ -35,6 +39,7 @@
   padding: 0;
   gap: 0;
   overflow: hidden;
+  overflow: clip; /* hidden rolaria por dentro ao focar um campo (ex.: "Próximo" do teclado) */
 }
 
 .close {
@@ -108,11 +113,24 @@
     padding: 24px 0 0;
   }
 
+  /* o fundo escuro não rola nem arrasta a página; quem rola é o conteúdo do modal */
+  .overlay {
+    overflow: hidden;
+    touch-action: none;
+  }
+
   .dialog,
   .compact {
     gap: 24px;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
     margin: auto 0 0;
     padding: 28px 20px calc(24px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     border-radius: 24px 24px 0 0;
     animation-name: slideUp;
   }
@@ -133,6 +151,8 @@
   .flush {
     gap: 0;
     padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .flush::before {
@@ -171,18 +191,24 @@
     line-height: 18px;
   }
 
+  /* X grudado no topo do modal enquanto o conteúdo rola (fundo branco para não se misturar ao conteúdo) */
   .close {
-    top: 18px;
-    right: 16px;
+    position: sticky;
+    top: 10px;
+    right: auto;
+    align-self: flex-end;
+    flex-shrink: 0;
+    margin: -18px -12px -38px 0;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.94);
+    border-radius: 50%;
+    box-shadow: 0 1px 6px rgba(17, 17, 17, 0.14);
   }
 
-  /* No modal com mapa, o X fica sobre o mapa: ganha fundo branco */
   .flush .close {
-    padding: 5px;
-    background: #fff;
-    border-radius: 50%;
-    box-shadow: var(--shadow-md);
+    margin: 10px 8px -42px 0;
   }
+
 }
 
 @keyframes slideUp {

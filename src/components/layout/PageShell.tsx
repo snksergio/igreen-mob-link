@@ -48,11 +48,13 @@ export function ResponsavelBadge() {
   )
 }
 
-export function HeaderController({ step }: { step?: number }) {
+/** `label` (ex.: "PASSO 1 DE 4"): no mobile sobe para a linha do logo, ao lado do responsável */
+export function HeaderController({ step, label }: { step?: number; label?: string }) {
   return (
     <header className={styles.headerController}>
       <div className={styles.headerTop}>
         <Isotipo />
+        {label ? <span className={cn(styles.badge, styles.badgeTop, 't-label')}>{label}</span> : null}
         <ResponsavelBadge />
       </div>
       {step ? <Stepper step={step} /> : null}
@@ -63,7 +65,7 @@ export function HeaderController({ step }: { step?: number }) {
 export function PageHeader({ badge, title, subtitle }: { badge: string; title: ReactNode; subtitle: ReactNode }) {
   return (
     <div className={styles.pageHeader}>
-      <span className={cn(styles.badge, 't-label')}>{badge}</span>
+      <span className={cn(styles.badge, styles.badgePage, 't-label')}>{badge}</span>
       <div className={styles.titleRow}>
         <h1 className="t-page-title">{title}</h1>
         <p className={cn('t-page-subtitle', styles.subtitle)}>{subtitle}</p>
@@ -95,7 +97,7 @@ export function StepPage({
   return (
     <main className={styles.page}>
       <div className={styles.column}>
-        <HeaderController step={step} />
+        <HeaderController step={step} label={badge ?? `PASSO ${step} DE ${TOTAL_STEPS}`} />
         <form
           className={styles.form}
           noValidate
@@ -119,9 +121,10 @@ export function StepPage({
   )
 }
 
+/** Coluna com espaçamento `gap` (px); no mobile o espaçamento encolhe proporcionalmente (ver CSS) */
 export function Stack({ gap, children, className, style }: { gap: number; children: ReactNode; className?: string; style?: CSSProperties }) {
   return (
-    <div className={cn(styles.stack, className)} style={{ gap, ...style }}>
+    <div className={cn(styles.stack, className)} style={{ '--gap': `${gap}px`, ...style } as CSSProperties}>
       {children}
     </div>
   )

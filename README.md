@@ -40,6 +40,14 @@ npm run compress:video -- <entrada.mp4> <saída.mp4> <largura> [crf]   # H.264 l
   - "Ver detalhamento da proposta" abre o modal de detalhamento com um resumo da proposta (ID, investidor, carregadores, participação, contrato e local) acima da projeção.
   - O card "Detalhamento do investimento" mostra a mesma projeção direto na página.
 - **Responsável pelo cadastro:** o selo ao lado do logo vem do link (`?responsavel=Nome Sobrenome`, fica salvo na sessão). Sem o parâmetro, mostra um nome de exemplo (`services/responsavel.ts`).
+- **Mobile:**
+  - O header é retraído: logo, etapa (`SIMULAÇÃO` / `PASSO 1 DE 4`) e responsável na mesma linha.
+  - Títulos, descrições e espaçamentos são mais enxutos (o `Stack` encolhe o `gap` proporcionalmente).
+  - A home cabe na área visível mesmo com as barras do navegador abertas.
+  - Os modais viram bottom sheet: o conteúdo rola dentro do próprio modal, sem arrastar a página de trás, e o X de fechar continua visível.
+- **Foco no celular:**
+  - Nenhum campo recebe foco sozinho (simulador e modais), para o teclado não abrir e esconder a etapa.
+  - Ao focar um campo, inclusive pelo "Próximo" do teclado, `lib/keepFocusedFieldVisible.ts` garante que ele fique visível acima do teclado.
 - O botão voltar do navegador funciona, e os dados ficam em `sessionStorage`, então um F5 não apaga o que foi preenchido.
 
 ## Estrutura

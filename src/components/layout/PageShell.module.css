@@ -167,7 +167,13 @@
 .stack {
   display: flex;
   flex-direction: column;
+  gap: var(--gap);
   width: 100%;
+}
+
+/* etapa no topo: só no mobile */
+.badgeTop {
+  display: none;
 }
 
 @keyframes enter {
@@ -177,16 +183,57 @@
   }
 }
 
+/* Mobile: header retraído (logo + etapa + responsável numa linha) e espaçamentos mais enxutos */
 @media (max-width: 560px) {
   .page {
-    padding: 32px 20px 56px;
+    padding: 20px 16px 40px;
   }
 
   .column {
-    gap: 32px;
+    gap: 20px;
   }
 
   .headerController {
-    gap: 24px;
+    gap: 16px;
+  }
+
+  .headerTop {
+    gap: 8px;
+  }
+
+  .isotipo {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+  }
+
+  .badgeTop {
+    display: inline-flex;
+    flex-shrink: 0;
+    height: 24px;
+    padding: 0 10px;
+    margin-right: auto;
+  }
+
+  .badgePage {
+    display: none;
+  }
+
+  .respName {
+    max-width: 120px;
+  }
+
+  .pageHeader {
+    gap: 12px;
+    padding-bottom: 20px;
+  }
+
+  .container {
+    gap: 28px;
+  }
+
+  /* 40 → 28, 28 → 20, 18 → 13; espaçamentos pequenos (até 12px) ficam como estão */
+  .stack {
+    gap: max(calc(var(--gap) * 0.7), min(var(--gap), 12px));
   }
 }

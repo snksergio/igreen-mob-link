@@ -18,12 +18,10 @@ html {
 }
 
 /*
- * Altura mínima pela área visível real do celular (dvh acompanha a barra de endereço);
  * overflow-x: clip corta sobras laterais sem criar um contêiner de rolagem, então o scroll vertical segue normal.
+ * A altura de cada tela usa svh (área visível com as barras do navegador abertas), que não "pula" ao rolar.
  */
 body {
-  min-height: 100vh;
-  min-height: 100dvh;
   overflow-x: clip;
   font-family: var(--font-sans);
   color: var(--fg-strong);
@@ -174,10 +172,21 @@ a {
   letter-spacing: 0.01em;
 }
 
-@media (max-width: 480px) {
+/* Mobile: títulos e descrições um pouco menores para caber mais conteúdo na tela */
+@media (max-width: 560px) {
   .t-page-title {
-    font-size: 24px;
-    line-height: 30px;
+    font-size: 22px;
+    line-height: 28px;
+  }
+
+  .t-page-subtitle {
+    font-size: 13px;
+    line-height: 19px;
+  }
+
+  .t-section-title {
+    font-size: 16px;
+    line-height: 22px;
   }
 }
 
