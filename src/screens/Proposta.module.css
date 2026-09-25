@@ -1,5 +1,11 @@
 .page {
   --bg: #f4f2f0;
+  --p-title: #2c2a26;
+  --p-text: #74706b;
+  --p-caption: #8f98a6;
+  --p-value: #000;
+  --p-card: #fff;
+  --p-badge: #e8f5ee;
   /* largura máxima da imagem do carro (em monitores grandes ela não cresce além disso) */
   --hero-w: min(100vw, 1180px);
   /* altura da área do vídeo: proporção da imagem no desktop, mais alta no celular (carro maior) */
@@ -16,6 +22,23 @@
   padding-bottom: 120px;
   background: var(--bg);
   overflow-x: clip;
+}
+
+:global([data-theme='dark']) .page {
+  --bg: var(--bg-surface);
+  --p-title: var(--fg-strong);
+  --p-text: var(--fg-main);
+  --p-caption: var(--fg-muted);
+  --p-value: var(--fg-strong);
+  --p-card: var(--bg-background);
+  --p-badge: var(--bg-primary-subtle);
+}
+
+.themeToggle {
+  position: absolute;
+  z-index: 5;
+  top: 16px;
+  right: 16px;
 }
 
 /* ---------- Cabeçalho ---------- */
@@ -42,7 +65,7 @@
   font-size: 46px;
   line-height: 48px;
   letter-spacing: -0.06em;
-  color: #2c2a26;
+  color: var(--p-title);
 }
 
 .accent {
@@ -57,7 +80,7 @@
   font-size: 16px;
   line-height: 22px;
   letter-spacing: -0.02em;
-  color: #74706b;
+  color: var(--p-text);
 }
 
 /* ---------- Imagem ---------- */
@@ -107,7 +130,7 @@
   gap: 18px;
   padding: 20px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), #fff 21.429%);
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--p-card) 90%, transparent), var(--p-card) 21.429%);
   backdrop-filter: blur(2px);
   box-shadow: var(--shadow-card);
 }
@@ -125,7 +148,7 @@
   font-size: 12px;
   line-height: 20px;
   letter-spacing: -0.02em;
-  color: #8f98a6;
+  color: var(--p-caption);
   white-space: nowrap;
 }
 
@@ -135,7 +158,7 @@
   font-size: 28px;
   line-height: 32px;
   letter-spacing: -0.03em;
-  color: #000;
+  color: var(--p-value);
 }
 
 .badges {
@@ -160,7 +183,8 @@
 }
 
 .badgeGreen {
-  background: #e8f5ee;
+  background: var(--p-badge);
+  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
   color: var(--fg-primary);
 }
 
@@ -178,7 +202,7 @@
 .shareCard {
   display: flex;
   padding: 20px;
-  background: #fff;
+  background: var(--p-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
 }
@@ -219,7 +243,7 @@
   font-size: 14px;
   line-height: 18px;
   letter-spacing: -0.02em;
-  color: #74706b;
+  color: var(--p-text);
 }
 
 .list {
@@ -229,7 +253,7 @@
 }
 
 .card {
-  background: #fff;
+  background: var(--p-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   overflow: hidden;
@@ -344,7 +368,7 @@
   font-size: 12px;
   line-height: 20px;
   letter-spacing: -0.02em;
-  color: #8f98a6;
+  color: var(--p-caption);
 }
 
 .check b {
@@ -370,7 +394,7 @@
   bottom: 32px;
   padding: 12px 18px;
   transform: translateX(-50%);
-  background: #111;
+  background: var(--bg-tooltip);
   color: #fff;
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-md);

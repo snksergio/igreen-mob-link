@@ -18,6 +18,7 @@
   /* ---------- Semantic: backgrounds ---------- */
   --bg-surface: var(--primitives-neutral-0);
   --bg-background: var(--primitives-neutral-0);
+  --bg-elevated: var(--primitives-neutral-0);
   --bg-secondary: var(--primitives-neutral-0);
   --bg-muted: var(--primitives-neutral-100);
   --bg-fill: var(--primitives-neutral-600);
@@ -43,6 +44,20 @@
   --fg-warning-strong: #381706;
   --fg-highlight: #00e405;
   --fg-stat: #252528;
+
+  /* ---------- Semantic: estados e camadas ---------- */
+  --bg-hover: rgba(17, 17, 17, 0.04);
+  --bg-glass: rgba(255, 255, 255, 0.95);
+  --bg-map: #f2f2f0;
+  --bg-primary-subtle-hover: #dff7e8;
+  --bg-input: var(--primitives-neutral-0);
+  --border-input: var(--primitives-neutral-200);
+  --border-primary-subtle: rgba(0, 119, 44, 0.1);
+  --ring-primary-subtle: transparent;
+  --bg-tooltip: #111111;
+  --overlay: rgba(17, 17, 17, 0.56);
+  --sheen: rgba(255, 255, 255, 0.85);
+  --map-shimmer: rgba(255, 255, 255, 0.55);
 
   /* ---------- Semantic: borders & rings ---------- */
   --border: var(--primitives-neutral-200);
@@ -87,4 +102,77 @@
   --chart-admin: #dcc7ad;
   --chart-maintenance: #cbd3ce;
   --chart-result: #00a651;
+}
+
+/*
+ * Modo escuro: cinza-carvão neutro em camadas (fundo #242527 → cards #28292b → caixas internas #2d2e30 →
+ * botões secundários #323335), textos em cinza claro e o verde da marca. Superfícies "elevadas" (modais,
+ * dropdown) ficam um tom acima do fundo.
+ */
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg-surface: #242527;
+  --bg-background: #28292b;
+  --bg-elevated: #2a2b2d;
+  --bg-secondary: #323335;
+  --bg-muted: #2d2e30;
+  --bg-fill: #5f6163;
+  --bg-primary: #00a859;
+  --bg-primary-hover: #00b862;
+  --bg-primary-active: #009a52;
+  --bg-primary-subtle: #1e3d30;
+  --bg-warning-subtle: #332a1c;
+  --bg-warning: #f08a24;
+
+  --fg-strong: #f4f5f5;
+  --fg-main: #a8a9ab;
+  --fg-muted: #7e7f81;
+  --fg-subtle: #4f5052;
+  --fg-primary: #25c776;
+  --fg-primary-strong: #45da8e;
+  --fg-on-secondary: #e8e9eb;
+  --fg-critical: #f87171;
+  --fg-warning: #f5a524;
+  --fg-warning-strong: #fde7b0;
+  --fg-stat: #e8e9eb;
+
+  --bg-hover: rgba(255, 255, 255, 0.04);
+  --bg-glass: rgba(42, 43, 45, 0.94);
+  --bg-map: #2d2e30;
+  --bg-primary-subtle-hover: #25473a;
+  --bg-input: #2b2c2e;
+  --border-input: #38393c;
+  --border-primary-subtle: rgba(37, 199, 118, 0.3);
+  --ring-primary-subtle: rgba(37, 199, 118, 0.3);
+  --bg-tooltip: #3a3b3d;
+  --overlay: rgba(10, 11, 12, 0.62);
+  --sheen: rgba(255, 255, 255, 0.1);
+  --map-shimmer: rgba(255, 255, 255, 0.06);
+
+  --border: #333436;
+  --border-muted: #2d2e30;
+  --border-primary: #25c776;
+  --border-critical: #ef4444;
+  --border-warning: #f5a524;
+  --ring-primary: rgba(37, 199, 118, 0.22);
+  --ring-critical: rgba(248, 113, 113, 0.2);
+  --ring-warning: rgba(245, 165, 36, 0.2);
+
+  --shadow-base: 0 1px 1px 0 rgba(0, 0, 0, 0.18);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-icon: 0 1px 1px 0 rgba(0, 0, 0, 0.2);
+  --shadow-card: 0 2px 6px 0 rgba(0, 0, 0, 0.22);
+  --shadow-md: 0 4px 10px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 30px -5px rgba(0, 0, 0, 0.45), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+
+  --chart-energy: #8a9590;
+  --chart-taxes: #a89076;
+  --chart-admin: #c9b193;
+  --chart-maintenance: #5f6163;
+  --chart-result: #00b35a;
 }

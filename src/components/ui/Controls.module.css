@@ -40,6 +40,11 @@
   box-shadow: var(--shadow-sm);
 }
 
+:global([data-theme='dark']) .tabActive {
+  background: var(--bg-primary-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+}
+
 .tabActive .tabIcon {
   background-color: var(--fg-primary);
 }

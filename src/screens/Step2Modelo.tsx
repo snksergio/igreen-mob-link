@@ -4,7 +4,7 @@ import { CategorySelect } from '../components/investment/CategorySelect'
 import { Highlight, Stack, StepPage } from '../components/layout/PageShell'
 import { Button, FooterGroup } from '../components/ui/Button'
 import { FancyIcon, QuantityStepper, YesNoToggle } from '../components/ui/Controls'
-import { Img } from '../components/ui/Icon'
+import { Icon } from '../components/ui/Icon'
 import {
   MAX_CARREGADORES,
   PERCENTUAL_FATURAMENTO_LIQUIDO,
@@ -129,7 +129,7 @@ export function Step2Modelo() {
           <p className={cn('t-label', styles.groupLabel)}>INFORMAÇÕES ADICIONAIS</p>
           <div className={styles.toggleCard}>
             <span className={styles.toggleIcon}>
-              <Img src={ICONS.discountBadge} size={24} />
+              <Icon src={ICONS.discountBadge} size={24} color="var(--fg-strong)" />
             </span>
             <div className={styles.toggleText}>
               <p className={cn('t-body-lg-semibold', styles.strong)}>Faturamento de publicidade</p>

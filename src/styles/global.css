@@ -31,6 +31,12 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+:root[data-theme='dark'] input:-webkit-autofill {
+  -webkit-text-fill-color: var(--fg-strong);
+  box-shadow: 0 0 0 1000px var(--bg-surface) inset;
+  caret-color: var(--fg-strong);
+}
+
 p,
 h1,
 h2,

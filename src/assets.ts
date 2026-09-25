@@ -57,6 +57,9 @@ export const ICONS = {
   add: icon('icon-add'),
   logoIsotipo: icon('logo-isotipo'),
   logoEnergy: icon('logo-igreen-energy'),
+  /** alternar tema (Lucide, licença ISC) */
+  sun: icon('icon-sun'),
+  moon: icon('icon-moon'),
 } as const
 
 const video = (name: string) => `/assets/video/${name}`
@@ -79,6 +82,13 @@ export const VIDEOS = {
     { src: video('proposta-car-960.mp4'), width: 960, bytes: 107_000 },
     { src: video('proposta-car-720.mp4'), width: 720, bytes: 53_000 },
   ],
+  /** Mesma cena à noite (tema escuro) — termina no mesmo quadro de proposta-hero-dark.webp */
+  propostaDark: [
+    { src: video('proposta-car-dark.mp4'), width: 1920, bytes: 557_000 },
+    { src: video('proposta-car-dark-1280.mp4'), width: 1280, bytes: 239_000 },
+    { src: video('proposta-car-dark-960.mp4'), width: 960, bytes: 116_000 },
+    { src: video('proposta-car-dark-720.mp4'), width: 720, bytes: 59_000 },
+  ],
 } as const satisfies Record<string, readonly Rendition[]>
 
 export const IMAGES = {
@@ -93,4 +103,6 @@ export const IMAGES = {
   mapStreets: img('map-streets.webp'),
   propostaHero: img('proposta-hero.webp'),
   propostaHeroLite: img('proposta-hero-lite.webp'),
+  propostaHeroDark: img('proposta-hero-dark.webp'),
+  propostaHeroDarkLite: img('proposta-hero-dark-lite.webp'),
 } as const

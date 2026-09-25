@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  background: var(--bg-surface);
+  background: var(--bg-background);
   border: 1px solid var(--border);
   border-radius: var(--radius-base);
   box-shadow: var(--shadow-base);
@@ -61,7 +61,7 @@
 }
 
 button.row:hover {
-  background: #f8faf9;
+  background: var(--bg-hover);
 }
 
 .rowSelected {

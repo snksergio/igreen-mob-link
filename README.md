@@ -50,6 +50,24 @@ npm run compress:video -- <entrada.mp4> <saída.mp4> <largura> [crf]   # H.264 l
   - Ao focar um campo, inclusive pelo "Próximo" do teclado, `lib/keepFocusedFieldVisible.ts` garante que ele fique visível acima do teclado.
 - O botão voltar do navegador funciona, e os dados ficam em `sessionStorage`, então um F5 não apaga o que foi preenchido.
 
+## Tema escuro (`lib/theme.ts`)
+
+- **Escolha do tema:** segue o sistema por padrão. O botão de sol/lua no header (e no canto da proposta) troca o tema, e a escolha fica salva no aparelho (`localStorage`).
+- **Sem piscar:** um script no `index.html` aplica o tema antes da primeira pintura.
+- **Tokens:** os valores escuros ficam em `styles/tokens.css`, em `:root[data-theme='dark']`. É um cinza-carvão em camadas: fundo `#242527`, cards `#28292b`, modais `#2a2b2d`, inputs `#2b2c2e`.
+  - O verde da marca continua nos botões.
+  - Os destaques "fracos" (selecionados, blocos e ícones com verde atrás) usam `#1e3d30` com um contorno verde sutil (`--ring-primary-subtle`), que é transparente no tema claro.
+- **Home:** é escura nos dois temas.
+- **Proposta:** usa uma versão noturna do vídeo (`propostaDark` em `assets.ts`), com as mesmas qualidades adaptativas.
+  - O vídeo e a imagem escura recebem uma correção de cor que sobe o preto. Assim as bordas ficam no tom do fundo da página e se fundem sem recorte.
+  - Para regerar o vídeo com a correção:
+
+    ```bash
+    npm run compress:video -- original.mp4 public/assets/video/proposta-car-dark-1280.mp4 1280 27 "colorlevels=romin=0.064:gomin=0.064:bomin=0.064"
+    ```
+
+- **Mapa:** usa a versão escura do Esri Gray Canvas.
+
 ## Estrutura
 
 ```

@@ -3,6 +3,7 @@ import 'leaflet/dist/leaflet.css'
 import { useEffect, useRef } from 'react'
 import { ICONS, IMAGES } from '../../assets'
 import { cn } from '../../lib/cn'
+import { useTheme, type Theme } from '../../lib/theme'
 import styles from './MapView.module.css'
 
 /** Pin do Figma (forma + círculo + sombra), com a mesma geometria do node 1:639 */
@@ -19,8 +20,14 @@ const pinHtml = `
  * (Mapbox, MapTiler, Google...) — basta alterar as URLs abaixo.
  */
 const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas'
-const TILE_BASE = `${ESRI}/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`
-const TILE_LABELS = `${ESRI}/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}`
+/** Light Gray no tema claro, Dark Gray no escuro (mesmo estilo, só invertido) */
+const tiles = (theme: Theme) => {
+  const style = theme === 'dark' ? 'Dark' : 'Light'
+  return {
+    base: `${ESRI}/World_${style}_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    labels: `${ESRI}/World_${style}_Gray_Reference/MapServer/tile/{z}/{y}/{x}`,
+  }
+}
 const TILE_ATTRIBUTION = 'Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap'
 
 const pinIcon = L.divIcon({
@@ -48,6 +55,9 @@ export function MapView({ lat, lng, loading, zoom = 16, className, wheelZoom = f
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
+  const layersRef = useRef<{ base: L.TileLayer; labels: L.TileLayer } | null>(null)
+  const theme = useTheme()
+  const themeRef = useRef(theme)
   const onPickRef = useRef(onPick)
   useEffect(() => {
     onPickRef.current = onPick
@@ -71,8 +81,11 @@ export function MapView({ lat, lng, loading, zoom = 16, className, wheelZoom = f
         keyboard: interactive,
       })
       map.attributionControl.setPrefix(false)
-      L.tileLayer(TILE_BASE, { maxZoom: 19, maxNativeZoom: 16, attribution: TILE_ATTRIBUTION }).addTo(map)
-      L.tileLayer(TILE_LABELS, { maxZoom: 19, maxNativeZoom: 16 }).addTo(map)
+      const urls = tiles(themeRef.current)
+      layersRef.current = {
+        base: L.tileLayer(urls.base, { maxZoom: 19, maxNativeZoom: 16, attribution: TILE_ATTRIBUTION }).addTo(map),
+        labels: L.tileLayer(urls.labels, { maxZoom: 19, maxNativeZoom: 16 }).addTo(map),
+      }
       if (interactive) {
         L.control.zoom({ position: 'bottomright', zoomInTitle: 'Aproximar', zoomOutTitle: 'Afastar' }).addTo(map)
         if (!wheelZoom) {
@@ -99,6 +112,14 @@ export function MapView({ lat, lng, loading, zoom = 16, className, wheelZoom = f
       if (!mapRef.current.getBounds().pad(-0.2).contains([lat, lng])) mapRef.current.panTo([lat, lng], { animate: true })
     }
   }, [hasCoords, lat, lng, zoom, wheelZoom, interactive, pickable])
+
+  // Troca de tema com o mapa aberto: só troca as URLs dos tiles
+  useEffect(() => {
+    themeRef.current = theme
+    const urls = tiles(theme)
+    layersRef.current?.base.setUrl(urls.base)
+    layersRef.current?.labels.setUrl(urls.labels)
+  }, [theme])
 
   useEffect(() => {
     const el = containerRef.current

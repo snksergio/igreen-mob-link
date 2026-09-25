@@ -30,6 +30,33 @@
   gap: 16px;
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.themeToggle {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  transition: background-color 0.15s ease;
+}
+
+.themeToggle:hover {
+  background: var(--bg-hover);
+}
+
+.themeIcon {
+  background-color: var(--fg-main);
+}
+
 /* Responsável pelo cadastro: informativo, com menos destaque que o conteúdo */
 .responsavel {
   display: inline-flex;
@@ -53,6 +80,7 @@
   height: 24px;
   border-radius: 50%;
   background: var(--bg-primary-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
   color: var(--fg-primary);
   font-family: var(--font-sans);
   font-weight: 700;

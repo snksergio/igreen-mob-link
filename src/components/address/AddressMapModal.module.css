@@ -30,7 +30,7 @@
   gap: 8px;
   max-width: calc(100% - 110px);
   padding: 8px 14px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-glass);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-md);

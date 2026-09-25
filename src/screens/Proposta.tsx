@@ -3,11 +3,13 @@ import { ICONS, IMAGES, VIDEOS } from '../assets'
 import { DetailModal } from '../components/projection/DetailModal'
 import { DistributionRows, ProjectionDisclaimer, ProjectionHero, ProjectionStats, RevenueBreakdown } from '../components/projection/Projection'
 import { Button } from '../components/ui/Button'
+import { ThemeToggle } from '../components/layout/PageShell'
 import { FancyIcon } from '../components/ui/Controls'
 import { Icon, Img } from '../components/ui/Icon'
 import { PlayOnceVideo } from '../components/ui/PlayOnceVideo'
 import { PREMISSAS, carregador } from '../data/investment'
 import { useAdaptiveVideo } from '../lib/adaptiveVideo'
+import { useTheme } from '../lib/theme'
 import { cn } from '../lib/cn'
 import { decimal, money, moneyCents, pad2, spelled } from '../lib/format'
 import { useMediaQuery } from '../lib/useMediaQuery'
@@ -34,7 +36,12 @@ export function Proposta() {
     const h = window.matchMedia('(max-width: 767px)').matches ? w / 1.45 : w / 2.178
     return Math.round(h * VIDEO_RATIO * Math.min(window.devicePixelRatio || 1, 2))
   })
-  const video = useAdaptiveVideo(VIDEOS.proposta, { enabled: !reducedMotion, neededWidth })
+  // Versão noturna no tema escuro (trocar o tema com a página aberta carrega a outra versão)
+  const dark = useTheme() === 'dark'
+  const video = useAdaptiveVideo(dark ? VIDEOS.propostaDark : VIDEOS.proposta, { enabled: !reducedMotion, neededWidth })
+  const heroImage = dark
+    ? video.status === 'image' && video.lite ? IMAGES.propostaHeroDarkLite : IMAGES.propostaHeroDark
+    : video.status === 'image' && video.lite ? IMAGES.propostaHeroLite : IMAGES.propostaHero
 
   useEffect(() => {
     if (!proposta) go('step4')
@@ -79,6 +86,7 @@ export function Proposta() {
 
   return (
     <main className={styles.page}>
+      <ThemeToggle className={styles.themeToggle} />
       <header className={styles.header}>
         <img src={ICONS.logoEnergy} width={88} height={28} alt="iGreen Energy" className={styles.logo} />
         <h1 className={styles.title}>
@@ -94,7 +102,7 @@ export function Proposta() {
         {video.status === 'video' ? (
           <PlayOnceVideo src={video.src} className={styles.heroImg} />
         ) : video.status === 'image' ? (
-          <img src={video.lite ? IMAGES.propostaHeroLite : IMAGES.propostaHero} alt="" className={styles.heroImg} />
+          <img src={heroImage} alt="" className={styles.heroImg} />
         ) : (
           <div className={styles.heroImg} />
         )}

@@ -1,7 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { ICONS } from '../../assets'
 import { cn } from '../../lib/cn'
+import { setTheme, useTheme } from '../../lib/theme'
 import { getResponsavel } from '../../services/responsavel'
+import { Icon } from '../ui/Icon'
 import { useCadastro } from '../../state/cadastro'
 import styles from './PageShell.module.css'
 
@@ -49,13 +51,33 @@ export function ResponsavelBadge() {
 }
 
 /** `label` (ex.: "PASSO 1 DE 4"): no mobile sobe para a linha do logo, ao lado do responsável */
+/** Alterna entre tema claro e escuro (a escolha fica salva no aparelho) */
+export function ThemeToggle({ className }: { className?: string }) {
+  const theme = useTheme()
+  const dark = theme === 'dark'
+  return (
+    <button
+      type="button"
+      className={cn(styles.themeToggle, className)}
+      onClick={() => setTheme(dark ? 'light' : 'dark')}
+      aria-label={dark ? 'Usar tema claro' : 'Usar tema escuro'}
+      title={dark ? 'Tema claro' : 'Tema escuro'}
+    >
+      <Icon src={dark ? ICONS.sun : ICONS.moon} size={16} className={styles.themeIcon} />
+    </button>
+  )
+}
+
 export function HeaderController({ step, label }: { step?: number; label?: string }) {
   return (
     <header className={styles.headerController}>
       <div className={styles.headerTop}>
         <Isotipo />
         {label ? <span className={cn(styles.badge, styles.badgeTop, 't-label')}>{label}</span> : null}
-        <ResponsavelBadge />
+        <div className={styles.headerRight}>
+          <ThemeToggle />
+          <ResponsavelBadge />
+        </div>
       </div>
       {step ? <Stepper step={step} /> : null}
     </header>
