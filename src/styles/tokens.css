@@ -118,7 +118,7 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --bg-surface: #242527;
+  --bg-surface: #212224;
   --bg-background: #28292b;
   --bg-elevated: #2a2b2d;
   --bg-secondary: #323335;

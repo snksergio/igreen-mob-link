@@ -84,10 +84,10 @@ export const VIDEOS = {
   ],
   /** Mesma cena à noite (tema escuro) — termina no mesmo quadro de proposta-hero-dark.webp */
   propostaDark: [
-    { src: video('proposta-car-dark.mp4'), width: 1920, bytes: 557_000 },
-    { src: video('proposta-car-dark-1280.mp4'), width: 1280, bytes: 239_000 },
-    { src: video('proposta-car-dark-960.mp4'), width: 960, bytes: 116_000 },
-    { src: video('proposta-car-dark-720.mp4'), width: 720, bytes: 59_000 },
+    { src: video('proposta-car-dark.mp4'), width: 1920, bytes: 563_000 },
+    { src: video('proposta-car-dark-1280.mp4'), width: 1280, bytes: 240_000 },
+    { src: video('proposta-car-dark-960.mp4'), width: 960, bytes: 117_000 },
+    { src: video('proposta-car-dark-720.mp4'), width: 720, bytes: 60_000 },
   ],
 } as const satisfies Record<string, readonly Rendition[]>
 
