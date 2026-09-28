@@ -1,22 +1,34 @@
-import { IMAGES } from '../../assets'
+import { useId, useState } from 'react'
+import { ICONS, IMAGES } from '../../assets'
 import { DialogHeader, Modal } from '../../components/ui/Modal'
-import { moneyCents, moneyParts } from '../../lib/format'
+import { Img } from '../../components/ui/Icon'
+import { money, moneyCents, moneyParts } from '../../lib/format'
 import { compactMoney, paybackLabel, pct } from '../format'
+import { POTENCIA } from '../guided'
 import { useGerador } from '../state'
 import { DreTable } from './DreTable'
+import { MonthTable } from './MonthTable'
+import { PeriodControl } from './PeriodControl'
+import { Premissas } from './Premissas'
+import { ReturnChart } from './ReturnChart'
+import { TabBar, TabPanel } from './Segmented'
 import styles from './Detail.module.css'
 
 export type ResumoItem = { label: string; value: string }
 
+type Aba = 'proposta' | 'retorno' | 'dre' | 'mes' | 'premissas'
+
 /**
- * Detalhamento da simulação (mês 1): recebimento, retorno, saldo/ROI em 36 meses e o DRE.
- * Na proposta final recebe `resumo` com os dados da proposta acima dos números.
+ * Detalhamento da simulação: card verde no padrão do card da bateria (recebimento do mês 1, modelo,
+ * sociedade, investimento e retorno) e, abaixo, abas com o gráfico de retorno, o DRE, o mês a mês e as premissas.
+ * Com `resumo` (proposta final), a primeira aba mostra os dados da proposta.
+ * O cabeçalho fica fixo e o conteúdo rola dentro do modal.
  */
 export function GeradorDetailModal({
   open,
   onClose,
   title = 'Detalhamento da simulação',
-  subtitle = 'Números do mês 1 com as premissas que você escolheu',
+  subtitle = 'Resultado estimado com as premissas que você escolheu',
   resumo,
 }: {
   open: boolean
@@ -25,53 +37,122 @@ export function GeradorDetailModal({
   subtitle?: string
   resumo?: ResumoItem[]
 }) {
-  const { state, result } = useGerador()
+  const { state, result, scenario } = useGerador()
   const s = state.simulacao.inputs
+  const { view, month, year } = state.simulacao
   const combined = s.incomeMode === 'combined'
   const m1 = result.months[0]
   const receipt = combined ? m1.totalInvestor : m1.investorRechargeCash
   const payback = combined ? result.payback : result.chargingPayback
   const net36 = combined ? result.net36 : result.months[35].chargingNetAccumulated
   const { int, cents } = moneyParts(receipt)
+  const solo = result.charger.investorShare === 1
+
+  const abas: { value: Aba; label: string }[] = [
+    ...(resumo?.length ? [{ value: 'proposta' as const, label: 'Proposta' }] : []),
+    { value: 'retorno', label: 'Retorno' },
+    { value: 'dre', label: 'DRE' },
+    { value: 'mes', label: 'Mês a mês' },
+    { value: 'premissas', label: 'Premissas' },
+  ]
+  const [aba, setAba] = useState<Aba>(abas[0].value)
+  const id = useId()
 
   return (
-    <Modal open={open} onClose={onClose} label={title} width={760} padding="compact">
-      <DialogHeader title={title} subtitle={subtitle} />
-      <div className={styles.content}>
-        {resumo?.length ? (
-          <dl className={styles.summary}>
-            {resumo.map((item) => (
-              <div key={item.label} className={styles.summaryRow}>
-                <dt>{item.label}</dt>
-                <dd>{item.value}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
-
-        <div className={styles.hero} style={{ backgroundImage: `url(${IMAGES.greenCard})` }}>
-          <span className={styles.heroLabel}>Recebimento estimado no mês 1 · {combined ? 'carteira + recargas' : 'só recargas'}</span>
-          <span className={styles.heroValue} aria-label={moneyCents(receipt)}>
-            R$ {int}
-            <small>,{cents}</small>
-          </span>
-          <div className={styles.kpis}>
-            <div>
-              <span>Retorno</span>
-              <b>{paybackLabel(payback)}</b>
-            </div>
-            <div>
-              <span>Saldo em 36 meses</span>
-              <b>{compactMoney(net36)}</b>
-            </div>
-            <div>
-              <span>ROI 36 meses</span>
-              <b>{pct((net36 / result.investment) * 100, 0)}</b>
-            </div>
-          </div>
+    <Modal open={open} onClose={onClose} label={title} width={880} padding="flush">
+      <div className={styles.shell}>
+        <div className={styles.head}>
+          <DialogHeader title={title} subtitle={subtitle} />
         </div>
 
-        <DreTable period={m1} inputs={s} charger={result.charger} periodLabel="Mês 1" combined={combined} embedded />
+        <div className={styles.scroll}>
+          {/* Card verde no padrão do card da bateria (resumo) */}
+          <section className={styles.hero} style={{ backgroundImage: `url(${IMAGES.greenCard})` }} aria-label="Resultado estimado">
+            <div className={styles.heroChips}>
+              <span className={styles.heroChip}>
+                {result.charger.name} · {POTENCIA[s.charger]}
+              </span>
+              <Img src={ICONS.plusCircle} size={16} />
+              <span className={styles.heroChip}>{solo ? '100% seu' : `Sociedade ${result.charger.investorShare * 100}/${result.charger.igreenShare * 100}`}</span>
+            </div>
+            <div className={styles.heroBottom}>
+              <div className={styles.heroValue}>
+                <p className={styles.heroAmount} aria-label={moneyCents(receipt)}>
+                  R$ {int}
+                  <span>,{cents}</span>
+                </p>
+                <p className={styles.heroOverline}>RECEBIMENTO ESTIMADO NO MÊS 1 · {combined ? 'CARTEIRA + RECARGAS' : 'SÓ RECARGAS'}</p>
+              </div>
+              <span className={styles.heroFlag}>
+                Investimento <b>{money(result.capital.investor)}</b> · retorno em <b>{paybackLabel(payback)}</b>
+              </span>
+            </div>
+            <div className={styles.heroBattery} aria-hidden>
+              <img src={IMAGES.battery} alt="" />
+            </div>
+          </section>
+
+          <div className={styles.stats}>
+            <div className={styles.stat}>
+              <span className={styles.statIcon}>
+                <Img src={ICONS.handMoney} size={22} />
+              </span>
+              <div>
+                <p className={styles.statLabel}>RETORNO</p>
+                <p className={styles.statValue}>{paybackLabel(payback)}</p>
+              </div>
+            </div>
+            <div className={styles.stat}>
+              <span className={styles.statIcon}>
+                <Img src={ICONS.moneyBag} size={22} />
+              </span>
+              <div>
+                <p className={styles.statLabel}>SALDO EM 36 MESES</p>
+                <p className={styles.statValue}>{compactMoney(net36)}</p>
+              </div>
+            </div>
+            <div className={styles.stat}>
+              <span className={styles.statIcon}>
+                <Img src={ICONS.moneyBag} size={22} />
+              </span>
+              <div>
+                <p className={styles.statLabel}>ROI EM 36 MESES</p>
+                <p className={styles.statValue}>{pct((net36 / result.investment) * 100, 0)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.tabsBar}>
+            <TabBar label="Seções do detalhamento" value={aba} options={abas} onChange={setAba} idBase={id} />
+          </div>
+
+          <TabPanel idBase={id} value={aba}>
+            {aba === 'proposta' && resumo ? (
+              <dl className={styles.facts}>
+                {resumo.map((item) => (
+                  <div key={item.label}>
+                    <dt>{item.label}</dt>
+                    <dd>{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+            {aba === 'retorno' ? <ReturnChart result={result} mode={s.incomeMode} embedded /> : null}
+            {aba === 'dre' ? (
+              <DreTable
+                period={scenario.period}
+                inputs={s}
+                charger={result.charger}
+                periodLabel={view === 'month' ? `Mês ${month}` : `Ano ${year}`}
+                combined={combined}
+                embedded
+                headerAside={<PeriodControl />}
+              />
+            ) : null}
+            {aba === 'mes' ? <MonthTable months={result.months} embedded /> : null}
+            {aba === 'premissas' ? <Premissas /> : null}
+          </TabPanel>
+        </div>
       </div>
     </Modal>
   )

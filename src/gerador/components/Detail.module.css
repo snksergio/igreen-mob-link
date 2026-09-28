@@ -1,124 +1,318 @@
-.content {
+/* ================= Modal de detalhamento (resumo e proposta final) ================= */
+
+/* Cabeçalho fixo; só o conteúdo rola, dentro do modal (não a tela) */
+.shell {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  width: 100%;
+  max-height: calc(100vh - 96px);
+  max-height: calc(100dvh - 96px);
 }
 
-/* Resumo da proposta (lista rótulo × valor) */
-.summary {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 2px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-}
-
-.summaryRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 11px 0;
-}
-
-.summaryRow + .summaryRow {
-  border-top: 1px solid var(--border);
-}
-
-.summaryRow dt {
+.head {
   flex-shrink: 0;
+  padding: 36px 30px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.scroll {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  padding: 24px 30px 30px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ---------- Card verde no padrão do card da bateria ---------- */
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 22px;
+  min-height: 196px;
+  padding: 24px 190px 24px 24px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background-color: #0a8a3c;
+  background-size: cover;
+  background-position: center;
+}
+
+.heroChips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.heroChip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  background: rgba(0, 179, 39, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(0.5px);
+  font-family: var(--font-inter);
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.heroBottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.heroValue {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.heroAmount {
+  font-family: var(--font-inter);
+  font-weight: 800;
+  font-size: 38px;
+  line-height: 44px;
+  letter-spacing: -0.02em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.heroAmount span {
+  font-weight: 700;
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.heroOverline {
+  font-family: var(--font-inter);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: -0.01em;
+  color: var(--fg-highlight);
+}
+
+.heroFlag {
+  display: inline-block;
+  padding: 8px 14px;
+  background: #fff;
+  border-radius: var(--radius-xl-flag);
   font-family: var(--font-sans);
   font-weight: 500;
   font-size: 12px;
   line-height: 18px;
-  color: var(--fg-main);
+  letter-spacing: -0.01em;
+  /* selo sempre branco: verde escuro fixo (o token clareia no tema escuro) */
+  color: #008949;
 }
 
-.summaryRow dd {
-  min-width: 0;
-  margin: 0;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--fg-strong);
-  text-align: right;
-  overflow-wrap: anywhere;
-}
-
-/* Cartão verde com o recebimento */
-.hero {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 20px;
-  border-radius: var(--radius-lg);
-  background-color: #0a8a3c;
-  background-position: center;
-  background-size: cover;
-  color: #fff;
-}
-
-.heroLabel {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 12px;
-  line-height: 16px;
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.heroValue {
-  font-family: var(--font-sans);
+.heroFlag b {
   font-weight: 700;
-  font-size: 34px;
-  line-height: 40px;
-  letter-spacing: -0.04em;
-  font-variant-numeric: tabular-nums;
 }
 
-.heroValue small {
-  font-size: 20px;
-  color: rgba(255, 255, 255, 0.6);
+.heroBattery {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 150px;
+  height: 184px;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateY(-50%);
 }
 
-.kpis {
+.heroBattery img {
+  position: absolute;
+  top: 0;
+  left: -81.68%;
+  width: 253.47%;
+  max-width: none;
+  height: 103.36%;
+}
+
+/* ---------- Retorno · saldo · ROI (mesmo padrão do painel do simulador) ---------- */
+.stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-  margin-top: 10px;
+  gap: 10px;
 }
 
-.kpis div {
+.stat {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 14px;
+  border-radius: var(--radius-base);
+  background: var(--bg-muted);
 }
 
-.kpis span {
+.statIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-background);
+  box-shadow: var(--shadow-icon);
+}
+
+.statLabel {
   font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.72);
+  font-size: 10.5px;
+  letter-spacing: 0.01em;
+  color: var(--fg-muted);
+  white-space: nowrap;
 }
 
-.kpis b {
+.statValue {
   font-family: var(--font-sans);
   font-weight: 700;
   font-size: 15px;
   line-height: 20px;
+  color: var(--fg-stat);
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Abas (grudam no topo enquanto o conteúdo rola) ---------- */
+.tabsBar {
+  position: sticky;
+  z-index: 3;
+  top: -24px;
+  margin: 4px 0 0;
+  padding: 8px 0;
+  background: var(--bg-elevated);
+}
+
+/* ---------- Dados da proposta (aba Proposta) ---------- */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  background: var(--border);
+}
+
+.facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--bg-elevated);
+}
+
+/* Quantidade ímpar: o último ocupa a linha toda (sem célula vazia) */
+.facts > div:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.facts dt {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.facts dd {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--fg-strong);
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 420px) {
-  .kpis {
+/* ---------- Tablet / celular ---------- */
+@media (max-width: 720px) {
+  .hero {
+    padding-right: 24px;
+  }
+
+  .heroBattery {
+    top: 14px;
+    right: 6px;
+    width: 96px;
+    height: 118px;
+    transform: none;
+    opacity: 0.9;
+  }
+
+  .heroChips {
+    padding-right: 84px;
+  }
+
+  .stats {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .stats .stat:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* No celular o próprio bottom sheet rola (padrão do Modal) */
+@media (max-width: 560px) {
+  .shell {
+    max-height: none;
+  }
+
+  .head {
+    padding: 28px 20px 16px;
+  }
+
+  .scroll {
+    overflow: visible;
+    padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .tabsBar {
+    top: 0;
+  }
+
+  .hero {
+    min-height: 0;
+    padding: 20px;
+  }
+
+  .heroAmount {
+    font-size: 32px;
+    line-height: 38px;
+  }
+
+  .stat {
+    padding: 12px;
+  }
+
+  .statIcon {
+    display: none;
   }
 }

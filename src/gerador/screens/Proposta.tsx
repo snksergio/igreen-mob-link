@@ -10,7 +10,6 @@ import { useTheme } from '../../lib/theme'
 import { cn } from '../../lib/cn'
 import { money, moneyCents } from '../../lib/format'
 import { useMediaQuery } from '../../lib/useMediaQuery'
-import { DreTable } from '../components/DreTable'
 import { GeradorDetailModal } from '../components/GeradorDetailModal'
 import { compactMoney, paybackLabel, pct } from '../format'
 import type { ChargerId } from '../model'
@@ -183,8 +182,29 @@ export function Proposta() {
               meta={[`${compactMoney(recebimento)}/mês`, `retorno em ${paybackLabel(payback)}`]}
               plain
             >
-              <div className={styles.detail}>
-                <DreTable period={m1} inputs={inputs} charger={result.charger} periodLabel="Mês 1" combined={combined} embedded />
+              {/* Só o essencial; o detalhamento completo (gráfico, DRE, mês a mês) fica no modal */}
+              <div className={styles.detailSummary}>
+                <dl className={styles.kpis}>
+                  <div>
+                    <dt>Recebimento no mês 1</dt>
+                    <dd>{moneyCents(recebimento)}</dd>
+                  </div>
+                  <div>
+                    <dt>Retorno</dt>
+                    <dd>{paybackLabel(payback)}</dd>
+                  </div>
+                  <div>
+                    <dt>Saldo em 36 meses</dt>
+                    <dd>{compactMoney(net36)}</dd>
+                  </div>
+                  <div>
+                    <dt>ROI em 36 meses</dt>
+                    <dd>{pct((net36 / result.investment) * 100, 0)}</dd>
+                  </div>
+                </dl>
+                <Button className={styles.fullButton} onClick={() => setDetailOpen(true)}>
+                  Ver detalhamento da proposta
+                </Button>
               </div>
             </Collapsible>
 

@@ -358,6 +358,50 @@
   padding: 12px 12px 12px;
 }
 
+/* Detalhamento do investimento: resumo em 4 números + o mesmo botão do card principal */
+.detailSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 8px 8px;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.kpis > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-base);
+  background: var(--bg-muted);
+}
+
+.kpis dt {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--p-caption);
+}
+
+.kpis dd {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.01em;
+  color: var(--p-value);
+  font-variant-numeric: tabular-nums;
+}
+
 .detailGroup {
   display: flex;
   flex-direction: column;
