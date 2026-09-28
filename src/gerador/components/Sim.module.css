@@ -1,0 +1,620 @@
+/* ================= Blocos do simulador (Gerador) ================= */
+
+/* ---------- Card de seção ---------- */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  padding: 23px; /* 24 - 1 de borda */
+  background: var(--bg-background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-base);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sectionIndex {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+  font-family: var(--font-inter);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--fg-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.sectionText {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 3px;
+}
+
+.sectionTitle {
+  color: var(--fg-strong);
+}
+
+.sectionSubtitle {
+  color: var(--fg-muted);
+}
+
+.sectionAside {
+  flex-shrink: 0;
+}
+
+.sectionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* ---------- Grupo rotulado (rótulo acima do controle) ---------- */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.groupHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fg-main);
+}
+
+.hint {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: -0.01em;
+  color: var(--fg-muted);
+}
+
+.hint b {
+  font-weight: 700;
+  color: var(--fg-main);
+}
+
+/* Valor grande ao lado do rótulo: "7 carros" */
+.bigValue {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 28px;
+  letter-spacing: -0.03em;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bigValue small {
+  margin-left: 4px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  color: var(--fg-muted);
+}
+
+.scale {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--fg-muted);
+}
+
+.scaleLimit {
+  font-weight: 700;
+  color: var(--fg-main);
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .row2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Caixa de controle (ex.: dias com − +) no mesmo tamanho dos campos */
+.controlBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--h-form-lg);
+  padding: 0 8px 0 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-base);
+}
+
+.controlBox .bigValue {
+  font-size: 18px;
+}
+
+/* ---------- Chips de referência ---------- */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-main);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+a.chip:hover {
+  background: var(--bg-hover);
+}
+
+.chip b {
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+.chipIcon {
+  background-color: var(--fg-primary);
+}
+
+/* ---------- Medidor de capacidade ---------- */
+.meter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-base);
+}
+
+.meterHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.meterValue {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 22px;
+  letter-spacing: -0.02em;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.meterTrack {
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--bg-primary-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+}
+
+.meterFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--bg-primary);
+  transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.meterFill.meterHigh {
+  background: var(--bg-warning);
+}
+
+/* ---------- Linha informativa (ex.: administração 15%) ---------- */
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-base);
+}
+
+.infoText {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.infoTitle {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.01em;
+  color: var(--fg-strong);
+}
+
+.infoValue {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.margin {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: var(--bg-primary-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-primary);
+}
+
+.margin.marginNegative {
+  background: var(--bg-warning-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-warning-subtle);
+  color: var(--bg-warning);
+}
+
+/* ---------- Cards de conexão (energia, seguros, telecom) ---------- */
+.toggles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 560px) {
+  .toggles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 14px;
+  text-align: left;
+  background: var(--bg-background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.toggle:hover {
+  border-color: var(--fg-subtle);
+}
+
+.toggleOn,
+.toggleOn:hover {
+  background: var(--bg-primary-subtle);
+  border-color: var(--border-primary);
+}
+
+.toggleHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.toggleName {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-main);
+}
+
+.toggleOn .toggleName {
+  color: var(--fg-primary);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--fg-subtle);
+  border-radius: 5px;
+}
+
+.checkOn {
+  background: var(--bg-primary);
+  border-color: var(--bg-primary);
+}
+
+.toggleValue {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: -0.02em;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Faixa de projeção da carteira ---------- */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.stripItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 14px;
+  background: var(--bg-muted);
+  border-radius: var(--radius-base);
+}
+
+.stripFirst {
+  background: var(--bg-primary-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+}
+
+.stripLabel {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.stripFirst .stripLabel {
+  color: var(--fg-primary);
+}
+
+.stripValue {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: -0.02em;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.stripValue small {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.stripAcc {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Lista de opções (radio em linhas) ---------- */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  text-align: left;
+  background: var(--bg-background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.option:hover {
+  border-color: var(--fg-subtle);
+}
+
+.optionOn,
+.optionOn:hover {
+  background: var(--bg-primary-subtle);
+  border-color: var(--border-primary);
+}
+
+.optionDot {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border: 1.5px solid var(--fg-subtle);
+  border-radius: 50%;
+}
+
+.optionOn .optionDot {
+  border: 5px solid var(--bg-primary);
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.optionTitle {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--fg-strong);
+}
+
+.optionHint {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-muted);
+}
+
+/* ---------- Avançado (recolhido) ---------- */
+.advanced {
+  padding: 0;
+  gap: 0;
+}
+
+.advancedSummary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 23px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.advancedSummary::-webkit-details-marker {
+  display: none;
+}
+
+.advancedChevron {
+  margin-left: auto;
+  background-color: var(--fg-main);
+  transition: transform 0.2s ease;
+}
+
+.advanced[open] .advancedChevron {
+  transform: rotate(180deg);
+}
+
+.advancedBody {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 23px 23px;
+}
+
+.taxChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.taxChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  background: var(--bg-muted);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--fg-main);
+}
+
+.taxChip b {
+  color: var(--fg-strong);
+}
+
+.note {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--fg-muted);
+}
+
+@media (max-width: 560px) {
+  .section {
+    gap: 18px;
+    padding: 17px;
+  }
+
+  .advanced {
+    padding: 0;
+  }
+
+  .advancedSummary {
+    padding: 16px 17px;
+  }
+
+  .advancedBody {
+    padding: 0 17px 17px;
+  }
+
+  .bigValue {
+    font-size: 22px;
+  }
+}
