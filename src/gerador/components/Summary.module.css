@@ -12,6 +12,11 @@
 }
 
 /* ---------- Celular: uma linha que expande para o resumo completo ---------- */
+/* Tema escuro: dentro de um card, o cinza interno (blocos, abas, linhas) sobe um tom para não sumir na superfície */
+:global([data-theme='dark']) .summary {
+  --bg-muted: var(--bg-secondary);
+}
+
 .summary {
   overflow: hidden;
   border: 1px solid var(--border);

@@ -13,6 +13,11 @@
   --series-a: #1ba865;
 }
 
+/* Tema escuro: dentro de um card, o cinza interno (blocos, abas, linhas) sobe um tom para não sumir na superfície */
+:global([data-theme='dark']) .panel {
+  --bg-muted: var(--bg-secondary);
+}
+
 .panel {
   background: var(--bg-background);
   border: 1px solid var(--border);

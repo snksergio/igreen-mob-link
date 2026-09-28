@@ -257,6 +257,11 @@
   gap: 14px;
 }
 
+/* Tema escuro: dentro de um card, o cinza interno (blocos, abas, linhas) sobe um tom para não sumir na superfície */
+:global([data-theme='dark']) .card {
+  --bg-muted: var(--bg-secondary);
+}
+
 .card {
   background: var(--p-card);
   border-radius: var(--radius-lg);

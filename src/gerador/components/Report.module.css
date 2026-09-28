@@ -12,6 +12,12 @@
   box-shadow: var(--shadow-base);
 }
 
+/* Tema escuro: dentro de um card, o cinza interno (blocos, abas, linhas) sobe um tom para não sumir na superfície */
+:global([data-theme='dark']) .card,
+:global([data-theme='dark']) .report {
+  --bg-muted: var(--bg-secondary);
+}
+
 .cardHead {
   display: flex;
   flex-wrap: wrap;

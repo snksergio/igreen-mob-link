@@ -113,9 +113,10 @@ export function buildSimulationDocument({ inputs: s, result, codigo, geradoEm, r
   const meses = result.months
     .map(
       (r) =>
-        `<tr><th>${r.month}</th><td>${signedMoney(r.investorRechargeCash)}</td><td>${moneyCents(r.energyCommission + r.insuranceCommission + r.telecomCommission)}</td><td><b>${moneyCents(
-          r.totalInvestor,
-        )}</b></td><td class="${r.netAccumulated < 0 ? 'neg' : 'pos'}">${signedMoney(r.netAccumulated)}</td></tr>`,
+        // Total e saldo primeiro: é o que se lê no celular sem precisar deslizar
+        `<tr><th>${r.month}</th><td><b>${moneyCents(r.totalInvestor)}</b></td><td class="${r.netAccumulated < 0 ? 'neg' : 'pos'}">${signedMoney(r.netAccumulated)}</td><td>${signedMoney(
+          r.investorRechargeCash,
+        )}</td><td>${moneyCents(r.energyCommission + r.insuranceCommission + r.telecomCommission)}</td></tr>`,
     )
     .join('')
 
@@ -132,7 +133,9 @@ export function buildSimulationDocument({ inputs: s, result, codigo, geradoEm, r
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Geist,system-ui,-apple-system,'Segoe UI',sans-serif;color:#141416;background:#f4f5f7;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{overflow-x:hidden}
 .page{max-width:860px;margin:0 auto;padding:32px 20px 48px;display:flex;flex-direction:column;gap:16px}
+.page>*,.grid>*,.fields>*{min-width:0}
 header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
 header .brand svg{height:28px;width:auto;display:block}
 header h1{margin-top:14px;font-size:26px;line-height:32px;letter-spacing:-.03em}
@@ -165,14 +168,20 @@ tr.total th,tr.total td{color:#141416;font-weight:700}
 tr.hl th,tr.hl td{color:#008949;font-weight:700;background:#e8f7ef}
 tr.hl th{padding-left:10px}tr.hl td{padding-right:10px}
 .fields{margin-top:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.fields td{white-space:normal;overflow-wrap:anywhere}
 .fields h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6b6f76;margin-bottom:4px}
 .fields th{font:600 11px/16px Geist,sans-serif;letter-spacing:.02em;text-transform:uppercase;color:#4b4d52}
-svg{width:100%;height:auto;margin-top:12px}
+/* Largos (mês a mês, gráfico): rolam dentro do próprio bloco no celular, sem empurrar a página */
+.x{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:12px}
+.x>table{min-width:540px}
+.x>svg{display:block;width:100%;min-width:560px;height:auto}
+.swipe{display:none;font-size:11px;color:#8a8d93;margin-top:8px}
 .ax{font:500 10px Geist,sans-serif;fill:#8a8d93}.end{font:700 11px Geist,sans-serif;fill:#141416}
 .legend{display:flex;gap:16px;font-size:12px;color:#4b4d52;margin-top:10px;flex-wrap:wrap}
 .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
 .months{max-height:none}
-.months th,.months td{padding:6px 4px;font-size:12px}
+.months th,.months td{padding:6px 6px;font-size:12px}
+.months tbody th,.months thead th:first-child{position:sticky;left:0;background:#fff;z-index:1}
 .months thead th{font-size:11px;color:#8a8d93;text-transform:uppercase;letter-spacing:.04em;font-weight:600;text-align:right}
 .months thead th:first-child{text-align:left}
 .neg{color:#d64545}.pos{color:#008949}
@@ -185,7 +194,21 @@ svg{width:100%;height:auto;margin-top:12px}
 .notes li{margin:0 0 6px 16px}
 .import{background:#e8f7ef;border:1px solid #bfe8d1;border-radius:12px;padding:12px 14px;font-size:12px;line-height:18px;color:#1d5c3a;margin-top:12px}
 footer{text-align:center;font-size:11px;color:#8a8d93}
-@media (max-width:640px){.hero,.grid,.fields{grid-template-columns:1fr}.strip{grid-template-columns:1fr 1fr}.amount{font-size:34px}.meta{text-align:left}}
+@media (max-width:640px){
+.page{padding:20px 14px 36px}
+section{padding:16px}
+.hero{grid-template-columns:1fr;padding:20px}
+.grid,.fields{grid-template-columns:1fr}
+.strip{grid-template-columns:1fr 1fr}
+.amount{font-size:32px;line-height:38px}
+.meta{text-align:left}
+header h1{font-size:22px;line-height:28px}
+/* Premissas: rótulo em cima, valor embaixo (nada cortado) */
+.fields tr{display:flex;flex-direction:column;gap:2px;padding:9px 0;border-bottom:1px solid #eef0f2}
+.fields th,.fields td{padding:0;border:0;text-align:left}
+.fields td{font-size:14px}
+.swipe{display:block}
+}
 @media print{body{background:#fff}.page{padding:0}section,.hero{break-inside:avoid}}
 </style>
 </head>
@@ -265,7 +288,8 @@ footer{text-align:center;font-size:11px;color:#8a8d93}
   <h2>Saldo acumulado em 36 meses</h2>
   <p>Recebimentos acumulados descontando o investimento inicial. Saldo em 36 meses: <b>${signedMoney(net36)}</b> · ROI ${pct(roi, 0)}.</p>
   <div class="legend"><span><i style="background:#00a859"></i>Carteira + recargas</span><span><i style="background:#5b6fd6"></i>Somente recargas</span><span>○ retorno em ${paybackLabel(payback)}</span></div>
-  ${chartSvg(result, combined)}
+  <div class="x">${chartSvg(result, combined)}</div>
+  <p class="swipe">Deslize para o lado para ver o gráfico inteiro →</p>
 </section>
 
 <section>
@@ -292,10 +316,11 @@ footer{text-align:center;font-size:11px;color:#8a8d93}
 <section>
   <p class="over2">Mês a mês</p>
   <h2>Mês a mês · 36 meses</h2>
-  <table class="months">
-    <thead><tr><th>Mês</th><th>Recargas</th><th>Carteira</th><th>Total</th><th>Saldo</th></tr></thead>
+  <p class="swipe">Deslize para o lado para ver recargas e carteira →</p>
+  <div class="x"><table class="months">
+    <thead><tr><th>Mês</th><th>Total do mês</th><th>Saldo acumulado</th><th>Recargas</th><th>Carteira</th></tr></thead>
     <tbody>${meses}</tbody>
-  </table>
+  </table></div>
 </section>
 
 <section>

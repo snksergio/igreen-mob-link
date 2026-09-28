@@ -8,6 +8,11 @@
   max-height: calc(100dvh - 96px);
 }
 
+/* Tema escuro: dentro de um card, o cinza interno (blocos, abas, linhas) sobe um tom para não sumir na superfície */
+:global([data-theme='dark']) .shell {
+  --bg-muted: var(--bg-secondary);
+}
+
 .head {
   flex-shrink: 0;
   padding: 36px 30px 20px;

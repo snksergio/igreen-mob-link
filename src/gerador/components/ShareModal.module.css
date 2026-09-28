@@ -1,3 +1,8 @@
+/* Tema escuro: dentro de um card, o cinza interno (blocos, abas, linhas) sobe um tom para não sumir na superfície */
+:global([data-theme='dark']) .content {
+  --bg-muted: var(--bg-secondary);
+}
+
 .content {
   display: flex;
   flex-direction: column;
