@@ -6,12 +6,12 @@ import type { MonthRow } from '../model'
 import styles from './Report.module.css'
 
 /** Mês a mês dos 3 anos: tabela no desktop, cards no celular */
-export function MonthTable({ months }: { months: MonthRow[] }) {
+export function MonthTable({ months, embedded = false }: { months: MonthRow[]; embedded?: boolean }) {
   const [ano, setAno] = useState(1)
   const rows = months.slice((ano - 1) * 12, ano * 12)
 
   return (
-    <section className={styles.card} aria-labelledby="mes-titulo">
+    <section className={cn(styles.card, embedded && styles.embedded)} aria-labelledby="mes-titulo">
       <header className={styles.cardHead}>
         <div className={styles.cardText}>
           <span className={styles.overline}>Mês a mês</span>

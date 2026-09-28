@@ -1,5 +1,3 @@
-import { ICONS } from '../../assets'
-import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import styles from './Report.module.css'
 
@@ -18,19 +16,20 @@ const FONTES = [
   },
 ]
 
-/** Premissas, regras de cálculo e fontes (textos da referência), recolhido por padrão */
+/** Premissas, regras de cálculo e fontes (textos da referência), na aba do relatório */
 export function Premissas() {
   return (
-    <details className={cn(styles.card, styles.details)}>
-      <summary className={styles.detailsSummary}>
-        <span className={styles.cardText}>
+    <section className={cn(styles.card, styles.embedded)} aria-labelledby="premissas-titulo">
+      <header className={styles.cardHead}>
+        <div className={styles.cardText}>
           <span className={styles.overline}>Transparência</span>
-          <span className={cn('t-section-title', styles.cardTitle)}>Premissas, regras de cálculo e fontes</span>
-        </span>
-        <Icon src={ICONS.chevronDown} size={18} className={styles.detailsChevron} />
-      </summary>
+          <h2 id="premissas-titulo" className={cn('t-section-title', styles.cardTitle)}>
+            Premissas, regras de cálculo e fontes
+          </h2>
+        </div>
+      </header>
 
-      <div className={styles.detailsBody}>
+      <div className={styles.premissasBody}>
         <article className={styles.prose}>
           <h3>Recargas e sociedade</h3>
           <p>
@@ -117,6 +116,6 @@ export function Premissas() {
           </p>
         </div>
       </div>
-    </details>
+    </section>
   )
 }

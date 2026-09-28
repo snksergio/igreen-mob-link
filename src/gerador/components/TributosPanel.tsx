@@ -1,5 +1,3 @@
-import { ICONS } from '../../assets'
-import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import type { CommissionMode, LocalMode } from '../model'
 import { useGerador } from '../state'
@@ -29,7 +27,7 @@ function Options<T extends string>({ label, value, options, onChange }: { label:
               <span className={styles.optionDot} aria-hidden />
               <span className={styles.optionText}>
                 <span className={styles.optionTitle}>{o.titulo}</span>
-                <span className={styles.optionHint}>{o.texto}</span>
+                <span className={styles.hint}>{o.texto}</span>
               </span>
             </button>
           )
@@ -39,28 +37,15 @@ function Options<T extends string>({ label, value, options, onChange }: { label:
   )
 }
 
-/** 05 · Avançado: todas as premissas fiscais da referência, recolhidas por padrão */
-export function AdvancedTaxes() {
+/** Aba Tributos: todas as premissas fiscais da referência (Lucro Real · base 2026) */
+export function TributosPanel() {
   const { state, setSim } = useGerador()
   const s = state.simulacao.inputs
 
   return (
-    <details className={cn(styles.section, styles.advanced)}>
-      <summary className={styles.advancedSummary}>
-        <span className={styles.sectionIndex} aria-hidden>
-          05
-        </span>
-        <span className={styles.sectionText}>
-          <span className={cn('t-section-title', styles.sectionTitle)}>Avançado · Tributos</span>
-          <span className={cn('t-body-md-medium', styles.sectionSubtitle)}>Lucro Real · base 2026. Ajuste só se tiver os valores validados.</span>
-        </span>
-        <Icon src={ICONS.chevronDown} size={18} className={styles.advancedChevron} />
-      </summary>
-
-      <div className={styles.advancedBody}>
-        <p className={styles.hint}>
-          Prévia gerencial. As alíquotas, os créditos e a escrituração de cada SCP precisam ser confirmados pela contabilidade.
-        </p>
+    <div className={styles.body}>
+      <div className={styles.group}>
+        <p className={styles.intro}>Lucro Real · base 2026. Ajuste só se tiver os valores validados pela contabilidade.</p>
         <div className={styles.taxChips}>
           <span className={styles.taxChip}>
             IRPJ <b>15%</b>
@@ -73,7 +58,9 @@ export function AdvancedTaxes() {
           </span>
         </div>
         <p className={styles.note}>¹ Sobre o lucro tributável que superar R$ 20 mil/mês, usado aqui como provisão mensal de uma operação constante.</p>
+      </div>
 
+      <div className={styles.group}>
         <div className={styles.row2}>
           <NumInput label="PIS SOBRE A BASE FISCAL" value={s.pisRate} suffix="%" max={100} onChange={(pisRate) => setSim({ pisRate })} />
           <NumInput label="COFINS SOBRE A BASE FISCAL" value={s.cofinsRate} suffix="%" max={100} onChange={(cofinsRate) => setSim({ cofinsRate })} />
@@ -83,7 +70,9 @@ export function AdvancedTaxes() {
         <p className={styles.note}>
           Informe apenas valores validados, incluindo exclusões cabíveis de ICMS. Créditos limitados ao débito do mês; saldo credor não projetado.
         </p>
+      </div>
 
+      <div className={styles.group}>
         <Options label="Tributação local da recarga" value={s.localMode} options={LOCAL} onChange={(localMode) => setSim({ localMode })} />
         {s.localMode === 'provision' ? (
           <NumInput label="PROVISÃO EFETIVA LÍQUIDA LOCAL" value={s.localRate} suffix="%" max={100} onChange={(localRate) => setSim({ localRate })} />
@@ -91,16 +80,18 @@ export function AdvancedTaxes() {
         <p className={styles.note}>
           ICMS depende da UF e do regime. A opção “incluído” exige confirmar que toda a carga da operação está no custo informado. Não significa isenção.
         </p>
+      </div>
 
-        <NumInput
-          label="ADIÇÕES FISCAIS LÍQUIDAS / MÊS"
-          value={s.taxAdditions}
-          suffix="R$"
-          max={1e7}
-          onChange={(taxAdditions) => setSim({ taxAdditions })}
-          helper="O modelo usa a mesma adição para IRPJ e CSLL, sem compensar prejuízos anteriores."
-        />
+      <NumInput
+        label="ADIÇÕES FISCAIS LÍQUIDAS / MÊS"
+        value={s.taxAdditions}
+        suffix="R$"
+        max={1e7}
+        onChange={(taxAdditions) => setSim({ taxAdditions })}
+        helper="O modelo usa a mesma adição para IRPJ e CSLL, sem compensar prejuízos anteriores."
+      />
 
+      <div className={styles.group}>
         <Options label="Tributação das comissões do licenciado" value={s.commissionMode} options={COMISSOES} onChange={(commissionMode) => setSim({ commissionMode })} />
         {s.commissionMode === 'rate' ? (
           <NumInput label="PROVISÃO SOBRE AS COMISSÕES" value={s.commissionRate} suffix="%" max={100} onChange={(commissionRate) => setSim({ commissionRate })} />
@@ -110,6 +101,6 @@ export function AdvancedTaxes() {
           investidor.
         </p>
       </div>
-    </details>
+    </div>
   )
 }

@@ -19,7 +19,7 @@ function niceStep(range: number, target = 4) {
  * Linha do zero = investimento recuperado; o marcador indica o mês do retorno do cenário escolhido.
  * Crosshair com tooltip por mês (mouse, toque e setas do teclado).
  */
-export function ReturnChart({ result, mode }: { result: SimResult; mode: IncomeMode }) {
+export function ReturnChart({ result, mode, embedded = false }: { result: SimResult; mode: IncomeMode; embedded?: boolean }) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(640)
   const [hover, setHover] = useState<number | null>(null)
@@ -78,7 +78,7 @@ export function ReturnChart({ result, mode }: { result: SimResult; mode: IncomeM
   const tipLeft = hover == null ? 0 : Math.min(width - 190, Math.max(0, x(hover) - 95))
 
   return (
-    <section className={styles.card} aria-labelledby="retorno-titulo">
+    <section className={cn(styles.card, embedded && styles.embedded)} aria-labelledby="retorno-titulo">
       <header className={styles.cardHead}>
         <div className={styles.cardText}>
           <span className={styles.overline}>Retorno do capital</span>

@@ -1,73 +1,8 @@
 .carousel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
-}
-
-/* ---------- Pontos + setas ---------- */
-.controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.dots {
-  display: flex;
-  gap: 6px;
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: var(--border);
-  transition:
-    background-color 0.2s ease,
-    width 0.25s ease;
-}
-
-.dotVisible {
-  background: var(--fg-subtle);
-}
-
-.dotSelected {
-  width: 18px;
-  background: var(--bg-primary);
-}
-
-.arrows {
-  display: flex;
-  gap: 6px;
-}
-
-.arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  transition: background-color 0.15s ease;
-}
-
-.arrow:hover {
-  background: var(--bg-hover);
-}
-
-.arrowIconLeft,
-.arrowIconRight {
-  background-color: var(--fg-main);
-}
-
-.arrowIconLeft {
-  transform: rotate(90deg);
-}
-
-.arrowIconRight {
-  transform: rotate(-90deg);
 }
 
 /* ---------- Trilho ---------- */
@@ -87,26 +22,27 @@
   display: none;
 }
 
+/* Todos cabem: dividem a largura igualmente */
+.trackFit .card {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 /* ---------- Card ---------- */
 .card {
-  position: relative;
   display: flex;
-  flex: 0 0 256px;
+  flex: 0 0 248px;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0;
   padding: 18px;
   text-align: left;
   background: var(--bg-background);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-base);
   scroll-snap-align: start;
   transition:
     border-color 0.2s ease,
-    background-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+    background-color 0.2s ease;
 }
 
 .card:hover {
@@ -122,9 +58,6 @@
 .cardActive:hover {
   background: var(--bg-primary-subtle);
   border-color: var(--border-primary);
-  box-shadow:
-    inset 0 0 0 1px var(--border-primary),
-    var(--shadow-card);
 }
 
 .cardTop {
@@ -156,9 +89,8 @@
 .name {
   font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 18px;
-  letter-spacing: -0.01em;
   color: var(--fg-main);
 }
 
@@ -166,50 +98,42 @@
   margin-top: 2px;
   font-family: var(--font-sans);
   font-weight: 700;
-  font-size: 30px;
-  line-height: 36px;
+  font-size: 26px;
+  line-height: 32px;
   letter-spacing: -0.04em;
   color: var(--fg-strong);
-  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .power small {
   margin-left: 4px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
   letter-spacing: -0.01em;
   color: var(--fg-muted);
 }
 
-.connectors {
+.meta {
+  margin-top: 6px;
   font-family: var(--font-sans);
   font-weight: 500;
   font-size: 12px;
   line-height: 18px;
-  color: var(--fg-main);
+  color: var(--fg-muted);
 }
 
-.capacity {
-  margin-top: 10px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  background: var(--bg-muted);
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--fg-main);
-}
-
-.cardActive .capacity {
-  background: var(--bg-background);
-}
-
-.divider {
+.invest {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   width: 100%;
-  height: 1px;
-  margin: 16px 0 14px;
-  background: var(--border);
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.cardActive .invest {
+  border-top-color: var(--border-primary-subtle);
 }
 
 .investLabel {
@@ -217,125 +141,100 @@
   font-weight: 600;
   font-size: 11px;
   line-height: 14px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--fg-muted);
 }
 
 .investValue {
-  margin-top: 2px;
   font-family: var(--font-sans);
   font-weight: 700;
-  font-size: 22px;
-  line-height: 28px;
-  letter-spacing: -0.03em;
+  font-size: 18px;
+  line-height: 24px;
+  letter-spacing: -0.02em;
   color: var(--fg-strong);
   font-variant-numeric: tabular-nums;
 }
 
-.soloNote {
-  margin-top: 12px;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-primary-subtle);
-  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+.society {
+  margin-top: 2px;
   font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 11px;
+  font-weight: 500;
+  font-size: 12px;
   line-height: 16px;
+  color: var(--fg-muted);
+}
+
+.societySolo {
+  font-weight: 600;
   color: var(--fg-primary);
 }
 
-.cardActive .soloNote {
-  background: var(--bg-background);
-}
-
-/* ---------- Sociedade ---------- */
-.split {
+/* ---------- Paginação abaixo dos cards ---------- */
+.controls {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  margin-top: 12px;
-}
-
-.splitBar {
-  display: flex;
-  gap: 2px;
-  height: 8px;
-  overflow: hidden;
-  border-radius: var(--radius-full);
-}
-
-.splitYou {
-  background: var(--bg-primary);
-  border-radius: var(--radius-full) 0 0 var(--radius-full);
-}
-
-.splitIgreen {
-  background: var(--fg-subtle);
-  border-radius: 0 var(--radius-full) var(--radius-full) 0;
-}
-
-.splitLegend {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--fg-main);
-}
-
-.splitLegend span {
-  display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 14px;
 }
 
-.keyYou,
-.keyIgreen {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
+.dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.keyYou {
+.dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  background: var(--border);
+  transition:
+    background-color 0.2s ease,
+    width 0.25s ease;
+}
+
+.dotOn {
+  width: 18px;
   background: var(--bg-primary);
 }
 
-.keyIgreen {
-  background: var(--fg-subtle);
+.arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
 
-.total {
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--fg-muted);
-  font-variant-numeric: tabular-nums;
+.arrow:hover:not(:disabled) {
+  background: var(--bg-hover);
 }
 
-/* Telas largas: os 3 cards cabem lado a lado — sem setas nem pontos */
-@media (min-width: 1280px) {
+.arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.arrowIcon {
+  background-color: var(--fg-main);
+}
+
+.arrowLeft {
+  transform: rotate(90deg);
+}
+
+.arrowRight {
+  transform: rotate(-90deg);
+}
+
+@media (max-width: 560px) {
   .card {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
-  .controls {
-    display: none;
-  }
-}
-
-/* Touch: arrasta, sem setas */
-@media (max-width: 767px) {
-  .arrows {
-    display: none;
-  }
-
-  .card {
-    flex-basis: min(78%, 280px);
+    flex-basis: min(78%, 270px);
+    padding: 16px;
   }
 }

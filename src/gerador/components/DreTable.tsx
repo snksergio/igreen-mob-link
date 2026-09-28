@@ -37,6 +37,7 @@ export function DreTable({
   periodLabel,
   combined,
   embedded = false,
+  headerAside,
 }: {
   period: MonthRow
   inputs: SimInputs
@@ -45,6 +46,8 @@ export function DreTable({
   combined: boolean
   /** Dentro de outro cartão (modal, proposta): sem borda/sombra própria */
   embedded?: boolean
+  /** Substitui o selo do período no cabeçalho (ex.: o controle de período no relatório) */
+  headerAside?: ReactNode
 }) {
   const titleId = useId()
   const mult = periodLabel.startsWith('Ano') ? 12 : 1
@@ -113,7 +116,7 @@ export function DreTable({
           </h2>
           <p className={styles.cardSubtitle}>Recargas · SCP do eletroposto · Lucro Real estimado.</p>
         </div>
-        <span className={styles.periodChip}>{periodLabel}</span>
+        {headerAside ?? <span className={styles.periodChip}>{periodLabel}</span>}
       </header>
 
       <div className={styles.dreGrid}>

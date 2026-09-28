@@ -317,7 +317,8 @@
   container-type: inline-size;
 }
 
-.embedded {
+/* Dentro de outro cartão (relatório, modal, proposta): mais específico que os paddings do .card */
+.card.embedded {
   padding: 0;
   border: 0;
   box-shadow: none;
@@ -625,45 +626,15 @@
   }
 }
 
-/* ---------- Premissas (recolhido) ---------- */
-.details {
-  gap: 0;
-  padding: 0;
-}
-
-.detailsSummary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 20px 23px;
-  list-style: none;
-  cursor: pointer;
-}
-
-.detailsSummary::-webkit-details-marker {
-  display: none;
-}
-
-.detailsChevron {
-  margin-left: auto;
-  flex-shrink: 0;
-  background-color: var(--fg-main);
-  transition: transform 0.2s ease;
-}
-
-.details[open] .detailsChevron {
-  transform: rotate(180deg);
-}
-
-.detailsBody {
+/* ---------- Premissas ---------- */
+.premissasBody {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
-  padding: 0 23px 23px;
 }
 
 @media (min-width: 900px) {
-  .detailsBody {
+  .premissasBody {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -721,18 +692,6 @@
     padding: 17px;
   }
 
-  .details {
-    padding: 0;
-  }
-
-  .detailsSummary {
-    padding: 16px 17px;
-  }
-
-  .detailsBody {
-    padding: 0 17px 17px;
-  }
-
   .headStat {
     align-items: flex-start;
     text-align: left;
@@ -749,4 +708,46 @@
   stroke: var(--bg-background);
   stroke-width: 4px;
   stroke-linejoin: round;
+}
+
+/* ---------- Relatório com abas (abaixo do simulador) ---------- */
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  padding: 23px;
+  background: var(--bg-background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-base);
+}
+
+.reportHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Ao lado do título no desktop; largura total no celular */
+.reportHead .reportTabs {
+  width: auto;
+  max-width: 100%;
+}
+
+@media (max-width: 720px) {
+  .reportHead .reportTabs {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .report {
+    gap: 20px;
+    padding: 17px;
+  }
 }

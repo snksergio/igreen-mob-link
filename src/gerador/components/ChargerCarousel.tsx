@@ -3,9 +3,11 @@ import { ICONS } from '../../assets'
 import { FancyIcon } from '../../components/ui/Controls'
 import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
-import { money, moneyCents } from '../../lib/format'
+import { money } from '../../lib/format'
 import { CHARGER_IDS, CHARGERS, capacityFor, capitalStructure, type ChargerId, type SimInputs } from '../model'
 import styles from './ChargerCarousel.module.css'
+
+const FIT_MIN = 214
 
 /** Conteúdo de apresentação de cada eletroposto (textos da referência) */
 const INFO: Record<ChargerId, { icon: string; power: string; connectors: string }> = {
@@ -15,43 +17,52 @@ const INFO: Record<ChargerId, { icon: string; power: string; connectors: string 
 }
 
 /**
- * Carrossel horizontal dos 3 eletropostos (scroll-snap). Setas no desktop, arrastar no touch,
- * pontos indicando a posição. Cada card é um radio: escolher troca o modelo da simulação.
+ * Carrossel horizontal dos 3 eletropostos (scroll-snap). Quando nem todos cabem, aparecem abaixo
+ * os pontos (cards visíveis) e as setas. Cada card é um radio: escolher troca o modelo da simulação.
  */
 export function ChargerCarousel({ inputs, onSelect }: { inputs: SimInputs; onSelect: (id: ChargerId) => void }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const [visible, setVisible] = useState<Record<string, boolean>>({})
+  const [scrollable, setScrollable] = useState(false)
   const selected = inputs.charger
 
-  // Pontos acompanham os cards visíveis no trilho
+  // Pontos acompanham os cards visíveis; os controles só aparecem se houver card fora da área
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
-    const observer = new IntersectionObserver(
+    const io = new IntersectionObserver(
       (entries) => {
         setVisible((prev) => {
           const next = { ...prev }
-          for (const e of entries) next[(e.target as HTMLElement).dataset.id!] = e.intersectionRatio > 0.6
+          for (const e of entries) next[(e.target as HTMLElement).dataset.id!] = e.intersectionRatio > 0.9
           return next
         })
       },
-      { root: track, threshold: [0, 0.6, 1] },
+      { root: track, threshold: [0, 0.9, 1] },
     )
-    Object.values(cardRefs.current).forEach((el) => el && observer.observe(el))
-    return () => observer.disconnect()
+    Object.values(cardRefs.current).forEach((el) => el && io.observe(el))
+    // Cabem lado a lado se cada card tiver ao menos FIT_MIN px; senão vira carrossel
+    const ro = new ResizeObserver(() => setScrollable(track.clientWidth - 8 < CHARGER_IDS.length * (FIT_MIN + 12) - 12))
+    ro.observe(track)
+    return () => {
+      io.disconnect()
+      ro.disconnect()
+    }
   }, [])
 
-  // O card escolhido entra na área visível (sem rolar a página)
-  useEffect(() => {
+  const reveal = (id: ChargerId) => {
     const track = trackRef.current
-    const card = cardRefs.current[selected]
+    const card = cardRefs.current[id]
     if (!track || !card) return
     const left = card.offsetLeft - track.offsetLeft
     if (left < track.scrollLeft || left + card.offsetWidth > track.scrollLeft + track.clientWidth) {
       track.scrollTo({ left: left - 4, behavior: 'smooth' })
     }
-  }, [selected])
+  }
+
+  // O card escolhido entra na área visível (sem rolar a página), inclusive quando vira carrossel
+  useEffect(() => reveal(selected), [selected, scrollable])
 
   const scrollBy = (dir: 1 | -1) => {
     const track = trackRef.current
@@ -70,25 +81,12 @@ export function ChargerCarousel({ inputs, onSelect }: { inputs: SimInputs; onSel
     cardRefs.current[next]?.focus()
   }
 
+  const first = CHARGER_IDS.find((id) => visible[id])
+  const last = [...CHARGER_IDS].reverse().find((id) => visible[id])
+
   return (
     <div className={styles.carousel}>
-      <div className={styles.controls}>
-        <div className={styles.dots} aria-hidden>
-          {CHARGER_IDS.map((id) => (
-            <span key={id} className={cn(styles.dot, visible[id] && styles.dotVisible, id === selected && styles.dotSelected)} />
-          ))}
-        </div>
-        <div className={styles.arrows}>
-          <button type="button" className={styles.arrow} onClick={() => scrollBy(-1)} aria-label="Ver eletroposto anterior">
-            <Icon src={ICONS.chevronDown} size={18} className={styles.arrowIconLeft} />
-          </button>
-          <button type="button" className={styles.arrow} onClick={() => scrollBy(1)} aria-label="Ver próximo eletroposto">
-            <Icon src={ICONS.chevronDown} size={18} className={styles.arrowIconRight} />
-          </button>
-        </div>
-      </div>
-
-      <div ref={trackRef} className={styles.track} role="radiogroup" aria-label="Modelo de eletroposto" onKeyDown={onKeyDown}>
+      <div ref={trackRef} className={cn(styles.track, !scrollable && styles.trackFit)} role="radiogroup" aria-label="Modelo de eletroposto" onKeyDown={onKeyDown}>
         {CHARGER_IDS.map((id) => {
           const c = CHARGERS[id]
           const info = INFO[id]
@@ -111,7 +109,7 @@ export function ChargerCarousel({ inputs, onSelect }: { inputs: SimInputs; onSel
               onClick={() => onSelect(id)}
             >
               <span className={styles.cardTop}>
-                <FancyIcon src={info.icon} bg="var(--bg-primary)" size={40} iconSize={20} />
+                <FancyIcon src={info.icon} bg="var(--bg-primary)" size={36} iconSize={18} />
                 <span className={cn(styles.radio, active && styles.radioOn)} aria-hidden>
                   {active ? <Icon src={ICONS.checkBold} size={10} color="#fff" /> : null}
                 </span>
@@ -122,39 +120,59 @@ export function ChargerCarousel({ inputs, onSelect }: { inputs: SimInputs; onSel
                 {info.power}
                 <small>kW</small>
               </span>
-              <span className={styles.connectors}>{info.connectors}</span>
-              <span className={styles.capacity} title="Limite estimado nas premissas atuais (24 h/dia)">
-                Até {maxCars} carros/dia
+              <span className={styles.meta}>
+                {info.connectors}
+                <br />
+                Até {maxCars} carros por dia
               </span>
 
-              <span className={styles.divider} aria-hidden />
-
-              <span className={styles.investLabel}>Seu investimento</span>
-              <span className={styles.investValue}>{money(capital.investor)}</span>
-
-              {solo ? (
-                <span className={styles.soloNote}>100% do resultado para você</span>
-              ) : (
-                <span className={styles.split}>
-                  <span className={styles.splitBar} aria-hidden>
-                    <span className={styles.splitYou} style={{ flexGrow: c.investorShare }} />
-                    <span className={styles.splitIgreen} style={{ flexGrow: c.igreenShare }} />
-                  </span>
-                  <span className={styles.splitLegend}>
-                    <span>
-                      <i className={styles.keyYou} /> Você {c.investorShare * 100}%
+              <span className={styles.invest}>
+                <span className={styles.investLabel}>Seu investimento</span>
+                <span className={styles.investValue}>{money(capital.investor)}</span>
+                {solo ? (
+                  <span className={cn(styles.society, styles.societySolo)}>100% do resultado para você</span>
+                ) : (
+                  <>
+                    <span className={styles.society}>
+                      Você {c.investorShare * 100}% · iGreen {c.igreenShare * 100}%
                     </span>
-                    <span>
-                      <i className={styles.keyIgreen} /> iGreen {c.igreenShare * 100}%
-                    </span>
-                  </span>
-                  <span className={styles.total}>Valor total {moneyCents(capital.total)}</span>
-                </span>
-              )}
+                    <span className={styles.society}>Valor total {money(capital.total)}</span>
+                  </>
+                )}
+              </span>
             </button>
           )
         })}
       </div>
+
+      {scrollable ? (
+        <div className={styles.controls}>
+          <button type="button" className={styles.arrow} onClick={() => scrollBy(-1)} disabled={first === CHARGER_IDS[0]} aria-label="Ver eletroposto anterior">
+            <Icon src={ICONS.chevronDown} size={18} className={cn(styles.arrowIcon, styles.arrowLeft)} />
+          </button>
+          <div className={styles.dots}>
+            {CHARGER_IDS.map((id) => (
+              <button
+                key={id}
+                type="button"
+                className={cn(styles.dot, visible[id] && styles.dotOn)}
+                onClick={() => reveal(id)}
+                aria-label={`Mostrar ${CHARGERS[id].name}`}
+                tabIndex={-1}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            className={styles.arrow}
+            onClick={() => scrollBy(1)}
+            disabled={last === CHARGER_IDS[CHARGER_IDS.length - 1]}
+            aria-label="Ver próximo eletroposto"
+          >
+            <Icon src={ICONS.chevronDown} size={18} className={cn(styles.arrowIcon, styles.arrowRight)} />
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }

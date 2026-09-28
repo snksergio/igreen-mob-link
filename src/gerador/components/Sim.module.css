@@ -1,67 +1,28 @@
-/* ================= Blocos do simulador (Gerador) ================= */
+/* ================= Abas de premissas do simulador (Gerador) — sem cards dentro de cards ================= */
 
-/* ---------- Card de seção ---------- */
-.section {
+.body {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 28px;
   min-width: 0;
-  padding: 23px; /* 24 - 1 de borda */
-  background: var(--bg-background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-base);
 }
 
-.sectionHead {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.sectionIndex {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-primary-subtle);
-  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
-  font-family: var(--font-inter);
-  font-weight: 700;
-  font-size: 12px;
-  color: var(--fg-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-.sectionText {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  padding-top: 3px;
-}
-
-.sectionTitle {
-  color: var(--fg-strong);
-}
-
-.sectionSubtitle {
+.intro {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: -0.01em;
   color: var(--fg-muted);
 }
 
-.sectionAside {
-  flex-shrink: 0;
-}
-
-.sectionBody {
+/* Sub-bloco separado por uma linha fina (capacidade, recorrência) */
+.divided {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  min-width: 0;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
 }
 
 /* ---------- Grupo rotulado (rótulo acima do controle) ---------- */
@@ -103,12 +64,20 @@
   color: var(--fg-main);
 }
 
+.note {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 11.5px;
+  line-height: 17px;
+  color: var(--fg-muted);
+}
+
 /* Valor grande ao lado do rótulo: "7 carros" */
 .bigValue {
   font-family: var(--font-sans);
   font-weight: 700;
-  font-size: 24px;
-  line-height: 28px;
+  font-size: 22px;
+  line-height: 26px;
   letter-spacing: -0.03em;
   color: var(--fg-strong);
   font-variant-numeric: tabular-nums;
@@ -142,7 +111,7 @@
 .row2 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
+  gap: 16px 12px;
 }
 
 @media (max-width: 480px) {
@@ -151,7 +120,7 @@
   }
 }
 
-/* Caixa de controle (ex.: dias com − +) no mesmo tamanho dos campos */
+/* Caixa de controle (dias com − +) no mesmo tamanho dos campos */
 .controlBox {
   display: flex;
   align-items: center;
@@ -164,23 +133,21 @@
   border-radius: var(--radius-base);
 }
 
-.controlBox .bigValue {
-  font-size: 18px;
-}
-
-/* ---------- Chips de referência ---------- */
-.chips {
+/* ---------- Baterias de referência ---------- */
+.refs {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
+  margin-top: -12px;
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 30px;
-  padding: 0 12px;
+  height: 28px;
+  padding: 0 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   font-family: var(--font-sans);
@@ -193,7 +160,7 @@
   transition: background-color 0.15s ease;
 }
 
-a.chip:hover {
+.chip:hover {
   background: var(--bg-hover);
 }
 
@@ -206,23 +173,7 @@ a.chip:hover {
   background-color: var(--fg-primary);
 }
 
-/* ---------- Medidor de capacidade ---------- */
-.meter {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px;
-  background: var(--bg-muted);
-  border-radius: var(--radius-base);
-}
-
-.meterHead {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-
+/* ---------- Capacidade ---------- */
 .meterValue {
   font-family: var(--font-sans);
   font-weight: 700;
@@ -237,11 +188,11 @@ a.chip:hover {
   height: 8px;
   overflow: hidden;
   border-radius: var(--radius-full);
-  background: var(--bg-primary-subtle);
-  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+  background: var(--bg-muted);
 }
 
 .meterFill {
+  display: block;
   height: 100%;
   border-radius: var(--radius-full);
   background: var(--bg-primary);
@@ -252,47 +203,18 @@ a.chip:hover {
   background: var(--bg-warning);
 }
 
-/* ---------- Linha informativa (ex.: administração 15%) ---------- */
-.infoRow {
+/* ---------- Margem ---------- */
+.marginRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: var(--bg-muted);
-  border-radius: var(--radius-base);
-}
-
-.infoText {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.infoTitle {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 18px;
-  letter-spacing: -0.01em;
-  color: var(--fg-strong);
-}
-
-.infoValue {
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--fg-strong);
-  font-variant-numeric: tabular-nums;
+  gap: 8px 12px;
 }
 
 .margin {
-  align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: var(--radius-full);
   background: var(--bg-primary-subtle);
   box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
@@ -301,6 +223,7 @@ a.chip:hover {
   font-size: 12px;
   line-height: 16px;
   color: var(--fg-primary);
+  white-space: nowrap;
 }
 
 .margin.marginNegative {
@@ -309,14 +232,49 @@ a.chip:hover {
   color: var(--bg-warning);
 }
 
-/* ---------- Cards de conexão (energia, seguros, telecom) ---------- */
+/* ---------- Linha chave × valor (administração) ---------- */
+.kv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.kv > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kvTitle {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.01em;
+  color: var(--fg-strong);
+}
+
+.kv > b {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Conexões (energia, seguros, telecom) ---------- */
 .toggles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
   .toggles {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -324,10 +282,9 @@ a.chip:hover {
 
 .toggle {
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
-  padding: 14px;
+  gap: 10px;
+  padding: 12px 14px;
   text-align: left;
   background: var(--bg-background);
   border: 1px solid var(--border);
@@ -347,34 +304,30 @@ a.chip:hover {
   border-color: var(--border-primary);
 }
 
-.toggleHead {
+.toggleText {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-bottom: 6px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .toggleName {
   font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 11px;
-  line-height: 14px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--fg-main);
-}
-
-.toggleOn .toggleName {
-  color: var(--fg-primary);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.01em;
+  color: var(--fg-strong);
 }
 
 .check {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 18px;
   height: 18px;
+  margin-top: 1px;
   border: 1.5px solid var(--fg-subtle);
   border-radius: 5px;
 }
@@ -384,62 +337,40 @@ a.chip:hover {
   border-color: var(--bg-primary);
 }
 
-.toggleValue {
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 16px;
-  line-height: 22px;
-  letter-spacing: -0.02em;
-  color: var(--fg-strong);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---------- Faixa de projeção da carteira ---------- */
+/* ---------- Recorrência (uma linha, divisórias finas) ---------- */
 .strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-}
-
-@media (max-width: 900px) {
-  .strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  margin: 0;
 }
 
 .stripItem {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
-  padding: 14px;
-  background: var(--bg-muted);
-  border-radius: var(--radius-base);
+  padding: 2px 14px;
+  border-left: 1px solid var(--border);
 }
 
-.stripFirst {
-  background: var(--bg-primary-subtle);
-  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+.stripItem:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
 
-.stripLabel {
+.stripItem dt {
   font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 10px;
+  font-weight: 600;
+  font-size: 11px;
   line-height: 14px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--fg-muted);
 }
 
-.stripFirst .stripLabel {
-  color: var(--fg-primary);
-}
-
-.stripValue {
+.stripItem dd {
+  margin: 0;
   font-family: var(--font-sans);
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 20px;
   letter-spacing: -0.02em;
   color: var(--fg-strong);
@@ -447,10 +378,14 @@ a.chip:hover {
   overflow-wrap: anywhere;
 }
 
-.stripValue small {
+.stripItem dd small {
   font-weight: 600;
   font-size: 11px;
   color: var(--fg-muted);
+}
+
+.stripItem:first-child dd {
+  color: var(--fg-primary);
 }
 
 .stripAcc {
@@ -462,7 +397,19 @@ a.chip:hover {
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- Lista de opções (radio em linhas) ---------- */
+@media (max-width: 640px) {
+  .strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 14px;
+  }
+
+  .stripItem:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+/* ---------- Opções (radio em linhas) ---------- */
 .options {
   display: flex;
   flex-direction: column;
@@ -520,50 +467,7 @@ a.chip:hover {
   color: var(--fg-strong);
 }
 
-.optionHint {
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--fg-muted);
-}
-
-/* ---------- Avançado (recolhido) ---------- */
-.advanced {
-  padding: 0;
-  gap: 0;
-}
-
-.advancedSummary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 20px 23px;
-  list-style: none;
-  cursor: pointer;
-}
-
-.advancedSummary::-webkit-details-marker {
-  display: none;
-}
-
-.advancedChevron {
-  margin-left: auto;
-  background-color: var(--fg-main);
-  transition: transform 0.2s ease;
-}
-
-.advanced[open] .advancedChevron {
-  transform: rotate(180deg);
-}
-
-.advancedBody {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 0 23px 23px;
-}
-
+/* ---------- Tributos ---------- */
 .taxChips {
   display: flex;
   flex-wrap: wrap;
@@ -586,35 +490,4 @@ a.chip:hover {
 
 .taxChip b {
   color: var(--fg-strong);
-}
-
-.note {
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 12px;
-  line-height: 18px;
-  color: var(--fg-muted);
-}
-
-@media (max-width: 560px) {
-  .section {
-    gap: 18px;
-    padding: 17px;
-  }
-
-  .advanced {
-    padding: 0;
-  }
-
-  .advancedSummary {
-    padding: 16px 17px;
-  }
-
-  .advancedBody {
-    padding: 0 17px 17px;
-  }
-
-  .bigValue {
-    font-size: 22px;
-  }
 }
