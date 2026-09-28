@@ -6,7 +6,7 @@ import { Icon, Img } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { money, moneyCents, moneyParts } from '../../lib/format'
 import { compactMoney, paybackLabel, pct, signedMoney } from '../format'
-import { POTENCIA } from '../guided'
+import { POTENCIA, semInvestimento } from '../guided'
 import { scenarioResult } from '../model'
 import { useGerador } from '../state'
 import { MiniReturnChart } from './MiniReturnChart'
@@ -49,7 +49,8 @@ export function ResultPanel({
   variant?: 'full' | 'summary'
   bare?: boolean
 }) {
-  const { state, setSim, result, scenario: current } = useGerador()
+  const { state, setSim, result, scenario: current, version } = useGerador()
+  const hideInvestment = semInvestimento(version)
   const { inputs, view, month, year } = state.simulacao
   const summary = variant === 'summary'
   const combined = inputs.incomeMode === 'combined'
@@ -102,7 +103,7 @@ export function ResultPanel({
               </p>
             </div>
             <div className={styles.chips}>
-              <span className={styles.chip}>Investimento {money(capital.investor)}</span>
+              {hideInvestment ? null : <span className={styles.chip}>Investimento {money(capital.investor)}</span>}
               <span className={styles.chip}>{solo ? '100% seu' : `Sociedade ${charger.investorShare * 100}/${charger.igreenShare * 100}`}</span>
             </div>
           </div>
@@ -120,9 +121,9 @@ export function ResultPanel({
             <p className={cn('t-label', styles.sectionLabel)}>SALDO EM 36 MESES</p>
             <p className={styles.miniValue}>{signedMoney(scenario.net36)}</p>
           </div>
-          <MiniReturnChart values={saldo} payback={scenario.payback} />
+          <MiniReturnChart values={saldo} payback={scenario.payback} startLabel={hideInvestment ? 'Início' : 'Investimento'} />
           <div className={styles.miniAxis} aria-hidden>
-            <span>Investimento</span>
+            <span>{hideInvestment ? 'Início' : 'Investimento'}</span>
             {scenario.payback != null ? (
               <span className={styles.miniAxisPayback}>
                 <i /> retorno em {paybackLabel(scenario.payback)}

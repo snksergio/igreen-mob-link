@@ -116,7 +116,8 @@ export const LIMITS: Record<Exclude<NumericKey, never>, [number, number, boolean
   loss: [0, 50],
   fixed: [0, 1e6],
   acShare: [0, 100],
-  monthlyClients: [0, 500, true],
+  // até 20 clientes por dia × 31 dias (a v2 pergunta por dia; ver guided.ts)
+  monthlyClients: [0, 620, true],
   pisRate: [0, 100],
   cofinsRate: [0, 100],
   taxCredit: [0, 1e7],

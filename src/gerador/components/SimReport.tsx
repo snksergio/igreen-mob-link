@@ -1,5 +1,6 @@
 import { useId, useRef, useState } from 'react'
 import { cn } from '../../lib/cn'
+import { semInvestimento } from '../guided'
 import { useGerador } from '../state'
 import { DreTable } from './DreTable'
 import { MonthTable } from './MonthTable'
@@ -20,7 +21,8 @@ const TABS: { value: ReportTab; label: string }[] = [
 
 /** Relatório completo abaixo do simulador, em abas: retorno em 36 meses, DRE do período, mês a mês e premissas */
 export function SimReport() {
-  const { state, result, scenario } = useGerador()
+  const { state, result, scenario, version } = useGerador()
+  const hideInvestment = semInvestimento(version)
   const inputs = state.simulacao.inputs
   const { view, month, year } = state.simulacao
   const [tab, setTab] = useState<ReportTab>('retorno')
@@ -52,7 +54,7 @@ export function SimReport() {
       </div>
 
       <TabPanel idBase={id} value={tab} className={styles.reportPanel}>
-        {tab === 'retorno' ? <ReturnChart result={result} mode={inputs.incomeMode} embedded /> : null}
+        {tab === 'retorno' ? <ReturnChart result={result} mode={inputs.incomeMode} embedded startLabel={hideInvestment ? 'Início' : undefined} /> : null}
         {tab === 'dre' ? (
           <DreTable
             period={scenario.period}
@@ -65,7 +67,7 @@ export function SimReport() {
           />
         ) : null}
         {tab === 'mes' ? <MonthTable months={result.months} embedded /> : null}
-        {tab === 'premissas' ? <Premissas /> : null}
+        {tab === 'premissas' ? <Premissas hideInvestment={hideInvestment} /> : null}
       </TabPanel>
     </section>
   )

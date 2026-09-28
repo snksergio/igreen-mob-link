@@ -13,6 +13,7 @@ import { useMediaQuery } from '../../lib/useMediaQuery'
 import { GeradorDetailModal } from '../components/GeradorDetailModal'
 import { compactMoney, paybackLabel, pct } from '../format'
 import type { ChargerId } from '../model'
+import { semInvestimento } from '../guided'
 import { useGerador } from '../state'
 import styles from './Proposta.module.css'
 
@@ -24,7 +25,8 @@ const POTENCIA: Record<ChargerId, string> = { lento: '7 kW', duo: '7 + 40 kW', u
 const VIDEO_RATIO = 1920 / 814
 
 export function Proposta() {
-  const { state, result, go } = useGerador()
+  const { state, result, go, version } = useGerador()
+  const hideInvestment = semInvestimento(version)
   const { investidor: inv, eletroposto, proposta } = state
   const inputs = state.simulacao.inputs
   const combined = inputs.incomeMode === 'combined'
@@ -67,7 +69,9 @@ export function Proposta() {
   const modelo = `${result.charger.name} (${POTENCIA[inputs.charger]})`
   const sociedade = solo ? '100% do investidor' : `Você ${result.charger.investorShare * 100}% · iGreen ${result.charger.igreenShare * 100}%`
   const link = `${window.location.origin}${window.location.pathname}#proposta`
-  const message = `Minha proposta iGreen Mob #${proposta.id}: investimento de ${money(result.capital.investor)} no ${modelo}.`
+  const message = hideInvestment
+    ? `Minha proposta iGreen Mob #${proposta.id}: ${modelo}, com recebimento estimado de ${money(recebimento)}/mês.`
+    : `Minha proposta iGreen Mob #${proposta.id}: investimento de ${money(result.capital.investor)} no ${modelo}.`
   const nomeCurto = inv.nome.trim().split(/\s+/).filter((_, i, all) => i === 0 || i === all.length - 1).join(' ')
 
   const copyLink = async () => {
@@ -119,8 +123,8 @@ export function Proposta() {
         <div className={styles.group}>
           <section className={styles.valueCard}>
             <div className={styles.valueText}>
-              <p className={styles.caption}>Valor do seu investimento no eletroposto</p>
-              <p className={styles.value}>{money(result.capital.investor)}</p>
+              <p className={styles.caption}>{hideInvestment ? 'Recebimento estimado no mês 1' : 'Valor do seu investimento no eletroposto'}</p>
+              <p className={styles.value}>{money(hideInvestment ? recebimento : result.capital.investor)}</p>
             </div>
             <div className={styles.badges}>
               <span className={cn(styles.badge, styles.badgeGreen)}>{result.charger.name}</span>
@@ -156,10 +160,12 @@ export function Proposta() {
               <CheckItem>
                 Eletroposto: <b>{modelo}</b> · até {result.maxCars} carros/dia
               </CheckItem>
-              <CheckItem>
-                Seu investimento: <b>{moneyCents(result.capital.investor)}</b>
-                {solo ? null : <> · valor total {moneyCents(result.capital.total)}</>}
-              </CheckItem>
+              {hideInvestment ? null : (
+                <CheckItem>
+                  Seu investimento: <b>{moneyCents(result.capital.investor)}</b>
+                  {solo ? null : <> · valor total {moneyCents(result.capital.total)}</>}
+                </CheckItem>
+              )}
               <CheckItem>
                 Sociedade: <b>{sociedade}</b>
               </CheckItem>
@@ -273,8 +279,12 @@ export function Proposta() {
           { label: 'Investidor', value: inv.nome },
           { label: 'Eletroposto', value: modelo },
           { label: 'Sociedade', value: sociedade },
-          { label: 'Seu investimento', value: moneyCents(result.capital.investor) },
-          ...(solo ? [] : [{ label: 'Valor total', value: moneyCents(result.capital.total) }]),
+          ...(hideInvestment
+            ? []
+            : [
+                { label: 'Seu investimento', value: moneyCents(result.capital.investor) },
+                ...(solo ? [] : [{ label: 'Valor total', value: moneyCents(result.capital.total) }]),
+              ]),
           { label: 'Local', value: `${local.logradouro}, ${local.numero} · ${local.cidade}/${local.uf}` },
         ]}
       />

@@ -19,7 +19,17 @@ function niceStep(range: number, target = 4) {
  * Linha do zero = investimento recuperado; o marcador indica o mês do retorno do cenário escolhido.
  * Crosshair com tooltip por mês (mouse, toque e setas do teclado).
  */
-export function ReturnChart({ result, mode, embedded = false }: { result: SimResult; mode: IncomeMode; embedded?: boolean }) {
+export function ReturnChart({
+  result,
+  mode,
+  embedded = false,
+  startLabel = 'Início · investimento',
+}: {
+  result: SimResult
+  mode: IncomeMode
+  embedded?: boolean
+  startLabel?: string
+}) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(640)
   const [hover, setHover] = useState<number | null>(null)
@@ -177,7 +187,7 @@ export function ReturnChart({ result, mode, embedded = false }: { result: SimRes
 
         {hover != null ? (
           <div className={styles.tooltip} style={{ left: tipLeft }} role="status">
-            <span className={styles.tooltipTitle}>{hover === 0 ? 'Início · investimento' : `Mês ${hover}`}</span>
+            <span className={styles.tooltipTitle}>{hover === 0 ? startLabel : `Mês ${hover}`}</span>
             {series.map((s) => (
               <span key={s.key} className={styles.tooltipRow}>
                 <i className={cn(styles.tooltipKey, s.className)} />

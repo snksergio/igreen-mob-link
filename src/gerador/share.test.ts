@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { money } from '../lib/format'
+import { CLIENTES_DIA, clientesPorDia, defaultsFor } from './guided'
 import { DEFAULTS, calculate, clampInputs } from './model'
 import { readSimulationFile, sanitizeInputs, shareText } from './share'
 import { buildSimulationDocument } from './simulationDoc'
@@ -25,6 +27,15 @@ describe('documento da simulação', () => {
     for (const trecho of ['R$ 7.311', '4,1 meses', 'CARROS POR DIA', 'PREÇO DE VENDA', 'Lucro disponível aos sócios', 'Mês a mês', 'SIM-TESTE', 'Juliana Martins']) {
       expect(html).toContain(trecho)
     }
+  })
+
+  it('não mostra o valor do investimento e traz os clientes por dia', () => {
+    const inputs = defaultsFor('v2')
+    const html = documento(inputs)
+    expect(html).not.toContain('Seu investimento')
+    expect(html).not.toContain(money(calculate(inputs).capital.investor))
+    expect(html).toContain('NOVOS CLIENTES POR DIA')
+    expect(html).toContain('2 por dia · 60 por mês')
   })
 
   it('o texto do documento não quebra o JSON embutido', () => {
@@ -84,5 +95,21 @@ describe('mensagem de compartilhamento', () => {
     expect(text).toContain('R$ 7.311')
     expect(text).toContain('4,1 meses')
     expect(text).not.toMatch(/https?:\/\//)
+  })
+})
+
+describe('clientes da carteira por dia (v2)', () => {
+  it('cada modelo sugere a sua quantidade: 7 kW 1, DUO 2, Ultra 5', () => {
+    expect(CLIENTES_DIA).toEqual({ lento: 1, duo: 2, ultra: 5 })
+  })
+
+  it('a v2 parte de 2 clientes por dia no DUO; a v1 continua com as premissas da referência', () => {
+    expect(defaultsFor('v2').monthlyClients).toBe(2 * DEFAULTS.days)
+    expect(clientesPorDia(defaultsFor('v2'))).toBe(2)
+    expect(defaultsFor('v1')).toBe(DEFAULTS)
+  })
+
+  it('o limite do modelo comporta 20 clientes por dia em 31 dias', () => {
+    expect(clampInputs({ ...DEFAULTS, days: 31, monthlyClients: 20 * 31 }).monthlyClients).toBe(620)
   })
 })

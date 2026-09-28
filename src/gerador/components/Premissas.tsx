@@ -16,8 +16,8 @@ const FONTES = [
   },
 ]
 
-/** Premissas, regras de cálculo e fontes (textos da referência), na aba do relatório */
-export function Premissas() {
+/** Premissas, regras de cálculo e fontes (textos da referência), na aba do relatório. `hideInvestment`: sem o valor do investimento (v2) */
+export function Premissas({ hideInvestment = false }: { hideInvestment?: boolean }) {
   return (
     <section className={cn(styles.card, styles.embedded)} aria-labelledby="premissas-titulo">
       <header className={styles.cardHead}>
@@ -33,7 +33,7 @@ export function Premissas() {
         <article className={styles.prose}>
           <h3>Recargas e sociedade</h3>
           <p>
-            No 7 kW, o investimento de R$ 9.997 é integralmente do investidor; a iGreen fornece o sistema e recebe a taxa de administração, sem participação
+            No 7 kW, o investimento{hideInvestment ? '' : ' de R$ 9.997'} é integralmente do investidor; a iGreen fornece o sistema e recebe a taxa de administração, sem participação
             societária. No DUO e no Ultra, a composição de capital é uma proposta: o investimento do usuário corresponde a 80% do total proposto, e os 20% restantes
             são uma contrapartida iGreen a formalizar. O simulador não comprova aporte realizado. Payback e ROI usam apenas o investimento do usuário.
           </p>

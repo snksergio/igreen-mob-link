@@ -6,7 +6,7 @@ import styles from './ResultPanel.module.css'
  * Mini gráfico do painel: saldo acumulado nos 36 meses do cenário escolhido (índice 0 = investimento),
  * linha do zero e o ponto do retorno. Passar o mouse, tocar ou usar as setas mostra o saldo de cada mês.
  */
-export function MiniReturnChart({ values, payback }: { values: number[]; payback: number | null }) {
+export function MiniReturnChart({ values, payback, startLabel = 'Investimento' }: { values: number[]; payback: number | null; startLabel?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(320)
   const [hover, setHover] = useState<number | null>(null)
@@ -70,7 +70,7 @@ export function MiniReturnChart({ values, payback }: { values: number[]; payback
       </svg>
       {hover != null ? (
         <span className={styles.miniTip} style={{ left: tipLeft }} role="status">
-          <small>{hover === 0 ? 'Investimento' : `Mês ${hover}`}</small>
+          <small>{hover === 0 ? startLabel : `Mês ${hover}`}</small>
           <b>{signedMoney(values[hover])}</b>
         </span>
       ) : null}

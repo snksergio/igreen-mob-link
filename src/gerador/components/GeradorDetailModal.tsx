@@ -4,7 +4,7 @@ import { DialogHeader, Modal } from '../../components/ui/Modal'
 import { Img } from '../../components/ui/Icon'
 import { money, moneyCents, moneyParts } from '../../lib/format'
 import { compactMoney, paybackLabel, pct } from '../format'
-import { POTENCIA } from '../guided'
+import { POTENCIA, semInvestimento } from '../guided'
 import { useGerador } from '../state'
 import { DreTable } from './DreTable'
 import { MonthTable } from './MonthTable'
@@ -37,7 +37,8 @@ export function GeradorDetailModal({
   subtitle?: string
   resumo?: ResumoItem[]
 }) {
-  const { state, result, scenario } = useGerador()
+  const { state, result, scenario, version } = useGerador()
+  const hideInvestment = semInvestimento(version)
   const s = state.simulacao.inputs
   const { view, month, year } = state.simulacao
   const combined = s.incomeMode === 'combined'
@@ -84,7 +85,15 @@ export function GeradorDetailModal({
                 <p className={styles.heroOverline}>RECEBIMENTO ESTIMADO NO MÊS 1 · {combined ? 'CARTEIRA + RECARGAS' : 'SÓ RECARGAS'}</p>
               </div>
               <span className={styles.heroFlag}>
-                Investimento <b>{money(result.capital.investor)}</b> · retorno em <b>{paybackLabel(payback)}</b>
+                {hideInvestment ? (
+                  <>
+                    Retorno em <b>{paybackLabel(payback)}</b>
+                  </>
+                ) : (
+                  <>
+                    Investimento <b>{money(result.capital.investor)}</b> · retorno em <b>{paybackLabel(payback)}</b>
+                  </>
+                )}
               </span>
             </div>
             <div className={styles.heroBattery} aria-hidden>
@@ -137,7 +146,7 @@ export function GeradorDetailModal({
                 ))}
               </dl>
             ) : null}
-            {aba === 'retorno' ? <ReturnChart result={result} mode={s.incomeMode} embedded /> : null}
+            {aba === 'retorno' ? <ReturnChart result={result} mode={s.incomeMode} embedded startLabel={hideInvestment ? 'Início' : undefined} /> : null}
             {aba === 'dre' ? (
               <DreTable
                 period={scenario.period}
@@ -150,7 +159,7 @@ export function GeradorDetailModal({
               />
             ) : null}
             {aba === 'mes' ? <MonthTable months={result.months} embedded /> : null}
-            {aba === 'premissas' ? <Premissas /> : null}
+            {aba === 'premissas' ? <Premissas hideInvestment={hideInvestment} /> : null}
           </TabPanel>
         </div>
       </div>

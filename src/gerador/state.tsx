@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState, type ReactNode } from 'react'
 import { emptyAddress, type Address } from '../services/address'
 import { DEFAULTS, calculate, clampInputs, scenarioResult, type PeriodView, type Scenario, type SimInputs, type SimResult } from './model'
+import { defaultsFor } from './guided'
 import { BASE, baseOf, versionOfBase, type GeradorVersion } from './routes'
 
 export type GeradorScreen = 'inicio' | 'simulador' | 'dados' | 'eletroposto' | 'resumo' | 'proposta'
@@ -68,7 +69,8 @@ function reducer(state: GeradorState, action: Action): GeradorState {
 
 const STORAGE_KEY = 'igreen-mob-gerador-v1'
 
-function loadState(): GeradorState {
+function loadState(version: GeradorVersion): GeradorState {
+  const defaults = defaultsFor(version)
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY)
     if (raw) {
@@ -78,7 +80,7 @@ function loadState(): GeradorState {
         simulacao: {
           ...initialState.simulacao,
           ...saved.simulacao,
-          inputs: clampInputs({ ...DEFAULTS, ...saved.simulacao?.inputs }),
+          inputs: clampInputs({ ...defaults, ...saved.simulacao?.inputs }),
         },
         investidor: { ...initialState.investidor, ...saved.investidor },
         eletroposto: { ...initialState.eletroposto, ...saved.eletroposto },
@@ -89,7 +91,7 @@ function loadState(): GeradorState {
   } catch {
     /* sessionStorage indisponível */
   }
-  return initialState
+  return { ...initialState, simulacao: { ...initialState.simulacao, inputs: defaults } }
 }
 
 const hashOf = (screen: GeradorScreen, version: GeradorVersion) => `#${BASE[version]}${screen === 'inicio' ? '' : `/${screen}`}`
@@ -121,7 +123,7 @@ type Ctx = {
 const GeradorContext = createContext<Ctx | null>(null)
 
 export function GeradorProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, undefined, loadState)
+  const [state, dispatch] = useReducer(reducer, undefined, () => loadState(routeFromHash().version))
   const [route, setRoute] = useState(routeFromHash)
   const { screen, version } = route
 

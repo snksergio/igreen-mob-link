@@ -1,6 +1,6 @@
-import { money, moneyCents } from '../lib/format'
+import { moneyCents } from '../lib/format'
 import { compactMoney, fixed, num, paybackLabel, pct, signedMoney } from './format'
-import { CONEXOES, POTENCIA } from './guided'
+import { CONEXOES, POTENCIA, clientesPorDia } from './guided'
 import { TERMS, recurrenceProjection, type SimInputs, type SimResult } from './model'
 import { embedPayload, resumoDe, type SimulationPayload } from './share'
 
@@ -73,7 +73,7 @@ export function buildSimulationDocument({ inputs: s, result, codigo, geradoEm, r
   const payback = combined ? result.payback : result.chargingPayback
   const net36 = combined ? result.net36 : result.months[35].chargingNetAccumulated
   const roi = (net36 / result.investment) * 100
-  const { charger, capital, capacity } = result
+  const { charger, capacity } = result
   const solo = charger.investorShare === 1
   const sociedade = solo ? '100% do investidor' : `Você ${charger.investorShare * 100}% · iGreen ${charger.igreenShare * 100}%`
   const rec = recurrenceProjection(s)
@@ -228,13 +228,13 @@ header h1{font-size:22px;line-height:28px}
     <div class="chips"><span class="chip">${esc(charger.name)} · ${POTENCIA[s.charger]}</span><span class="chip">${solo ? '100% seu' : `Sociedade ${charger.investorShare * 100}/${charger.igreenShare * 100}`}</span><span class="chip">${combined ? 'Carteira + recargas' : 'Só recargas'}</span></div>
     <p class="amount">${esc(moneyCents(receipt).replace(/,(\d\d)$/, ''))}<small>,${moneyCents(receipt).slice(-2)}</small></p>
     <p class="over">RECEBIMENTO ESTIMADO NO MÊS 1</p>
-    <span class="flag">Investimento <b>${money(capital.investor)}</b> · retorno em <b>${paybackLabel(payback)}</b></span>
+    <span class="flag">Retorno em <b>${paybackLabel(payback)}</b></span>
   </div>
   <div class="kpis">
     <div class="kpi"><span>Retorno</span><b>${paybackLabel(payback)}</b></div>
     <div class="kpi"><span>ROI em 36 meses</span><b>${pct(roi, 0)}</b></div>
     <div class="kpi"><span>Saldo em 36 meses</span><b>${compactMoney(net36)}</b></div>
-    <div class="kpi"><span>Seu investimento</span><b>${money(capital.investor)}</b></div>
+    <div class="kpi"><span>Recargas por mês</span><b>${num(s.cars * s.days)}</b></div>
   </div>
 </div>
 
@@ -245,8 +245,6 @@ header h1{font-size:22px;line-height:28px}
   <div class="fields">
     <div><h3>Eletroposto</h3><table>
       ${field('Modelo', `${esc(charger.name)} · ${POTENCIA[s.charger]}`)}
-      ${field('Seu investimento', moneyCents(capital.investor))}
-      ${solo ? '' : row('Valor total do eletroposto', moneyCents(capital.total))}
       ${field('Sociedade', sociedade)}
       ${field('Limite estimado', `${capacity.maxCars} carros/dia`)}
     </table></div>
@@ -264,7 +262,7 @@ header h1{font-size:22px;line-height:28px}
       ${field('Administração iGreen', `${pct(TERMS.administration * 100, 0)} (fixa)`)}
     </table></div>
     <div><h3>Carteira iGreen</h3><table>
-      ${field('Novos clientes por mês', `${s.monthlyClients} clientes`)}
+      ${field('Novos clientes por dia', `${clientesPorDia(s)} por dia · ${num(s.monthlyClients)} por mês`)}
       ${CONEXOES.map((c) => field(c.nome, s[c.key] ? `Sim · ${moneyCents(c.valor)}/mês por cliente` : 'Não')).join('')}
       ${field('Por cliente (conexões escolhidas)', `${moneyCents(rec.perClient)}/mês`)}
     </table></div>

@@ -5,7 +5,7 @@ import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { moneyCents } from '../../lib/format'
 import { fixed, hoursLabel, num, pct } from '../format'
-import { CONEXOES, TAX_KEYS, taxCustom } from '../guided'
+import { CLIENTES_DIA, CONEXOES, MAX_CLIENTES_DIA, TAX_KEYS, clientesPorDia, taxCustom } from '../guided'
 import { CHARGERS, DEFAULTS, TERMS, recurrenceProjection, type SimInputs } from '../model'
 import { useGerador } from '../state'
 import { ChargerCarousel } from './ChargerCarousel'
@@ -40,10 +40,16 @@ function More({ label, children }: { label: string; children: ReactNode }) {
 
 export function EletropostoFields() {
   const { state, setSim } = useGerador()
+  const s = state.simulacao.inputs
 
   return (
     <>
-      <ChargerCarousel inputs={state.simulacao.inputs} onSelect={(charger) => setSim({ charger, cars: CHARGERS[charger].defaultCars })} />
+      {/* Trocar o modelo sugere os carros e os clientes por dia dele (dá para ajustar depois) */}
+      <ChargerCarousel
+        inputs={s}
+        hideInvestment
+        onSelect={(charger) => setSim({ charger, cars: CHARGERS[charger].defaultCars, monthlyClients: CLIENTES_DIA[charger] * s.days })}
+      />
       <div className={styles.included}>
         <span className={styles.includedTitle}>Incluso em todos os modelos:</span>
         <ul className={styles.includedList}>
@@ -77,7 +83,16 @@ export function MovimentoFields() {
     <>
       <div className={sim.row2}>
         <NumInput label="CARROS POR DIA" value={s.cars} decimals={0} suffix="carros" min={1} max={max} onChange={(cars) => setSim({ cars })} helper={`Até ${max} por dia neste modelo`} />
-        <NumInput label="DIAS DE OPERAÇÃO" value={s.days} decimals={0} suffix="por mês" min={1} max={31} onChange={(days) => setSim({ days })} helper="De 1 a 31 dias" />
+        <NumInput
+          label="DIAS DE OPERAÇÃO"
+          value={s.days}
+          decimals={0}
+          suffix="por mês"
+          min={1}
+          max={31}
+          onChange={(days) => setSim({ days, monthlyClients: clientesPorDia(s) * days })}
+          helper="De 1 a 31 dias"
+        />
       </div>
       <NumInput
         label="ENERGIA POR RECARGA"
@@ -175,6 +190,7 @@ export function CarteiraFields() {
   const { state, setSim } = useGerador()
   const s = state.simulacao.inputs
   const rec = recurrenceProjection(s)
+  const porDia = clientesPorDia(s)
   const linhas = [
     { titulo: 'No 1º mês', clientes: s.monthlyClients, mensal: rec.firstMonth, acumulado: rec.firstMonth },
     ...rec.periods.map((p, i) => ({ titulo: ['Fim do 1º ano', 'Fim do 5º ano', 'Fim do 10º ano'][i], clientes: p.clients, mensal: p.monthly, acumulado: p.accumulated })),
@@ -183,13 +199,13 @@ export function CarteiraFields() {
   return (
     <>
       <NumInput
-        label="NOVOS CLIENTES POR MÊS"
-        value={s.monthlyClients}
+        label="NOVOS CLIENTES POR DIA"
+        value={porDia}
         decimals={0}
-        suffix="clientes"
-        max={500}
-        onChange={(monthlyClients) => setSim({ monthlyClients })}
-        helper="Clientes conectados pelo seu ponto, de 0 a 500 por mês"
+        suffix={porDia === 1 ? 'cliente' : 'clientes'}
+        max={MAX_CLIENTES_DIA}
+        onChange={(n) => setSim({ monthlyClients: n * s.days })}
+        helper={`Sugestão para este modelo: ${CLIENTES_DIA[s.charger]} por dia. São ${num(s.monthlyClients)} clientes por mês em ${s.days} dias de operação.`}
       />
 
       <div className={styles.field}>
