@@ -6,6 +6,8 @@ import { Img } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { money, moneyCents, moneyParts } from '../../lib/format'
 import { compactMoney, paybackLabel, pct, signedMoney } from '../format'
+import { POTENCIA } from '../guided'
+import { scenarioResult } from '../model'
 import { useGerador } from '../state'
 import { MiniReturnChart } from './MiniReturnChart'
 import { PeriodControl } from './PeriodControl'
@@ -29,15 +31,35 @@ function Stat({ icon, label, value }: { icon: string; label: string; value: stri
 /**
  * Painel "Seu resultado" no padrão do simulador atual: card verde com o recebimento do período,
  * retorno e ROI, mini gráfico do saldo em 36 meses, origem do recebimento e aviso. Depois, os botões.
+ * `variant="summary"`: resumo para as etapas de cadastro (mês 1, sem os controles, com "Editar simulação").
+ * `bare`: sem a moldura própria, para ficar dentro de outro cartão (resumo expansível do celular).
  */
-export function ResultPanel({ onContinue, onShare, panelRef }: { onContinue?: () => void; onShare?: () => void; panelRef?: Ref<HTMLDivElement> }) {
-  const { state, setSim, result, scenario } = useGerador()
-  const { view, month, year } = state.simulacao
-  const combined = state.simulacao.inputs.incomeMode === 'combined'
+export function ResultPanel({
+  onContinue,
+  onShare,
+  onEdit,
+  panelRef,
+  variant = 'full',
+  bare = false,
+}: {
+  onContinue?: () => void
+  onShare?: () => void
+  onEdit?: () => void
+  panelRef?: Ref<HTMLDivElement>
+  variant?: 'full' | 'summary'
+  bare?: boolean
+}) {
+  const { state, setSim, result, scenario: current } = useGerador()
+  const { inputs, view, month, year } = state.simulacao
+  const summary = variant === 'summary'
+  const combined = inputs.incomeMode === 'combined'
+  const monthOne = useMemo(() => scenarioResult(result, inputs.incomeMode, 'month', 1, 1), [result, inputs.incomeMode])
+  const scenario = summary ? monthOne : current
   const p = scenario.period
   const { int, cents } = moneyParts(scenario.receipt)
   const { charger, capital } = result
   const solo = charger.investorShare === 1
+  const periodo = summary || view === 'month' ? `NO MÊS ${summary ? 1 : month}` : `NO ANO ${year}`
 
   const saldo = useMemo(
     () => [-result.investment, ...result.months.map((m) => (combined ? m.netAccumulated : m.chargingNetAccumulated))],
@@ -48,21 +70,32 @@ export function ResultPanel({ onContinue, onShare, panelRef }: { onContinue?: ()
 
   return (
     <div className={styles.wrap} ref={panelRef}>
-      <section className={styles.panel} aria-label="Seu resultado">
+      <section className={cn(styles.panel, bare && styles.bare)} aria-label={summary ? 'Sua simulação' : 'Seu resultado'}>
         <div className={styles.top}>
-          <Segmented
-            label="Receitas incluídas no resultado"
-            value={combined ? 'combined' : 'charging'}
-            options={[
-              { value: 'combined', label: 'Carteira + recargas' },
-              { value: 'charging', label: 'Só recargas' },
-            ]}
-            onChange={(incomeMode) => setSim({ incomeMode })}
-          />
+          {summary ? (
+            bare ? null : (
+              <div className={styles.summaryHead}>
+                <span className={styles.summaryOverline}>Sua simulação</span>
+                <span className={styles.summaryModel}>
+                  {charger.name} · {POTENCIA[inputs.charger]}
+                </span>
+              </div>
+            )
+          ) : (
+            <Segmented
+              label="Receitas incluídas no resultado"
+              value={combined ? 'combined' : 'charging'}
+              options={[
+                { value: 'combined', label: 'Carteira + recargas' },
+                { value: 'charging', label: 'Só recargas' },
+              ]}
+              onChange={(incomeMode) => setSim({ incomeMode })}
+            />
+          )}
 
           <div className={styles.hero} style={{ backgroundImage: `url(${IMAGES.greenCard})` }}>
             <div className={styles.heroValue}>
-              <p className={styles.overline}>RECEBIMENTO ESTIMADO {view === 'month' ? `NO MÊS ${month}` : `NO ANO ${year}`}</p>
+              <p className={styles.overline}>RECEBIMENTO ESTIMADO {periodo}</p>
               <p className={styles.amount} aria-live="polite" aria-label={moneyCents(scenario.receipt)}>
                 R$ {int}
                 <span className={styles.cents}>,{cents}</span>
@@ -74,7 +107,7 @@ export function ResultPanel({ onContinue, onShare, panelRef }: { onContinue?: ()
             </div>
           </div>
 
-          <PeriodControl />
+          {summary ? null : <PeriodControl />}
 
           <div className={styles.stats}>
             <Stat icon={ICONS.handMoney} label="RETORNO" value={paybackLabel(scenario.payback)} />
@@ -118,16 +151,18 @@ export function ResultPanel({ onContinue, onShare, panelRef }: { onContinue?: ()
           </div>
         </div>
 
-        <div className={styles.bottom}>
-          {result.feasible ? (
-            <Flag icon={ICONS.alert}>Projeção estimada. O retorno varia com o movimento e não é garantido.</Flag>
-          ) : (
-            <Flag icon={ICONS.alert} tone="warning">
-              Acima da capacidade estimada: reduza os carros por dia ou os kWh por carro.
-            </Flag>
-          )}
-          {pendentes.length ? <p className={styles.pending}>Prévia {pendentes.join(' e ')}. Ajuste em Tributos.</p> : null}
-        </div>
+        {summary ? null : (
+          <div className={styles.bottom}>
+            {result.feasible ? (
+              <Flag icon={ICONS.alert}>Projeção estimada. O retorno varia com o movimento e não é garantido.</Flag>
+            ) : (
+              <Flag icon={ICONS.alert} tone="warning">
+                Acima da capacidade estimada: reduza os carros por dia ou os kWh por carro.
+              </Flag>
+            )}
+            {pendentes.length ? <p className={styles.pending}>Prévia {pendentes.join(' e ')}. Ajuste em Tributos.</p> : null}
+          </div>
+        )}
       </section>
 
       {onContinue ? (
@@ -138,6 +173,11 @@ export function ResultPanel({ onContinue, onShare, panelRef }: { onContinue?: ()
       {onShare ? (
         <Button variant="secondary" className={styles.cta} onClick={onShare}>
           Compartilhar simulação
+        </Button>
+      ) : null}
+      {onEdit ? (
+        <Button variant="secondary" className={styles.cta} onClick={onEdit}>
+          Editar simulação
         </Button>
       ) : null}
     </div>

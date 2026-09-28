@@ -76,7 +76,7 @@ Fluxo novo e independente, guiado pelo "Simulador de investimento e DRE | iGreen
     - origem do recebimento.
   - Em notebooks baixos o painel gruda pela base, para o botão "Seguir para proposta" continuar visível. No celular ele vira uma barra fixa embaixo.
   - Abaixo vem um relatório em abas: retorno em 36 meses, DRE do período, mês a mês e premissas e fontes.
-- **Dados da simulação:** acompanham o fluxo inteiro. As etapas 2 e 3 mostram o resumo numa lateral fixa, como num checkout (no celular, um cartão compacto cinza no topo), com "Editar simulação", e o resumo e a proposta usam os mesmos números (investimento do investidor, sociedade, recebimento do mês 1, retorno e DRE).
+- **Dados da simulação:** acompanham o fluxo inteiro. As etapas 2 e 3 mostram o resumo numa lateral fixa, como num checkout: o mesmo painel do simulador em versão resumida (mês 1, sem os controles). No celular, é uma linha com o modelo e o recebimento que expande ali mesmo. Os dois têm "Editar simulação", e o resumo e a proposta usam os mesmos números (investimento do investidor, sociedade, recebimento do mês 1, retorno e DRE).
 - **Motor de cálculo:** `gerador/model.ts` é o porte fiel do `model.mjs` da referência, coberto por testes em `gerador/model.test.ts` (`npm test`). Com as premissas padrão (DUO), dá R$ 7.311,47 no mês 1, retorno em 4,1 meses e ROI de 5.253% em 36 meses.
 - **Estado:** fica em `sessionStorage` (`igreen-mob-gerador-v1`), separado do fluxo atual. Abrir uma etapa sem as anteriores redireciona para a primeira que falta.
 
@@ -84,7 +84,7 @@ Fluxo novo e independente, guiado pelo "Simulador de investimento e DRE | iGreen
 
 Mesmo fluxo e mesmas etapas 2 a 4, trocando só o simulador (`screens/SimuladorV2.tsx`). A versão com abas continua em `#gerador`. As rotas da v2 são as mesmas com o prefixo `#gerador2` (por exemplo, `#gerador2/dados`), e a navegação mantém a versão escolhida.
 
-- **Layout:** mesma largura do simulador com abas (1120px). Não tem stepper nem selo de etapa: o título e a descrição vêm logo abaixo do logo, e o painel do investidor começa na altura do título. A escolha do eletroposto tem só um rótulo, como os campos.
+- **Layout:** mesma largura do simulador com abas (1120px). Não tem stepper nem selo de etapa: o título e a descrição vêm logo abaixo do logo, e o painel do investidor começa na altura da primeira seção.
 - **Premissas:** ficam em um formulário linear (eletroposto, movimento, preços, carteira e tributos), já preenchido com as premissas padrão.
   - Cada seção entra com uma animação curta quando chega perto da área visível na rolagem. O conteúdo está sempre na página.
   - A ajuda de cada campo fica logo abaixo, em uma linha e mais suave que o rótulo. As explicações longas ficam em "Como calculamos".

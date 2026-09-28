@@ -21,6 +21,49 @@
   overflow: hidden;
 }
 
+/* Dentro de outro cartão (resumo expansível do celular): sem moldura própria */
+.bare {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.bare .top {
+  padding-top: 14px;
+}
+
+/* Resumo das etapas de cadastro: título e modelo acima do card verde */
+.summaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.summaryOverline {
+  font-family: var(--font-inter);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.summaryModel {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--bg-primary-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-primary);
+  white-space: nowrap;
+}
+
 .top {
   display: flex;
   flex-direction: column;

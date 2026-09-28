@@ -16,10 +16,15 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 32px;
   width: 100%;
   max-width: 1120px;
   animation: enter 0.35s ease-out;
+}
+
+/* Título da página sem o espaço extra de baixo: a primeira seção vem logo em seguida */
+.intro {
+  padding-bottom: 0;
 }
 
 .layout {

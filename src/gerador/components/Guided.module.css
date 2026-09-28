@@ -35,16 +35,6 @@
   min-width: 0;
 }
 
-.sectionCompact {
-  gap: 12px;
-}
-
-/* Mesmo estilo dos rótulos dos campos (CARROS POR DIA, ...) */
-.sectionLabel {
-  text-transform: uppercase;
-  color: var(--fg-main);
-}
-
 .sectionHead {
   display: flex;
   flex-direction: column;

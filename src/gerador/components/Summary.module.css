@@ -1,121 +1,6 @@
 /* ================= Resumo da simulação nas etapas de cadastro ================= */
 
-/* ---------- Lateral (desktop), no padrão do painel do simulador ---------- */
-.aside {
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-base);
-  background: var(--bg-background);
-  box-shadow: var(--shadow-base);
-}
-
-.asideTop {
-  padding: 19px 19px 0;
-}
-
-.hero {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 20px;
-  border-radius: var(--radius-lg);
-  background-color: #0a8a3c;
-  background-size: cover;
-  background-position: center;
-}
-
-.heroOverline {
-  font-family: var(--font-inter);
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: -0.01em;
-  color: var(--fg-highlight);
-}
-
-.heroAmount {
-  font-family: var(--font-inter);
-  font-weight: 800;
-  font-size: 28px;
-  line-height: normal;
-  color: var(--fg-on-primary);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.heroAmount span {
-  font-weight: 700;
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.heroChip {
-  margin-top: 6px;
-  padding: 6px 10px;
-  border-radius: var(--radius-xl-flag);
-  background: #fff;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 11.5px;
-  line-height: 16px;
-  color: var(--fg-primary-strong);
-  white-space: nowrap;
-}
-
-.rows {
-  display: flex;
-  flex-direction: column;
-  margin: 8px 0 0;
-}
-
-.rows > div {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 19px;
-}
-
-.rows > div + div {
-  border-top: 1px solid var(--border);
-}
-
-.rows dt {
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--fg-main);
-}
-
-.rows dd {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--fg-strong);
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.asideFoot {
-  display: flex;
-  justify-content: center;
-  padding: 12px 19px;
-  border-top: 1px solid var(--border);
-}
-
-.link {
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--fg-primary);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
+/* Lateral (desktop): usa o painel do simulador em versão resumida; aqui só a nota abaixo dele */
 .asideNote {
   font-family: var(--font-sans);
   font-weight: 500;
@@ -123,16 +8,16 @@
   line-height: 17px;
   color: var(--fg-muted);
   opacity: 0.8;
+  text-align: center;
 }
 
-/* ---------- Cartão compacto no corpo (celular): cinza, sem disputar com o formulário ---------- */
+/* ---------- Celular: uma linha que expande para o resumo completo ---------- */
 .summary {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px;
-  border-radius: var(--radius-lg);
-  background: var(--bg-muted);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  background: var(--bg-background);
+  box-shadow: var(--shadow-base);
 }
 
 @media (min-width: 1000px) {
@@ -141,13 +26,16 @@
   }
 }
 
-.head {
+.summaryHead {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
 }
 
-.headText {
+.summaryText {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -155,7 +43,7 @@
   min-width: 0;
 }
 
-.overline {
+.summaryOverline {
   font-family: var(--font-inter);
   font-weight: 700;
   font-size: 10px;
@@ -165,76 +53,76 @@
   color: var(--fg-muted);
 }
 
-.model {
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.02em;
-  color: var(--fg-strong);
-}
-
-.edit {
-  flex-shrink: 0;
-  height: 32px;
-  padding: 0 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-background);
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 12px;
-  color: var(--fg-primary);
-  transition: background-color 0.15s ease;
-}
-
-.edit:hover {
-  background: var(--bg-hover);
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
-}
-
-.stats div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-background);
-}
-
-.stats dt {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--fg-muted);
-}
-
-.stats dd {
-  margin: 0;
+.summaryLine {
+  overflow: hidden;
   font-family: var(--font-sans);
   font-weight: 700;
   font-size: 14px;
   line-height: 18px;
   letter-spacing: -0.01em;
   color: var(--fg-strong);
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@media (max-width: 420px) {
-  .stats {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
+.summaryValue {
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.02em;
+  color: var(--fg-primary);
+  font-variant-numeric: tabular-nums;
+}
 
-  .stats div:first-child {
-    grid-column: 1 / -1;
+.summaryValue small {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.summaryChevron {
+  flex-shrink: 0;
+  background-color: var(--fg-main);
+  transition: transform 0.2s ease;
+}
+
+.summaryOpen .summaryChevron {
+  transform: rotate(180deg);
+}
+
+.summaryBody {
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  animation: bodyIn 0.25s ease-out;
+}
+
+/* Dentro do cartão: o botão "Editar simulação" fica com respiro das bordas */
+.summaryBody > div {
+  padding-bottom: 16px;
+}
+
+.summaryBody > div > button {
+  width: calc(100% - 38px);
+  margin: 0 auto;
+}
+
+@keyframes bodyIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summaryBody {
+    animation: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .summaryBody > div > button {
+    width: calc(100% - 30px);
   }
 }
