@@ -11,6 +11,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # build de produção em dist/
 npm run lint
+npm test           # testes do motor de cálculo do fluxo Gerador (Vitest)
 npm run compress:video -- <entrada.mp4> <saída.mp4> <largura> [crf]   # H.264 leve para a web
 ```
 
@@ -49,6 +50,31 @@ npm run compress:video -- <entrada.mp4> <saída.mp4> <largura> [crf]   # H.264 l
   - Nenhum campo recebe foco sozinho (simulador e modais), para o teclado não abrir e esconder a etapa.
   - Ao focar um campo, inclusive pelo "Próximo" do teclado, `lib/keepFocusedFieldVisible.ts` garante que ele fique visível acima do teclado.
 - O botão voltar do navegador funciona, e os dados ficam em `sessionStorage`, então um F5 não apaga o que foi preenchido.
+
+## Fluxo Gerador (`#gerador`)
+
+Fluxo novo e independente, guiado pelo "Simulador de investimento e DRE | iGreen Mob". O fluxo atual continua igual: `Root.tsx` só renderiza o Gerador quando o hash começa com `gerador`. Todo o código fica em `src/gerador/`.
+
+| Tela | Rota (hash) |
+| --- | --- |
+| Início com "Simular gratuitamente" (sem CPF e sem contrato) | `#gerador` |
+| Etapa 1: simulador completo | `#gerador/simulador` |
+| Etapa 2: dados do investidor + endereço | `#gerador/dados` |
+| Etapa 3: endereço do eletroposto (mapa) + publicidade | `#gerador/eletroposto` |
+| Etapa 4: resumo, assinatura e aceite | `#gerador/resumo` |
+| Proposta gerada | `#gerador/proposta` |
+
+- **Simulador:** reúne tudo o que a referência tem, em blocos numerados.
+  - Escolha do eletroposto em carrossel (Lento, DUO, Ultra): no desktop largo os 3 cards ficam lado a lado.
+  - Movimento, com o medidor de capacidade.
+  - Preços e repasse ao ponto.
+  - Carteira iGreen, com a recorrência em 1, 5 e 10 anos.
+  - Tributos em "Avançado".
+  - À direita, o painel do investidor fica fixo, com mês ou ano, "Carteira + recargas" ou "Só recargas", retorno, saldo e ROI em 36 meses. No celular ele vira uma barra fixa embaixo.
+  - Abaixo vêm o gráfico de retorno em 36 meses, o DRE do período, a tabela mês a mês e as premissas e fontes.
+- **Dados da simulação:** acompanham o fluxo inteiro. As etapas 2 e 3 mostram o resumo com "Editar simulação", e o resumo e a proposta usam os mesmos números (investimento do investidor, sociedade, recebimento do mês 1, retorno e DRE).
+- **Motor de cálculo:** `gerador/model.ts` é o porte fiel do `model.mjs` da referência, coberto por testes em `gerador/model.test.ts` (`npm test`). Com as premissas padrão (DUO), dá R$ 7.311,47 no mês 1, retorno em 4,1 meses e ROI de 5.253% em 36 meses.
+- **Estado:** fica em `sessionStorage` (`igreen-mob-gerador-v1`), separado do fluxo atual. Abrir uma etapa sem as anteriores redireciona para a primeira que falta.
 
 ## Tema escuro (`lib/theme.ts`)
 
@@ -102,6 +128,7 @@ public/assets/             ícones (SVG), imagens (WebP) e vídeo
 | `services/document.ts` | Consulta de endereço por CPF/CNPJ **desligada** (`AUTO_ENDERECO_POR_DOCUMENTO = false`), porque o mock devolvia sempre o endereço do Figma. Ligar quando houver consulta real. |
 | `services/proposal.ts` → `createProposal` | Gera um ID aleatório. Trocar pelo POST que cria a proposta. |
 | `data/investment.ts` | Preços, modelos, lista de aportes e premissas. |
+| `gerador/proposal.ts` → `createGeradorProposal` | Gera um ID aleatório para a proposta do fluxo Gerador. Trocar pelo POST que cria a proposta. |
 | `services/responsavel.ts` | Nome do responsável: vem do parâmetro `?responsavel=` do link. Sem ele, mostra um nome de exemplo. |
 | `screens/Inicio.tsx` → `STATS` | "+R$ 1,2 mi" e "68%" fixos. |
 | Links "Memorando de Entendimento" e "Termos de Uso" | Ainda sem destino. |
