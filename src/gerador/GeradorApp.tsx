@@ -7,6 +7,8 @@ import { Inicio } from './screens/Inicio'
 import { Proposta } from './screens/Proposta'
 import { Resumo } from './screens/Resumo'
 import { Simulador } from './screens/Simulador'
+import { SimuladorV2 } from './screens/SimuladorV2'
+import { Visualizar } from './screens/Visualizar'
 
 const SCREENS: Record<GeradorScreen, ComponentType> = {
   inicio: Inicio,
@@ -15,6 +17,7 @@ const SCREENS: Record<GeradorScreen, ComponentType> = {
   eletroposto: Eletroposto,
   resumo: Resumo,
   proposta: Proposta,
+  visualizar: Visualizar,
 }
 
 /** Etapa que falta quando a pessoa abre uma tela sem ter concluído as anteriores */
@@ -29,7 +32,7 @@ function useMissingStep(screen: GeradorScreen): GeradorScreen | null {
 }
 
 function Flow() {
-  const { screen, go } = useGerador()
+  const { screen, version, go } = useGerador()
   const missing = useMissingStep(screen)
 
   useEffect(() => {
@@ -37,7 +40,8 @@ function Flow() {
   }, [missing, go])
 
   if (missing) return null
-  const Current = SCREENS[screen]
+  // v2 (#gerador2) troca só o simulador; as demais etapas são as mesmas
+  const Current = screen === 'simulador' && version === 'v2' ? SimuladorV2 : SCREENS[screen]
   return <Current key={screen} />
 }
 

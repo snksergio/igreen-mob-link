@@ -6,6 +6,7 @@ import { Img } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { money, moneyCents, moneyParts } from '../../lib/format'
 import { compactMoney, paybackLabel, pct, signedMoney } from '../format'
+import { scenarioResult, type Scenario } from '../model'
 import { useGerador } from '../state'
 import { MiniReturnChart } from './MiniReturnChart'
 import { PeriodControl } from './PeriodControl'
@@ -27,13 +28,36 @@ function Stat({ icon, label, value }: { icon: string; label: string; value: stri
 }
 
 /**
- * Painel "Seu resultado" no padrão do simulador atual: card verde com o recebimento do período,
- * retorno e ROI, mini gráfico do saldo em 36 meses, origem do recebimento e aviso. Depois, o botão para seguir.
+ * Cenário exibido: enquanto a carteira não foi preenchida (simulador guiado), só recargas;
+ * depois, o escolhido em "Carteira + recargas / Só recargas".
  */
-export function ResultPanel({ onContinue, panelRef }: { onContinue: () => void; panelRef?: Ref<HTMLDivElement> }) {
-  const { state, setSim, result, scenario } = useGerador()
+function useShownScenario(carteiraPending: boolean): { scenario: Scenario; combined: boolean } {
+  const { state, result, scenario } = useGerador()
   const { view, month, year } = state.simulacao
-  const combined = state.simulacao.inputs.incomeMode === 'combined'
+  const pendingScenario = useMemo(() => scenarioResult(result, 'charging', view, month, year), [result, view, month, year])
+  if (carteiraPending) return { scenario: pendingScenario, combined: false }
+  return { scenario, combined: state.simulacao.inputs.incomeMode === 'combined' }
+}
+
+/**
+ * Painel "Seu resultado" no padrão do simulador atual: card verde com o recebimento do período,
+ * retorno e ROI, mini gráfico do saldo em 36 meses, origem do recebimento e aviso. Depois, os botões.
+ * `carteiraPending`: simulador guiado antes do passo da carteira (mostra só recargas, sem a escolha do cenário).
+ */
+export function ResultPanel({
+  onContinue,
+  onShare,
+  panelRef,
+  carteiraPending = false,
+}: {
+  onContinue?: () => void
+  onShare?: () => void
+  panelRef?: Ref<HTMLDivElement>
+  carteiraPending?: boolean
+}) {
+  const { state, setSim, result } = useGerador()
+  const { view, month, year } = state.simulacao
+  const { scenario, combined } = useShownScenario(carteiraPending)
   const p = scenario.period
   const { int, cents } = moneyParts(scenario.receipt)
   const { charger, capital } = result
@@ -50,6 +74,7 @@ export function ResultPanel({ onContinue, panelRef }: { onContinue: () => void; 
     <div className={styles.wrap} ref={panelRef}>
       <section className={styles.panel} aria-label="Seu resultado">
         <div className={styles.top}>
+          {carteiraPending ? null : (
           <Segmented
             label="Receitas incluídas no resultado"
             value={combined ? 'combined' : 'charging'}
@@ -59,6 +84,7 @@ export function ResultPanel({ onContinue, panelRef }: { onContinue: () => void; 
             ]}
             onChange={(incomeMode) => setSim({ incomeMode })}
           />
+          )}
 
           <div className={styles.hero} style={{ backgroundImage: `url(${IMAGES.greenCard})` }}>
             <div className={styles.heroValue}>
@@ -106,8 +132,15 @@ export function ResultPanel({ onContinue, panelRef }: { onContinue: () => void; 
               </p>
               <p className={styles.rowValue}>{signedMoney(p.investorRechargeCash)}</p>
             </div>
-            {combined ? (
-              <div className={styles.row}>
+            {carteiraPending ? (
+              <div className={cn(styles.row, styles.rowPending)}>
+                <Img src={ICONS.userGreen} size={20} />
+                <p className={styles.rowLabel}>
+                  Carteira iGreen <small>entra no passo 4</small>
+                </p>
+              </div>
+            ) : combined ? (
+              <div className={cn(styles.row, styles.rowPrimary)}>
                 <Img src={ICONS.userGreen} size={20} />
                 <p className={styles.rowLabel}>
                   Carteira iGreen <small>{p.clients} clientes</small>
@@ -120,26 +153,44 @@ export function ResultPanel({ onContinue, panelRef }: { onContinue: () => void; 
 
         <div className={styles.bottom}>
           {result.feasible ? (
-            <Flag icon={ICONS.alert}>Projeção estimada. O retorno varia conforme o movimento do eletroposto e não é garantido.</Flag>
+            <Flag icon={ICONS.alert}>Projeção estimada. O retorno varia com o movimento e não é garantido.</Flag>
           ) : (
             <Flag icon={ICONS.alert} tone="warning">
               Acima da capacidade estimada: reduza os carros por dia ou os kWh por carro.
             </Flag>
           )}
-          {pendentes.length ? <p className={styles.pending}>Prévia {pendentes.join(' e ')}. Ajuste na aba Tributos.</p> : null}
+          {pendentes.length ? <p className={styles.pending}>Prévia {pendentes.join(' e ')}. Ajuste em Tributos.</p> : null}
         </div>
       </section>
 
-      <Button className={styles.cta} onClick={onContinue}>
-        Seguir para proposta
-      </Button>
+      {onContinue ? (
+        <Button className={styles.cta} onClick={onContinue}>
+          Seguir para proposta
+        </Button>
+      ) : null}
+      {onShare ? (
+        <Button variant="secondary" className={styles.cta} onClick={onShare}>
+          Compartilhar simulação
+        </Button>
+      ) : null}
     </div>
   )
 }
 
-/** Barra fixa do celular: resultado resumido + seguir (some quando o painel completo está na tela) */
-export function MobileResultBar({ onContinue, hidden }: { onContinue: () => void; hidden: boolean }) {
-  const { scenario, state } = useGerador()
+/** Barra fixa do celular: resultado resumido + ação (some quando o painel completo está na tela) */
+export function MobileResultBar({
+  onContinue,
+  hidden,
+  actionLabel = 'Seguir',
+  carteiraPending = false,
+}: {
+  onContinue: () => void
+  hidden: boolean
+  actionLabel?: string
+  carteiraPending?: boolean
+}) {
+  const { state } = useGerador()
+  const { scenario } = useShownScenario(carteiraPending)
   const { view } = state.simulacao
   return (
     <div className={cn(styles.bar, hidden && styles.barHidden)} aria-hidden={hidden}>
@@ -151,7 +202,7 @@ export function MobileResultBar({ onContinue, hidden }: { onContinue: () => void
         <span>Retorno em {paybackLabel(scenario.payback).toLowerCase()}</span>
       </div>
       <Button className={styles.barButton} onClick={onContinue} tabIndex={hidden ? -1 : 0}>
-        Seguir
+        {actionLabel}
       </Button>
     </div>
   )

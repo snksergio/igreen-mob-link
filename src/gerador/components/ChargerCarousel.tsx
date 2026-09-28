@@ -51,18 +51,23 @@ export function ChargerCarousel({ inputs, onSelect }: { inputs: SimInputs; onSel
     }
   }, [])
 
-  const reveal = (id: ChargerId) => {
+  const reveal = (id: ChargerId, behavior: ScrollBehavior = 'smooth') => {
     const track = trackRef.current
     const card = cardRefs.current[id]
     if (!track || !card) return
     const left = card.offsetLeft - track.offsetLeft
     if (left < track.scrollLeft || left + card.offsetWidth > track.scrollLeft + track.clientWidth) {
-      track.scrollTo({ left: left - 4, behavior: 'smooth' })
+      track.scrollTo({ left: left - 4, behavior })
     }
   }
 
-  // O card escolhido entra na área visível (sem rolar a página), inclusive quando vira carrossel
-  useEffect(() => reveal(selected), [selected, scrollable])
+  // O card escolhido entra na área visível (sem rolar a página): suave ao escolher, direto quando vira carrossel
+  const wasScrollable = useRef(scrollable)
+  useEffect(() => {
+    const switched = wasScrollable.current !== scrollable
+    wasScrollable.current = scrollable
+    reveal(selected, switched ? 'auto' : 'smooth')
+  }, [selected, scrollable])
 
   const scrollBy = (dir: 1 | -1) => {
     const track = trackRef.current

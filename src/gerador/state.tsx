@@ -2,8 +2,15 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useReducer,
 import { emptyAddress, type Address } from '../services/address'
 import { DEFAULTS, calculate, clampInputs, scenarioResult, type PeriodView, type Scenario, type SimInputs, type SimResult } from './model'
 
-export type GeradorScreen = 'inicio' | 'simulador' | 'dados' | 'eletroposto' | 'resumo' | 'proposta'
-const SCREENS: GeradorScreen[] = ['inicio', 'simulador', 'dados', 'eletroposto', 'resumo', 'proposta']
+export type GeradorScreen = 'inicio' | 'simulador' | 'dados' | 'eletroposto' | 'resumo' | 'proposta' | 'visualizar'
+const SCREENS: GeradorScreen[] = ['inicio', 'simulador', 'dados', 'eletroposto', 'resumo', 'proposta', 'visualizar']
+
+/** v1: simulador com abas (#gerador) · v2: simulador guiado em passos (#gerador2). As demais etapas são as mesmas */
+export type GeradorVersion = 'v1' | 'v2'
+const BASE: Record<GeradorVersion, string> = { v1: 'gerador', v2: 'gerador2' }
+
+/** Passos do simulador guiado (v2): eletroposto, movimento, preços, carteira e tributos */
+export const PASSOS_V2 = 5
 
 export type GeradorState = {
   simulacao: {
@@ -12,6 +19,8 @@ export type GeradorState = {
     view: PeriodView
     month: number
     year: number
+    /** v2: quantos passos do simulador guiado já foram concluídos (0 a PASSOS_V2) */
+    etapa: number
   }
   investidor: {
     tipo: 'pf' | 'pj'
@@ -44,7 +53,7 @@ type Action =
   | { type: 'proposta'; value: GeradorState['proposta'] }
 
 const initialState: GeradorState = {
-  simulacao: { inputs: DEFAULTS, view: 'month', month: 1, year: 1 },
+  simulacao: { inputs: DEFAULTS, view: 'month', month: 1, year: 1, etapa: 0 },
   investidor: { tipo: 'pf', documento: '', nome: '', nascimento: '', email: '', whatsapp: '', endereco: emptyAddress },
   eletroposto: { endereco: emptyAddress, publicidade: false },
   assinatura: { data: '', nome: '', documento: '', testemunhaNome: '', testemunhaCpf: '', aceite: false },
@@ -88,11 +97,14 @@ function loadState(): GeradorState {
   return initialState
 }
 
-const hashOf = (screen: GeradorScreen) => (screen === 'inicio' ? '#gerador' : `#gerador/${screen}`)
+const hashOf = (screen: GeradorScreen, version: GeradorVersion) => `#${BASE[version]}${screen === 'inicio' ? '' : `/${screen}`}`
 
-const screenFromHash = (): GeradorScreen => {
-  const [, sub] = window.location.hash.replace('#', '').split('/')
-  return SCREENS.includes(sub as GeradorScreen) ? (sub as GeradorScreen) : 'inicio'
+/** #gerador2/resumo → { version: 'v2', screen: 'resumo' } (ignora a query, ex.: o ?d= do link compartilhado) */
+const routeFromHash = (): { version: GeradorVersion; screen: GeradorScreen } => {
+  const [path] = window.location.hash.replace('#', '').split('?')
+  const [base, sub] = path.split('/')
+  const screen = SCREENS.includes(sub as GeradorScreen) ? (sub as GeradorScreen) : 'inicio'
+  return { version: base === BASE.v2 ? 'v2' : 'v1', screen }
 }
 
 type Ctx = {
@@ -102,6 +114,8 @@ type Ctx = {
   /** recorte do resultado na visão escolhida (cenário + período) */
   scenario: Scenario
   screen: GeradorScreen
+  version: GeradorVersion
+  /** navega mantendo a versão do fluxo (v1 ou v2) */
   go: (screen: GeradorScreen) => void
   patch: <S extends Section>(section: S, value: Partial<GeradorState[S]>) => void
   /** altera entradas da simulação (sempre aplicando os limites do modelo) */
@@ -113,7 +127,8 @@ const GeradorContext = createContext<Ctx | null>(null)
 
 export function GeradorProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, loadState)
-  const [screen, setScreen] = useState<GeradorScreen>(screenFromHash)
+  const [route, setRoute] = useState(routeFromHash)
+  const { screen, version } = route
 
   useEffect(() => {
     try {
@@ -124,7 +139,7 @@ export function GeradorProvider({ children }: { children: ReactNode }) {
   }, [state])
 
   useEffect(() => {
-    const onPop = () => setScreen(screenFromHash())
+    const onPop = () => setRoute(routeFromHash())
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
@@ -133,10 +148,13 @@ export function GeradorProvider({ children }: { children: ReactNode }) {
     window.scrollTo({ top: 0 })
   }, [screen])
 
-  const go = useCallback((next: GeradorScreen) => {
-    window.history.pushState(null, '', hashOf(next))
-    setScreen(next)
-  }, [])
+  const go = useCallback(
+    (next: GeradorScreen) => {
+      window.history.pushState(null, '', hashOf(next, version))
+      setRoute({ version, screen: next })
+    },
+    [version],
+  )
 
   const patch = useCallback(<S extends Section>(section: S, value: Partial<GeradorState[S]>) => {
     dispatch({ type: 'patch', section, value } as Action)
@@ -150,8 +168,8 @@ export function GeradorProvider({ children }: { children: ReactNode }) {
   const scenario = useMemo(() => scenarioResult(result, inputs.incomeMode, view, month, year), [result, inputs.incomeMode, view, month, year])
 
   const value = useMemo(
-    () => ({ state, result, scenario, screen, go, patch, setSim, setProposta }),
-    [state, result, scenario, screen, go, patch, setSim, setProposta],
+    () => ({ state, result, scenario, screen, version, go, patch, setSim, setProposta }),
+    [state, result, scenario, screen, version, go, patch, setSim, setProposta],
   )
 
   return <GeradorContext.Provider value={value}>{children}</GeradorContext.Provider>

@@ -1,0 +1,448 @@
+/* ================= Simulador guiado (v2): passos em linha do tempo ================= */
+
+.step {
+  display: flex;
+  gap: 16px;
+  scroll-margin-top: 24px;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 28px;
+}
+
+.marker {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-family: var(--font-inter);
+  font-weight: 700;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.active .marker {
+  background: var(--bg-primary);
+  color: var(--fg-on-primary);
+  box-shadow: 0 0 0 4px var(--bg-primary-subtle);
+}
+
+.done .marker {
+  background: var(--bg-primary-subtle);
+  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+}
+
+.line {
+  flex: 1 1 auto;
+  width: 2px;
+  min-height: 16px;
+  margin: 6px 0;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.done .line {
+  background: var(--border-primary-subtle);
+}
+
+.last .line {
+  visibility: hidden;
+}
+
+.main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  padding-bottom: 32px;
+}
+
+.done .main {
+  padding-bottom: 24px;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+}
+
+.headText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.title {
+  color: var(--fg-strong);
+}
+
+.done .title {
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.description {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: -0.01em;
+  color: var(--fg-muted);
+}
+
+/* Resumo do passo concluído: o que foi escolhido */
+.summary {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--fg-main);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  animation: bodyIn 0.3s ease-out;
+}
+
+.action {
+  flex: none;
+  width: 100%;
+  margin-top: 4px;
+}
+
+@keyframes bodyIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .body {
+    animation: none;
+  }
+}
+
+/* ---------- Conteúdo dos passos ---------- */
+
+/* Incluso no eletroposto: faixa cinza centralizada */
+.included {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--radius-base);
+  background: var(--bg-muted);
+  text-align: center;
+}
+
+.includedTitle {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.includedList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.includedList li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--fg-strong);
+}
+
+.tick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+}
+
+/* Campo: rótulo, controle e (no máximo) uma linha de ajuda logo abaixo */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.help {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-muted);
+}
+
+.help a {
+  font-weight: 600;
+  color: var(--fg-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Informação fixa (não editável): administração iGreen, premissas padrão */
+.info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-base);
+  background: var(--bg-muted);
+}
+
+.infoIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-fill);
+}
+
+.infoText {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.infoTitle {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--fg-strong);
+}
+
+.infoValue {
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--fg-strong);
+}
+
+/* Conexões da carteira: uma por linha, com checkbox */
+.checks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  background: var(--bg-background);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.checkRow:hover {
+  border-color: var(--fg-subtle);
+}
+
+.checkOn,
+.checkOn:hover {
+  border-color: var(--border-primary);
+  background: var(--bg-primary-subtle);
+}
+
+.checkBox {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--fg-subtle);
+  border-radius: 5px;
+}
+
+.checkOn .checkBox {
+  border-color: var(--bg-primary);
+  background: var(--bg-primary);
+}
+
+.checkName {
+  flex: 1 1 auto;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--fg-strong);
+}
+
+.checkValue {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-muted);
+  text-align: right;
+}
+
+.checkValue b {
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+/* Projeção da carteira: linhas rótulo × valor */
+.projection {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  border-top: 1px solid var(--border);
+}
+
+.projection > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.projection dt {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--fg-main);
+}
+
+.projection dd {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.projection dd small {
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--fg-muted);
+}
+
+/* "Como calculamos": explicação longa recolhida, fora do meio dos campos */
+.more {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.more summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--fg-primary);
+  list-style: none;
+  cursor: pointer;
+}
+
+.more summary::-webkit-details-marker {
+  display: none;
+}
+
+.moreChevron {
+  background-color: var(--fg-primary);
+  transition: transform 0.2s ease;
+}
+
+.more[open] .moreChevron {
+  transform: rotate(180deg);
+}
+
+.more p {
+  margin-top: 10px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--fg-muted);
+}
+
+.more p b {
+  font-weight: 700;
+  color: var(--fg-main);
+}
+
+@media (max-width: 560px) {
+  .step {
+    gap: 12px;
+  }
+
+  .main {
+    padding-bottom: 28px;
+  }
+
+  .checkRow {
+    align-items: flex-start;
+  }
+
+  .checkValue {
+    max-width: 50%;
+  }
+}
+
+.alignStart {
+  align-self: flex-start;
+}

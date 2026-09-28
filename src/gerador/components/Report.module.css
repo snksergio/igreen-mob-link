@@ -712,8 +712,9 @@
 
 /* ---------- Relatório com abas (abaixo do simulador) ---------- */
 .report {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: 24px;
   min-width: 0;
   padding: 23px;
@@ -724,30 +725,54 @@
 }
 
 .reportHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
+  min-width: 0;
 }
 
-/* Ao lado do título no desktop; largura total no celular */
-.reportHead .reportTabs {
+.reportTabsBar {
+  min-width: 0;
+}
+
+/* Ao lado do título no desktop */
+.reportTabsBar .reportTabs {
   width: auto;
   max-width: 100%;
 }
 
+.reportPanel {
+  grid-column: 1 / -1;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* Celular/tablet: abas em largura total, grudadas no topo durante a rolagem do relatório */
 @media (max-width: 720px) {
-  .reportHead .reportTabs {
+  .report {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .reportTabsBar {
+    position: sticky;
+    z-index: 20;
+    top: 0;
+    margin: 0 -17px;
+    padding: 10px 17px;
+    background: var(--bg-background);
+    box-shadow: 0 1px 0 var(--border);
+  }
+
+  .reportTabsBar .reportTabs {
     width: 100%;
+  }
+
+  .reportPanel {
+    padding-top: 8px;
+    border-top: 0;
   }
 }
 
 @media (max-width: 560px) {
   .report {
-    gap: 20px;
     padding: 17px;
   }
 }

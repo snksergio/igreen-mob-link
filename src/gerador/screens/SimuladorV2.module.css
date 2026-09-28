@@ -1,0 +1,187 @@
+/* Simulador guiado (v2): mesma estrutura do simulador atual — coluna de 480px com header e stepper,
+   painel flutuando à direita (entra depois do primeiro passo) */
+.page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 56px;
+  padding: 56px 16px 96px;
+  background: var(--bg-surface);
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  max-width: 940px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 42px;
+  width: 100%;
+  max-width: 480px;
+  view-transition-name: sim2-form;
+  animation: enter 0.35s ease-out;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  view-transition-name: sim2-panel;
+  animation: panelIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.sideHint {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+.below {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 940px;
+  scroll-margin-top: 24px;
+}
+
+/* ---------- Seguir ou compartilhar (fim da página) ---------- */
+.final {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  padding: 23px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-background);
+  box-shadow: var(--shadow-base);
+}
+
+.finalText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.finalTitle {
+  color: var(--fg-strong);
+}
+
+.finalText p {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--fg-muted);
+}
+
+.finalButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.finalButtons > * {
+  flex: none;
+  width: auto;
+  padding: 0 24px;
+}
+
+/* ---------- Desktop: painel ao lado, alinhado ao título ---------- */
+@media (min-width: 1000px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .side {
+    position: sticky;
+    top: var(--side-top, 24px);
+    flex-shrink: 0;
+    width: 420px;
+    max-width: none;
+    margin-top: 116px;
+  }
+}
+
+@media (max-width: 999px) {
+  .below {
+    padding-bottom: 72px;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    gap: 40px;
+    padding: 20px 16px 40px;
+  }
+
+  .column {
+    gap: 20px;
+  }
+
+  .form {
+    gap: 28px;
+  }
+
+  .final {
+    padding: 17px;
+  }
+
+  .finalButtons {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+
+  .finalButtons > * {
+    width: 100%;
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .column,
+  .side {
+    animation: none;
+  }
+}

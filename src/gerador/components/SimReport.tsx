@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { cn } from '../../lib/cn'
 import { useGerador } from '../state'
 import { DreTable } from './DreTable'
@@ -25,20 +25,33 @@ export function SimReport() {
   const { view, month, year } = state.simulacao
   const [tab, setTab] = useState<ReportTab>('retorno')
   const id = useId()
+  const barRef = useRef<HTMLDivElement>(null)
+
+  // Trocar de aba com as abas grudadas no topo leva ao começo da nova seção
+  const choose = (next: ReportTab) => {
+    setTab(next)
+    const bar = barRef.current
+    if (!bar || bar.getBoundingClientRect().top > 1) return
+    requestAnimationFrame(() => {
+      const panel = document.getElementById(`${id}-panel-${next}`)
+      if (panel) window.scrollTo({ top: panel.getBoundingClientRect().top + window.scrollY - bar.offsetHeight - 8 })
+    })
+  }
 
   return (
     <section className={styles.report} aria-labelledby={`${id}-titulo`}>
-      <header className={styles.reportHead}>
-        <div className={styles.cardText}>
-          <span className={styles.overline}>Relatório da simulação</span>
-          <h2 id={`${id}-titulo`} className={cn('t-section-title', styles.cardTitle)}>
-            Entenda cada número
-          </h2>
-        </div>
-        <TabBar className={styles.reportTabs} label="Seções do relatório" value={tab} options={TABS} onChange={setTab} idBase={id} />
+      <header className={cn(styles.cardText, styles.reportHead)}>
+        <span className={styles.overline}>Relatório da simulação</span>
+        <h2 id={`${id}-titulo`} className={cn('t-section-title', styles.cardTitle)}>
+          Entenda cada número
+        </h2>
       </header>
+      {/* Filho direto do relatório: no celular as abas grudam no topo enquanto a pessoa rola o conteúdo */}
+      <div ref={barRef} className={styles.reportTabsBar}>
+        <TabBar className={styles.reportTabs} label="Seções do relatório" value={tab} options={TABS} onChange={choose} idBase={id} />
+      </div>
 
-      <TabPanel idBase={id} value={tab}>
+      <TabPanel idBase={id} value={tab} className={styles.reportPanel}>
         {tab === 'retorno' ? <ReturnChart result={result} mode={inputs.incomeMode} embedded /> : null}
         {tab === 'dre' ? (
           <DreTable
