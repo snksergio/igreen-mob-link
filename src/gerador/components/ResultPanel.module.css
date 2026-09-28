@@ -33,6 +33,36 @@
   padding-top: 14px;
 }
 
+/* "Editar simulação" discreto, dentro do próprio painel */
+.editRow {
+  display: flex;
+  justify-content: center;
+  padding: 12px 19px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.editLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--fg-primary);
+  transition: background-color 0.15s ease;
+}
+
+.editLink:hover {
+  background: var(--bg-primary-subtle);
+}
+
+.editIcon {
+  background-color: var(--fg-primary);
+}
+
 /* Resumo das etapas de cadastro: título e modelo acima do card verde */
 .summaryHead {
   display: flex;

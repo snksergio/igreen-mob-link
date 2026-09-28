@@ -98,16 +98,6 @@
   animation: bodyIn 0.25s ease-out;
 }
 
-/* Dentro do cartão: o botão "Editar simulação" fica com respiro das bordas */
-.summaryBody > div {
-  padding-bottom: 16px;
-}
-
-.summaryBody > div > button {
-  width: calc(100% - 38px);
-  margin: 0 auto;
-}
-
 @keyframes bodyIn {
   from {
     opacity: 0;
@@ -118,11 +108,5 @@
 @media (prefers-reduced-motion: reduce) {
   .summaryBody {
     animation: none;
-  }
-}
-
-@media (max-width: 400px) {
-  .summaryBody > div > button {
-    width: calc(100% - 30px);
   }
 }

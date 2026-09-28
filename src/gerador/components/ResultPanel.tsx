@@ -2,7 +2,7 @@ import { useMemo, type Ref } from 'react'
 import { ICONS, IMAGES } from '../../assets'
 import { Button } from '../../components/ui/Button'
 import { Flag } from '../../components/ui/Controls'
-import { Img } from '../../components/ui/Icon'
+import { Icon, Img } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { money, moneyCents, moneyParts } from '../../lib/format'
 import { compactMoney, paybackLabel, pct, signedMoney } from '../format'
@@ -31,7 +31,7 @@ function Stat({ icon, label, value }: { icon: string; label: string; value: stri
 /**
  * Painel "Seu resultado" no padrão do simulador atual: card verde com o recebimento do período,
  * retorno e ROI, mini gráfico do saldo em 36 meses, origem do recebimento e aviso. Depois, os botões.
- * `variant="summary"`: resumo para as etapas de cadastro (mês 1, sem os controles, com "Editar simulação").
+ * `variant="summary"`: resumo para as etapas de cadastro (mês 1, sem os controles; "Editar simulação" discreto no rodapé).
  * `bare`: sem a moldura própria, para ficar dentro de outro cartão (resumo expansível do celular).
  */
 export function ResultPanel({
@@ -151,6 +151,15 @@ export function ResultPanel({
           </div>
         </div>
 
+        {summary && onEdit ? (
+          <div className={styles.editRow}>
+            <button type="button" className={styles.editLink} onClick={onEdit}>
+              <Icon src={ICONS.lineEdit} size={14} className={styles.editIcon} />
+              Editar simulação
+            </button>
+          </div>
+        ) : null}
+
         {summary ? null : (
           <div className={styles.bottom}>
             {result.feasible ? (
@@ -173,11 +182,6 @@ export function ResultPanel({
       {onShare ? (
         <Button variant="secondary" className={styles.cta} onClick={onShare}>
           Compartilhar simulação
-        </Button>
-      ) : null}
-      {onEdit ? (
-        <Button variant="secondary" className={styles.cta} onClick={onEdit}>
-          Editar simulação
         </Button>
       ) : null}
     </div>
