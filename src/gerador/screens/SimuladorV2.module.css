@@ -22,8 +22,19 @@
   animation: enter 0.35s ease-out;
 }
 
+/* Título à esquerda, "Importar simulação" à direita na mesma linha (quebra para baixo no celular) */
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+}
+
 /* Título da página sem o espaço extra de baixo: a primeira seção vem logo em seguida */
-.intro {
+.titleRow .intro {
+  flex: 1 1 320px;
+  width: auto;
   padding-bottom: 0;
 }
 

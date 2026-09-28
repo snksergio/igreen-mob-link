@@ -18,18 +18,14 @@ function Isotipo() {
   )
 }
 
-/**
- * `label` (ex.: "ETAPA 1 DE 4"): no mobile sobe para a linha do logo, ao lado do responsável.
- * `actions`: botões extras à direita, antes do tema (ex.: "Importar simulação").
- */
-export function GeradorHeader({ step, label, actions }: { step?: number; label?: string; actions?: ReactNode }) {
+/** `label` (ex.: "ETAPA 1 DE 4"): no mobile sobe para a linha do logo, ao lado do responsável */
+export function GeradorHeader({ step, label }: { step?: number; label?: string }) {
   return (
     <header className={styles.headerController}>
       <div className={styles.headerTop}>
         <Isotipo />
         {label ? <span className={cn(styles.badge, styles.badgeTop, 't-label')}>{label}</span> : null}
         <div className={styles.headerRight}>
-          {actions}
           <ThemeToggle />
           <ResponsavelBadge />
         </div>

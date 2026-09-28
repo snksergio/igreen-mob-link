@@ -61,16 +61,20 @@ export function SimuladorV2() {
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <GeradorHeader actions={<ImportSimulation />} />
-        <GeradorPageHeader
-          className={styles.intro}
-          title={
-            <>
-              Simule seu <Highlight>eletroposto</Highlight>
-            </>
-          }
-          subtitle="Grátis e sem compromisso. Ajuste os valores e veja o resultado ao vivo."
-        />
+        <GeradorHeader />
+        {/* Título à esquerda e "Importar simulação" no fim da mesma linha */}
+        <div className={styles.titleRow}>
+          <GeradorPageHeader
+            className={styles.intro}
+            title={
+              <>
+                Simule seu <Highlight>eletroposto</Highlight>
+              </>
+            }
+            subtitle="Grátis e sem compromisso. Ajuste os valores e veja o resultado ao vivo."
+          />
+          <ImportSimulation />
+        </div>
 
         {/* O painel começa na mesma altura da primeira seção */}
         <div className={styles.layout}>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ICONS } from '../../assets'
+import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { DEFAULTS } from '../model'
@@ -8,10 +9,10 @@ import { useGerador } from '../state'
 import styles from './ImportSimulation.module.css'
 
 /**
- * "Importar simulação" (cabeçalho do simulador): lê o documento HTML gerado em "Compartilhar"
+ * "Importar simulação" (ao lado do título do simulador): lê o documento HTML gerado em "Compartilhar"
  * (ou um JSON) e preenche todos os campos com as premissas guardadas nele. Leitura direta, sem IA.
  */
-export function ImportSimulation() {
+export function ImportSimulation({ className }: { className?: string }) {
   const { setSim } = useGerador()
   const inputRef = useRef<HTMLInputElement>(null)
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null)
@@ -34,10 +35,12 @@ export function ImportSimulation() {
 
   return (
     <>
-      <button type="button" className={styles.button} onClick={() => inputRef.current?.click()} title="Importar simulação" aria-label="Importar simulação">
-        <Icon src={ICONS.arrowRight} size={15} className={styles.icon} />
-        <span className={styles.label}>Importar simulação</span>
-      </button>
+      <Button variant="secondary" className={cn(styles.button, className)} onClick={() => inputRef.current?.click()}>
+        <span className={styles.inner}>
+          <Icon src={ICONS.arrowRight} size={18} className={styles.icon} />
+          Importar simulação
+        </span>
+      </Button>
       <input
         ref={inputRef}
         type="file"

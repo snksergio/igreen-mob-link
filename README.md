@@ -95,7 +95,7 @@ Mesmo fluxo e mesmas etapas 2 a 4, trocando só o simulador (`screens/SimuladorV
     - Leva código, data e responsável, e nenhum dado pessoal do cliente.
   - Gera também uma imagem 1080×1350 com o resultado.
   - No celular, "WhatsApp" e "Mais opções" usam o compartilhamento do sistema já com os arquivos. No computador, o documento é baixado para anexar.
-- **Importar simulação** (`components/ImportSimulation.tsx`, no topo do simulador v2):
+- **Importar simulação** (`components/ImportSimulation.tsx`, botão secundário na linha do título do simulador v2):
   - Lê o documento, onde as premissas vão embutidas num `<script type="application/json" id="igreen-mob-simulacao">`, ou um JSON, e preenche todos os campos.
   - É uma leitura direta, sem IA: só entram chaves conhecidas e com o tipo certo. Um arquivo que não é uma simulação mostra um aviso.
 
