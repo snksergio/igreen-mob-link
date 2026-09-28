@@ -64,14 +64,17 @@ Fluxo novo e independente, guiado pelo "Simulador de investimento e DRE | iGreen
 | Etapa 4: resumo, assinatura e aceite | `#gerador/resumo` |
 | Proposta gerada | `#gerador/proposta` |
 
-- **Simulador:** reúne tudo o que a referência tem, em blocos numerados.
-  - Escolha do eletroposto em carrossel (Lento, DUO, Ultra): no desktop largo os 3 cards ficam lado a lado.
-  - Movimento, com o medidor de capacidade.
-  - Preços e repasse ao ponto.
-  - Carteira iGreen, com a recorrência em 1, 5 e 10 anos.
-  - Tributos em "Avançado".
-  - À direita, o painel do investidor fica fixo, com mês ou ano, "Carteira + recargas" ou "Só recargas", retorno, saldo e ROI em 36 meses. No celular ele vira uma barra fixa embaixo.
-  - Abaixo vêm o gráfico de retorno em 36 meses, o DRE do período, a tabela mês a mês e as premissas e fontes.
+- **Simulador:** reúne tudo o que a referência tem, direto na página (sem cards dentro de cards).
+  - Escolha do eletroposto em carrossel (Lento, DUO, Ultra). Quando os 3 cards não cabem lado a lado, os pontos e as setas aparecem abaixo deles.
+  - As premissas ficam em abas: Movimento (com o medidor de capacidade), Preços (e repasse ao ponto), Carteira (com a recorrência em 1, 5 e 10 anos) e Tributos.
+  - À direita fica fixo o painel do investidor, no padrão do simulador atual:
+    - "Carteira + recargas" ou "Só recargas";
+    - card verde com o recebimento do mês ou do ano;
+    - retorno e ROI;
+    - mini gráfico do saldo em 36 meses;
+    - origem do recebimento.
+  - Em notebooks baixos o painel gruda pela base, para o botão "Seguir para proposta" continuar visível. No celular ele vira uma barra fixa embaixo.
+  - Abaixo vem um relatório em abas: retorno em 36 meses, DRE do período, mês a mês e premissas e fontes.
 - **Dados da simulação:** acompanham o fluxo inteiro. As etapas 2 e 3 mostram o resumo com "Editar simulação", e o resumo e a proposta usam os mesmos números (investimento do investidor, sociedade, recebimento do mês 1, retorno e DRE).
 - **Motor de cálculo:** `gerador/model.ts` é o porte fiel do `model.mjs` da referência, coberto por testes em `gerador/model.test.ts` (`npm test`). Com as premissas padrão (DUO), dá R$ 7.311,47 no mês 1, retorno em 4,1 meses e ROI de 5.253% em 36 meses.
 - **Estado:** fica em `sessionStorage` (`igreen-mob-gerador-v1`), separado do fluxo atual. Abrir uma etapa sem as anteriores redireciona para a primeira que falta.
