@@ -146,7 +146,7 @@ export function GeradorDetailModal({
                 ))}
               </dl>
             ) : null}
-            {aba === 'retorno' ? <ReturnChart result={result} mode={s.incomeMode} embedded startLabel={hideInvestment ? 'Início' : undefined} /> : null}
+            {aba === 'retorno' ? <ReturnChart result={result} mode={s.incomeMode} embedded hideStart={hideInvestment} /> : null}
             {aba === 'dre' ? (
               <DreTable
                 period={scenario.period}
@@ -159,7 +159,7 @@ export function GeradorDetailModal({
               />
             ) : null}
             {aba === 'mes' ? <MonthTable months={result.months} embedded /> : null}
-            {aba === 'premissas' ? <Premissas hideInvestment={hideInvestment} /> : null}
+            {aba === 'premissas' ? <Premissas /> : null}
           </TabPanel>
         </div>
       </div>

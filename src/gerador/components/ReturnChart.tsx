@@ -23,12 +23,13 @@ export function ReturnChart({
   result,
   mode,
   embedded = false,
-  startLabel = 'Início · investimento',
+  hideStart = false,
 }: {
   result: SimResult
   mode: IncomeMode
   embedded?: boolean
-  startLabel?: string
+  /** o tooltip começa no mês 1, sem mostrar o saldo inicial (o valor do investimento) */
+  hideStart?: boolean
 }) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(640)
@@ -73,16 +74,17 @@ export function ReturnChart({
   const payback = mode === 'combined' || series.length === 1 ? result.payback : result.chargingPayback
   const net = mode === 'combined' || series.length === 1 ? result.net36 : result.months[35].chargingNetAccumulated
 
+  const first = hideStart ? 1 : 0
   const pick = (clientX: number) => {
     const rect = wrapRef.current!.getBoundingClientRect()
     const month = Math.round(((clientX - rect.left - m.left) / w) * 36)
-    setHover(Math.min(36, Math.max(0, month)))
+    setHover(Math.min(36, Math.max(first, month)))
   }
   const onPointer = (e: PointerEvent) => pick(e.clientX)
   const onKey = (e: KeyboardEvent) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
     e.preventDefault()
-    setHover((cur) => Math.min(36, Math.max(0, (cur ?? 0) + (e.key === 'ArrowRight' ? 1 : -1))))
+    setHover((cur) => Math.min(36, Math.max(first, (cur ?? first) + (e.key === 'ArrowRight' ? 1 : -1))))
   }
 
   const tipLeft = hover == null ? 0 : Math.min(width - 190, Math.max(0, x(hover) - 95))
@@ -187,7 +189,7 @@ export function ReturnChart({
 
         {hover != null ? (
           <div className={styles.tooltip} style={{ left: tipLeft }} role="status">
-            <span className={styles.tooltipTitle}>{hover === 0 ? startLabel : `Mês ${hover}`}</span>
+            <span className={styles.tooltipTitle}>{hover === 0 ? 'Início · investimento' : `Mês ${hover}`}</span>
             {series.map((s) => (
               <span key={s.key} className={styles.tooltipRow}>
                 <i className={cn(styles.tooltipKey, s.className)} />

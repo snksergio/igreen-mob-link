@@ -1,4 +1,6 @@
 import { cn } from '../../lib/cn'
+import { CLIENTES_DIA, MAX_CLIENTES_DIA, semInvestimento } from '../guided'
+import { useGerador } from '../state'
 import styles from './Report.module.css'
 
 const FONTES = [
@@ -16,8 +18,11 @@ const FONTES = [
   },
 ]
 
-/** Premissas, regras de cálculo e fontes (textos da referência), na aba do relatório. `hideInvestment`: sem o valor do investimento (v2) */
-export function Premissas({ hideInvestment = false }: { hideInvestment?: boolean }) {
+/** Premissas, regras de cálculo e fontes (textos da referência), na aba do relatório. Na v2: sem o valor do investimento e com clientes por dia */
+export function Premissas() {
+  const { version } = useGerador()
+  const hideInvestment = semInvestimento(version)
+  const porDia = version === 'v2'
   return (
     <section className={cn(styles.card, styles.embedded)} aria-labelledby="premissas-titulo">
       <header className={styles.cardHead}>
@@ -80,7 +85,10 @@ export function Premissas({ hideInvestment = false }: { hideInvestment?: boolean
         <article className={styles.prose}>
           <h3>Carteira e retorno</h3>
           <p>
-            Entram de 0 a 500 novos clientes por mês, conforme a meta informada. Cada cliente contrata todas as soluções selecionadas, com uma linha telecom por
+            {porDia
+              ? `Entram de 0 a ${MAX_CLIENTES_DIA} novos clientes por dia de operação, conforme o valor informado (sugestão inicial: ${CLIENTES_DIA.lento} no 7 kW, ${CLIENTES_DIA.duo} no DUO e ${CLIENTES_DIA.ultra} no Ultra rápido). Por mês, são os clientes por dia × os dias de operação.`
+              : 'Entram de 0 a 500 novos clientes por mês, conforme a meta informada.'}{' '}
+            Cada cliente contrata todas as soluções selecionadas, com uma linha telecom por
             cliente; a contagem de clientes não é multiplicada pela quantidade de produtos. A carteira começa em zero e acumula sem cancelamentos e sem ajuste por
             repetição de visitantes. Comissão integral já no mês da contratação: 4% de energia, 5% de seguro e R$ 7 por linha telecom. Sem bônus inicial de seguro. O
             simulador de 10 anos usa apenas comissões brutas; seus valores não são somados outra vez ao DRE.

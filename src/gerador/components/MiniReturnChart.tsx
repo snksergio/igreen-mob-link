@@ -6,7 +6,8 @@ import styles from './ResultPanel.module.css'
  * Mini gráfico do painel: saldo acumulado nos 36 meses do cenário escolhido (índice 0 = investimento),
  * linha do zero e o ponto do retorno. Passar o mouse, tocar ou usar as setas mostra o saldo de cada mês.
  */
-export function MiniReturnChart({ values, payback, startLabel = 'Investimento' }: { values: number[]; payback: number | null; startLabel?: string }) {
+/** `hideStart`: o tooltip começa no mês 1, sem mostrar o saldo inicial (o valor do investimento) */
+export function MiniReturnChart({ values, payback, hideStart = false }: { values: number[]; payback: number | null; hideStart?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(320)
   const [hover, setHover] = useState<number | null>(null)
@@ -20,6 +21,7 @@ export function MiniReturnChart({ values, payback, startLabel = 'Investimento' }
   }, [])
 
   const last = values.length - 1
+  const first = hideStart ? 1 : 0
   const height = 84
   const pad = { top: 10, right: 6, bottom: 10, left: 6 }
   const min = Math.min(...values, 0)
@@ -32,12 +34,12 @@ export function MiniReturnChart({ values, payback, startLabel = 'Investimento' }
   const pick = (e: PointerEvent) => {
     const rect = ref.current!.getBoundingClientRect()
     const i = Math.round(((e.clientX - rect.left - pad.left) / (width - pad.left - pad.right)) * last)
-    setHover(Math.min(last, Math.max(0, i)))
+    setHover(Math.min(last, Math.max(first, i)))
   }
   const onKey = (e: KeyboardEvent) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
     e.preventDefault()
-    setHover((cur) => Math.min(last, Math.max(0, (cur ?? 0) + (e.key === 'ArrowRight' ? 1 : -1))))
+    setHover((cur) => Math.min(last, Math.max(first, (cur ?? first) + (e.key === 'ArrowRight' ? 1 : -1))))
   }
 
   const tipLeft = hover == null ? 0 : Math.min(width - 150, Math.max(0, x(hover) - 75))
@@ -70,7 +72,7 @@ export function MiniReturnChart({ values, payback, startLabel = 'Investimento' }
       </svg>
       {hover != null ? (
         <span className={styles.miniTip} style={{ left: tipLeft }} role="status">
-          <small>{hover === 0 ? startLabel : `Mês ${hover}`}</small>
+          <small>{hover === 0 ? 'Investimento' : `Mês ${hover}`}</small>
           <b>{signedMoney(values[hover])}</b>
         </span>
       ) : null}

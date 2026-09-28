@@ -121,7 +121,7 @@ export function ResultPanel({
             <p className={cn('t-label', styles.sectionLabel)}>SALDO EM 36 MESES</p>
             <p className={styles.miniValue}>{signedMoney(scenario.net36)}</p>
           </div>
-          <MiniReturnChart values={saldo} payback={scenario.payback} startLabel={hideInvestment ? 'Início' : 'Investimento'} />
+          <MiniReturnChart values={saldo} payback={scenario.payback} hideStart={hideInvestment} />
           <div className={styles.miniAxis} aria-hidden>
             <span>{hideInvestment ? 'Início' : 'Investimento'}</span>
             {scenario.payback != null ? (

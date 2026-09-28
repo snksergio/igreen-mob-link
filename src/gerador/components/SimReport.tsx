@@ -54,7 +54,7 @@ export function SimReport() {
       </div>
 
       <TabPanel idBase={id} value={tab} className={styles.reportPanel}>
-        {tab === 'retorno' ? <ReturnChart result={result} mode={inputs.incomeMode} embedded startLabel={hideInvestment ? 'Início' : undefined} /> : null}
+        {tab === 'retorno' ? <ReturnChart result={result} mode={inputs.incomeMode} embedded hideStart={hideInvestment} /> : null}
         {tab === 'dre' ? (
           <DreTable
             period={scenario.period}
@@ -67,7 +67,7 @@ export function SimReport() {
           />
         ) : null}
         {tab === 'mes' ? <MonthTable months={result.months} embedded /> : null}
-        {tab === 'premissas' ? <Premissas hideInvestment={hideInvestment} /> : null}
+        {tab === 'premissas' ? <Premissas /> : null}
       </TabPanel>
     </section>
   )
