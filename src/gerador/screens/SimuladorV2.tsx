@@ -21,7 +21,7 @@ const SECOES: { title: string; description: string; Fields: ComponentType }[] = 
 ]
 
 /**
- * Simulador v2 (#gerador2): mesma largura e painel do simulador com abas, mas com as premissas em um
+ * Simulador v2 (#investir): mesma largura e painel do simulador com abas, mas com as premissas em um
  * formulário linear. Tudo já vem preenchido com as premissas padrão; cada seção aparece na rolagem.
  */
 export function SimuladorV2() {

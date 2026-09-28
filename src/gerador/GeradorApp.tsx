@@ -38,7 +38,7 @@ function Flow() {
   }, [missing, go])
 
   if (missing) return null
-  // v2 (#gerador2) troca só o simulador; as demais etapas são as mesmas
+  // v2 (#investir) troca só o simulador; as demais etapas são as mesmas
   const Current = screen === 'simulador' && version === 'v2' ? SimuladorV2 : SCREENS[screen]
   return <Current key={screen} />
 }

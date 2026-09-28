@@ -79,9 +79,11 @@ Fluxo novo e independente, guiado pelo "Simulador de investimento e DRE | iGreen
 - **Motor de cálculo:** `gerador/model.ts` é o porte fiel do `model.mjs` da referência, coberto por testes em `gerador/model.test.ts` (`npm test`). Com as premissas padrão (DUO), dá R$ 7.311,47 no mês 1, retorno em 4,1 meses e ROI de 5.253% em 36 meses.
 - **Estado:** fica em `sessionStorage` (`igreen-mob-gerador-v1`), separado do fluxo atual. Abrir uma etapa sem as anteriores redireciona para a primeira que falta.
 
-### Versão 2: formulário linear (`#gerador2`)
+### Versão 2: formulário linear (`#investir`)
 
-Mesmo fluxo e mesmas etapas 2 a 4, trocando só o simulador (`screens/SimuladorV2.tsx`). A versão com abas continua em `#gerador`. As rotas da v2 são as mesmas com o prefixo `#gerador2` (por exemplo, `#gerador2/dados`), e a navegação mantém a versão escolhida.
+Mesmo fluxo e mesmas etapas 2 a 4, trocando só o simulador (`screens/SimuladorV2.tsx`). A versão com abas continua em `#gerador`. As rotas da v2 são as mesmas com o prefixo `#investir` (por exemplo, `#investir/simulador` e `#investir/dados`), e a navegação mantém a versão escolhida. O endereço antigo `#gerador2` ainda abre e é trocado por `#investir` (ver `gerador/routes.ts`).
+
+Link para avaliação: **https://igreen-mob-link.vercel.app/#investir**
 
 - **Layout:** mesma largura do simulador com abas (1120px). Não tem stepper nem selo de etapa: o título e a descrição vêm logo abaixo do logo, e o painel do investidor começa na altura da primeira seção.
 - **Premissas:** ficam em um formulário linear (eletroposto, movimento, preços, carteira e tributos), já preenchido com as premissas padrão.

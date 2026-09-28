@@ -1,13 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState, type ReactNode } from 'react'
 import { emptyAddress, type Address } from '../services/address'
 import { DEFAULTS, calculate, clampInputs, scenarioResult, type PeriodView, type Scenario, type SimInputs, type SimResult } from './model'
+import { BASE, baseOf, versionOfBase, type GeradorVersion } from './routes'
 
 export type GeradorScreen = 'inicio' | 'simulador' | 'dados' | 'eletroposto' | 'resumo' | 'proposta'
 const SCREENS: GeradorScreen[] = ['inicio', 'simulador', 'dados', 'eletroposto', 'resumo', 'proposta']
 
-/** v1: simulador com abas (#gerador) · v2: formulário linear com seções que aparecem na rolagem (#gerador2). As demais etapas são as mesmas */
-export type GeradorVersion = 'v1' | 'v2'
-const BASE: Record<GeradorVersion, string> = { v1: 'gerador', v2: 'gerador2' }
+/** v1: simulador com abas (#gerador) · v2: formulário linear (#investir). As demais etapas são as mesmas (ver routes.ts) */
+export type { GeradorVersion }
 
 export type GeradorState = {
   simulacao: {
@@ -94,12 +94,12 @@ function loadState(): GeradorState {
 
 const hashOf = (screen: GeradorScreen, version: GeradorVersion) => `#${BASE[version]}${screen === 'inicio' ? '' : `/${screen}`}`
 
-/** #gerador2/resumo → { version: 'v2', screen: 'resumo' } (ignora uma eventual query) */
+/** #investir/resumo → { version: 'v2', screen: 'resumo' } (ignora uma eventual query) */
 const routeFromHash = (): { version: GeradorVersion; screen: GeradorScreen } => {
   const [path] = window.location.hash.replace('#', '').split('?')
-  const [base, sub] = path.split('/')
+  const [, sub] = path.split('/')
   const screen = SCREENS.includes(sub as GeradorScreen) ? (sub as GeradorScreen) : 'inicio'
-  return { version: base === BASE.v2 ? 'v2' : 'v1', screen }
+  return { version: versionOfBase(baseOf(window.location.hash)) ?? 'v1', screen }
 }
 
 type Ctx = {
@@ -134,9 +134,17 @@ export function GeradorProvider({ children }: { children: ReactNode }) {
   }, [state])
 
   useEffect(() => {
-    const onPop = () => setRoute(routeFromHash())
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
+    const sync = () => {
+      const next = routeFromHash()
+      // Endereço antigo (#gerador2/...) vira o atual (#investir/...) sem criar entrada no histórico.
+      // Só mexe em endereços do Gerador: outra rota é do fluxo atual e o Root troca de app.
+      const base = baseOf(window.location.hash)
+      if (versionOfBase(base) && base !== BASE[next.version]) window.history.replaceState(null, '', hashOf(next.screen, next.version))
+      setRoute(next)
+    }
+    sync()
+    window.addEventListener('popstate', sync)
+    return () => window.removeEventListener('popstate', sync)
   }, [])
 
   useEffect(() => {
