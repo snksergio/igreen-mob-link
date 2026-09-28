@@ -63,7 +63,6 @@ Fluxo novo e independente, guiado pelo "Simulador de investimento e DRE | iGreen
 | Etapa 3: endereço do eletroposto (mapa) + publicidade | `#gerador/eletroposto` |
 | Etapa 4: resumo, assinatura e aceite | `#gerador/resumo` |
 | Proposta gerada | `#gerador/proposta` |
-| Simulação compartilhada (só leitura) | `#gerador2/visualizar?d=…` |
 
 - **Simulador:** reúne tudo o que a referência tem, direto na página (sem cards dentro de cards).
   - Escolha do eletroposto em carrossel (Lento, DUO, Ultra). Quando os 3 cards não cabem lado a lado, os pontos e as setas aparecem abaixo deles.
@@ -90,11 +89,15 @@ Mesmo fluxo e mesmas etapas 2 a 4, trocando só o simulador (`screens/SimuladorV
   - A ajuda de cada campo fica logo abaixo, em uma linha e mais suave que o rótulo. As explicações longas ficam em "Como calculamos".
   - O que é fixo (administração iGreen, premissas padrão de tributos) aparece como informação, não como campo.
 - **Resultado:** o painel mostra o resultado desde o início. Abaixo vêm o relatório "Entenda cada número" e os botões "Seguir para proposta" e "Compartilhar simulação". No celular, as abas do relatório ficam grudadas no topo durante a rolagem.
-- **Compartilhar** (`share.ts`, `shareImage.ts`, `components/ShareModal.tsx`):
-  - Gera uma imagem 1080×1350 com o resultado (recebimento do mês 1, retorno, saldo e ROI em 36 meses, mini gráfico e origem do recebimento).
-  - Gera também um link `#gerador2/visualizar?d=…`, que guarda só as premissas que diferem do padrão, sem dados pessoais.
-  - No celular, "WhatsApp" abre o compartilhamento do sistema já com a imagem. No computador, abre o WhatsApp com a mensagem e o link, e a imagem pode ser baixada para anexar.
-- **Visualização** (`screens/Visualizar.tsx`): quem abre o link vê as premissas, o painel e o relatório. "Fazer minha simulação" abre o simulador v2 com esses valores.
+- **Compartilhar** (`simulationDoc.ts`, `share.ts`, `shareImage.ts`, `components/ShareModal.tsx`):
+  - Gera o **documento da simulação**: um HTML único, sem dependências, que abre no navegador, no e-mail e no WhatsApp e imprime bem.
+    - Traz o resultado, as premissas com os mesmos nomes dos campos do simulador (para preencher lado a lado), o gráfico de 36 meses, o DRE do mês 1, a carteira e o mês a mês.
+    - Leva código, data e responsável, e nenhum dado pessoal do cliente.
+  - Gera também uma imagem 1080×1350 com o resultado.
+  - No celular, "WhatsApp" e "Mais opções" usam o compartilhamento do sistema já com os arquivos. No computador, o documento é baixado para anexar.
+- **Importar simulação** (`components/ImportSimulation.tsx`, no topo do simulador v2):
+  - Lê o documento, onde as premissas vão embutidas num `<script type="application/json" id="igreen-mob-simulacao">`, ou um JSON, e preenche todos os campos.
+  - É uma leitura direta, sem IA: só entram chaves conhecidas e com o tipo certo. Um arquivo que não é uma simulação mostra um aviso.
 
 ## Tema escuro (`lib/theme.ts`)
 

@@ -8,7 +8,6 @@ import { Proposta } from './screens/Proposta'
 import { Resumo } from './screens/Resumo'
 import { Simulador } from './screens/Simulador'
 import { SimuladorV2 } from './screens/SimuladorV2'
-import { Visualizar } from './screens/Visualizar'
 
 const SCREENS: Record<GeradorScreen, ComponentType> = {
   inicio: Inicio,
@@ -17,7 +16,6 @@ const SCREENS: Record<GeradorScreen, ComponentType> = {
   eletroposto: Eletroposto,
   resumo: Resumo,
   proposta: Proposta,
-  visualizar: Visualizar,
 }
 
 /** Etapa que falta quando a pessoa abre uma tela sem ter concluído as anteriores */

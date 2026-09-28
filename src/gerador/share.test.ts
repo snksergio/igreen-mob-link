@@ -1,37 +1,54 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULTS } from './model'
-import { decodeSim, encodeSim, shareText } from './share'
+import { DEFAULTS, calculate } from './model'
+import { readSimulationFile, sanitizeInputs, shareText } from './share'
+import { buildSimulationDocument } from './simulationDoc'
 
-describe('link de compartilhamento da simulação', () => {
-  it('guarda só o que difere do padrão e volta igual', () => {
+const meta = { codigo: 'SIM-TESTE', geradoEm: new Date('2026-09-28T12:00:00Z'), responsavel: 'Juliana Martins', logoSvg: '' }
+
+describe('documento da simulação', () => {
+  it('guarda as premissas no próprio HTML e o importar lê de volta', () => {
     const inputs = { ...DEFAULTS, charger: 'ultra' as const, cars: 12, energyEnabled: false, sale: 2.5 }
-    const encoded = encodeSim(inputs)
-    expect(encoded).toMatch(/^[A-Za-z0-9_-]+$/)
-    expect(decodeSim(encoded)).toEqual({ charger: 'ultra', cars: 12, energyEnabled: false, sale: 2.5 })
+    const html = buildSimulationDocument({ inputs, result: calculate(inputs), ...meta })
+    expect(html).toContain('<!doctype html>')
+    expect(readSimulationFile(html)).toEqual(inputs)
   })
 
-  it('simulação padrão vira um código curto e volta vazia', () => {
-    const encoded = encodeSim(DEFAULTS)
-    expect(encoded.length).toBeLessThan(8)
-    expect(decodeSim(encoded)).toEqual({})
+  it('traz o essencial para analisar: recebimento, premissas, DRE e mês a mês', () => {
+    const html = buildSimulationDocument({ inputs: DEFAULTS, result: calculate(DEFAULTS), ...meta })
+    for (const trecho of ['R$ 7.311', '4,1 meses', 'CARROS POR DIA', 'PREÇO DE VENDA', 'Lucro disponível aos sócios', 'Mês a mês', 'SIM-TESTE', 'Juliana Martins']) {
+      expect(html).toContain(trecho)
+    }
+  })
+
+  it('o texto das premissas não quebra o JSON embutido', () => {
+    const html = buildSimulationDocument({ inputs: DEFAULTS, result: calculate(DEFAULTS), ...meta, responsavel: '</script><b>x' })
+    expect(readSimulationFile(html)).toEqual(DEFAULTS)
+  })
+})
+
+describe('importar simulação', () => {
+  it('aceita o JSON das premissas', () => {
+    expect(readSimulationFile(JSON.stringify({ inputs: { cars: 9, charger: 'lento' } }))).toEqual({ cars: 9, charger: 'lento' })
   })
 
   it('ignora chaves desconhecidas e tipos errados', () => {
-    const raw = btoa(JSON.stringify({ cars: '9', hack: 1, days: 20, charger: 42 })).replace(/=+$/, '')
-    expect(decodeSim(raw)).toEqual({ days: 20 })
+    expect(sanitizeInputs({ cars: '9', hack: 1, days: 20, charger: 42 })).toEqual({ days: 20 })
   })
 
-  it('código inválido devolve null', () => {
-    expect(decodeSim('%%%')).toBeNull()
-    expect(decodeSim('')).toBeNull()
-    expect(decodeSim(btoa('[1,2]'))).toBeNull()
+  it('arquivo que não é uma simulação devolve null', () => {
+    expect(readSimulationFile('<html><body>oi</body></html>')).toBeNull()
+    expect(readSimulationFile('')).toBeNull()
+    expect(readSimulationFile('[1,2]')).toBeNull()
+    expect(readSimulationFile(JSON.stringify({ inputs: {} }))).toBeNull()
   })
+})
 
-  it('texto para WhatsApp traz modelo, recebimento, retorno e o link', () => {
-    const text = shareText({ modelo: 'iGreen DUO', recebimento: 7311.47, payback: 4.1, url: 'https://x.test/#gerador2/visualizar?d=e30' })
+describe('mensagem de compartilhamento', () => {
+  it('traz modelo, recebimento e retorno, sem link', () => {
+    const text = shareText({ modelo: 'iGreen DUO', recebimento: 7311.47, payback: 4.1 })
     expect(text).toContain('iGreen DUO')
     expect(text).toContain('R$ 7.311')
     expect(text).toContain('4,1 meses')
-    expect(text).toContain('https://x.test/#gerador2/visualizar?d=e30')
+    expect(text).not.toMatch(/https?:\/\//)
   })
 })

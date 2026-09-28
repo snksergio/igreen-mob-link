@@ -6,6 +6,7 @@ import { FormSection, Reveal } from '../components/Guided'
 import { CarteiraFields, EletropostoFields, MovimentoFields, PrecosFields, TributosFields } from '../components/GuidedFields'
 import { MobileResultBar, ResultPanel } from '../components/ResultPanel'
 import { ShareModal } from '../components/ShareModal'
+import { ImportSimulation } from '../components/ImportSimulation'
 import { GeradorHeader, GeradorPageHeader } from '../components/Shell'
 import { SimReport } from '../components/SimReport'
 import { useGerador } from '../state'
@@ -60,7 +61,7 @@ export function SimuladorV2() {
   return (
     <main className={styles.page}>
       <div className={styles.container}>
-        <GeradorHeader />
+        <GeradorHeader actions={<ImportSimulation />} />
         <GeradorPageHeader
           className={styles.intro}
           title={

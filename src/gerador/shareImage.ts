@@ -18,6 +18,7 @@ export type ShareImageData = {
   /** comissões da carteira no mês 1 (null = cenário só recargas) */
   carteira: number | null
   clientes: number
+  /** assinatura do rodapé (ex.: "iGreen Mob") */
   site: string
 }
 
@@ -208,7 +209,7 @@ export async function renderShareImage(d: ShareImageData): Promise<Blob> {
   if (d.carteira != null) row(`Carteira iGreen · ${d.clientes} clientes`, money(d.carteira), true)
 
   /* ---------- Rodapé ---------- */
-  text(ctx, `Projeção estimada, sem garantia de retorno · Simule grátis em ${d.site}`, W / 2, H - 44, `500 22px ${SANS}`, C.muted, 'center')
+  text(ctx, `Projeção estimada, sem garantia de retorno · ${d.site}`, W / 2, H - 44, `500 22px ${SANS}`, C.muted, 'center')
 
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Falha ao gerar a imagem'))), 'image/png'))
 }

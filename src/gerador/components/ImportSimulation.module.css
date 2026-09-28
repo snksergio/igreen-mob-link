@@ -1,0 +1,73 @@
+/* Mesmo formato dos controles do cabeçalho (tema, responsável): pílula com borda */
+.button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-main);
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.button:hover {
+  background: var(--bg-hover);
+}
+
+/* Seta para cima: "trazer" o arquivo */
+.icon {
+  background-color: var(--fg-main);
+  transform: rotate(-90deg);
+}
+
+.file {
+  display: none;
+}
+
+.toast {
+  position: fixed;
+  z-index: 1100;
+  left: 50%;
+  bottom: 32px;
+  max-width: calc(100vw - 32px);
+  padding: 12px 18px;
+  transform: translateX(-50%);
+  border-radius: var(--radius-full);
+  background: var(--bg-tooltip);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  color: #fff;
+  text-align: center;
+}
+
+.toastError {
+  background: var(--border-critical);
+}
+
+/* Celular: só o ícone, no tamanho do botão de tema */
+@media (max-width: 560px) {
+  .button {
+    justify-content: center;
+    width: 30px;
+    padding: 0;
+  }
+
+  .label {
+    display: none;
+  }
+
+  .toast {
+    bottom: 96px;
+    border-radius: var(--radius-lg);
+  }
+}

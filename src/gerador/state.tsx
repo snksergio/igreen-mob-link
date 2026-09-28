@@ -2,8 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useReducer,
 import { emptyAddress, type Address } from '../services/address'
 import { DEFAULTS, calculate, clampInputs, scenarioResult, type PeriodView, type Scenario, type SimInputs, type SimResult } from './model'
 
-export type GeradorScreen = 'inicio' | 'simulador' | 'dados' | 'eletroposto' | 'resumo' | 'proposta' | 'visualizar'
-const SCREENS: GeradorScreen[] = ['inicio', 'simulador', 'dados', 'eletroposto', 'resumo', 'proposta', 'visualizar']
+export type GeradorScreen = 'inicio' | 'simulador' | 'dados' | 'eletroposto' | 'resumo' | 'proposta'
+const SCREENS: GeradorScreen[] = ['inicio', 'simulador', 'dados', 'eletroposto', 'resumo', 'proposta']
 
 /** v1: simulador com abas (#gerador) · v2: formulário linear com seções que aparecem na rolagem (#gerador2). As demais etapas são as mesmas */
 export type GeradorVersion = 'v1' | 'v2'
@@ -94,7 +94,7 @@ function loadState(): GeradorState {
 
 const hashOf = (screen: GeradorScreen, version: GeradorVersion) => `#${BASE[version]}${screen === 'inicio' ? '' : `/${screen}`}`
 
-/** #gerador2/resumo → { version: 'v2', screen: 'resumo' } (ignora a query, ex.: o ?d= do link compartilhado) */
+/** #gerador2/resumo → { version: 'v2', screen: 'resumo' } (ignora uma eventual query) */
 const routeFromHash = (): { version: GeradorVersion; screen: GeradorScreen } => {
   const [path] = window.location.hash.replace('#', '').split('?')
   const [base, sub] = path.split('/')
