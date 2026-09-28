@@ -19,13 +19,22 @@ const INFO: Record<ChargerId, { icon: string; power: string; connectors: string 
 /**
  * Carrossel horizontal dos 3 eletropostos (scroll-snap). Quando nem todos cabem, aparecem abaixo
  * os pontos (cards visíveis) e as setas. Cada card é um radio: escolher troca o modelo da simulação.
+ * `selected={null}`: nenhum escolhido ainda (formulário v2); sem a prop, vale o modelo das entradas.
  */
-export function ChargerCarousel({ inputs, onSelect }: { inputs: SimInputs; onSelect: (id: ChargerId) => void }) {
+export function ChargerCarousel({
+  inputs,
+  onSelect,
+  selected: selectedProp,
+}: {
+  inputs: SimInputs
+  onSelect: (id: ChargerId) => void
+  selected?: ChargerId | null
+}) {
   const trackRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const [visible, setVisible] = useState<Record<string, boolean>>({})
   const [scrollable, setScrollable] = useState(false)
-  const selected = inputs.charger
+  const selected = selectedProp === undefined ? inputs.charger : selectedProp
 
   // Pontos acompanham os cards visíveis; os controles só aparecem se houver card fora da área
   useEffect(() => {
@@ -66,7 +75,7 @@ export function ChargerCarousel({ inputs, onSelect }: { inputs: SimInputs; onSel
   useEffect(() => {
     const switched = wasScrollable.current !== scrollable
     wasScrollable.current = scrollable
-    reveal(selected, switched ? 'auto' : 'smooth')
+    if (selected) reveal(selected, switched ? 'auto' : 'smooth')
   }, [selected, scrollable])
 
   const scrollBy = (dir: 1 | -1) => {
@@ -80,8 +89,8 @@ export function ChargerCarousel({ inputs, onSelect }: { inputs: SimInputs; onSel
   const onKeyDown = (e: KeyboardEvent) => {
     if (!['ArrowRight', 'ArrowLeft'].includes(e.key)) return
     e.preventDefault()
-    const i = CHARGER_IDS.indexOf(selected)
-    const next = CHARGER_IDS[(i + (e.key === 'ArrowRight' ? 1 : CHARGER_IDS.length - 1)) % CHARGER_IDS.length]
+    const i = selected ? CHARGER_IDS.indexOf(selected) : -1
+    const next = CHARGER_IDS[(i + (e.key === 'ArrowRight' ? 1 : CHARGER_IDS.length - 1) + CHARGER_IDS.length) % CHARGER_IDS.length]
     onSelect(next)
     cardRefs.current[next]?.focus()
   }
@@ -109,7 +118,7 @@ export function ChargerCarousel({ inputs, onSelect }: { inputs: SimInputs; onSel
               type="button"
               role="radio"
               aria-checked={active}
-              tabIndex={active ? 0 : -1}
+              tabIndex={active || (!selected && id === CHARGER_IDS[0]) ? 0 : -1}
               className={cn(styles.card, active && styles.cardActive)}
               onClick={() => onSelect(id)}
             >

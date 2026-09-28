@@ -86,6 +86,14 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+.heroNote {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 19px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;

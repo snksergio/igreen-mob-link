@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Highlight } from '../../components/layout/PageShell'
 import { Button } from '../../components/ui/Button'
-import { RESUMOS } from '../guided'
+import { CAMPOS_V2, RESUMOS } from '../guided'
 import { ResultPanel } from '../components/ResultPanel'
 import { GeradorHeader, GeradorPageHeader } from '../components/Shell'
 import { SimReport } from '../components/SimReport'
@@ -29,7 +29,7 @@ export function Visualizar() {
   }, [shared, setSim, patch])
 
   const simular = () => {
-    patch('simulacao', { etapa: 0 })
+    patch('simulacao', { preenchidos: CAMPOS_V2 })
     go('simulador')
   }
 

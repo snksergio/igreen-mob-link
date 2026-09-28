@@ -1,67 +1,41 @@
 import { useEffect, useRef, useState, type ComponentType, type CSSProperties } from 'react'
-import { flushSync } from 'react-dom'
 import { Highlight } from '../../components/layout/PageShell'
 import { Button } from '../../components/ui/Button'
 import { cn } from '../../lib/cn'
-import { GuidedStep } from '../components/Guided'
-import { CarteiraStep, EletropostoStep, MovimentoStep, PrecosStep, TributosStep } from '../components/GuidedFields'
-import { RESUMOS } from '../guided'
+import { FormSection } from '../components/Guided'
+import { CarteiraFields, EletropostoFields, MovimentoFields, PrecosFields, TributosFields } from '../components/GuidedFields'
 import { MobileResultBar, ResultPanel } from '../components/ResultPanel'
 import { ShareModal } from '../components/ShareModal'
 import { ETAPAS, GeradorHeader, GeradorPageHeader } from '../components/Shell'
 import { SimReport } from '../components/SimReport'
-import { PASSOS_V2, useGerador } from '../state'
+import { secoesPreenchidas } from '../guided'
+import { useGerador } from '../state'
 import styles from './SimuladorV2.module.css'
 
-const PASSOS: { title: string; short: string; description: string; Body: ComponentType }[] = [
-  { title: 'Escolha seu eletroposto', short: 'eletroposto', description: 'Um ponto, quatro fontes de receita: recarga, energia, seguros e telecom.', Body: EletropostoStep },
-  { title: 'Movimento', short: 'movimento', description: 'Quantos carros recarregam por dia e quanta energia cada um leva.', Body: MovimentoStep },
-  { title: 'Preços', short: 'preços', description: 'Quanto custa a energia, por quanto você vende e a parte do dono do local.', Body: PrecosStep },
-  { title: 'Carteira iGreen', short: 'carteira', description: 'Clientes de energia, seguros e telecom conectados pelo seu ponto geram comissões todo mês.', Body: CarteiraStep },
-  { title: 'Tributos', short: 'tributos', description: 'Lucro Real · base 2026. Altere só com valores validados pela contabilidade.', Body: TributosStep },
+const SECOES: { title: string; description: string; Fields: ComponentType }[] = [
+  { title: 'Escolha seu eletroposto', description: 'Um ponto, quatro fontes de receita: recarga, energia, seguros e telecom.', Fields: EletropostoFields },
+  { title: 'Movimento', description: 'Quantos carros recarregam por dia e quanta energia cada um leva.', Fields: MovimentoFields },
+  { title: 'Preços', description: 'Quanto custa a energia, por quanto você vende e a parte do dono do local.', Fields: PrecosFields },
+  { title: 'Carteira iGreen', description: 'Clientes de energia, seguros e telecom conectados pelo seu ponto geram comissões todo mês.', Fields: CarteiraFields },
+  { title: 'Tributos', description: 'Lucro Real · base 2026. Altere só com valores validados pela contabilidade.', Fields: TributosFields },
 ]
-const CARTEIRA = 3
-
-/** Troca de layout com View Transitions quando o navegador suporta (painel entrando ao lado) */
-function withTransition(update: () => void) {
-  const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown }
-  if (doc.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    doc.startViewTransition(() => flushSync(update))
-  } else update()
-}
 
 /**
- * Simulador guiado (v2, #gerador2): os passos aparecem conforme a pessoa conclui o anterior.
- * O painel entra depois do eletroposto; a carteira entra no resultado depois do passo 4;
- * o relatório e os botões para seguir e compartilhar aparecem no fim.
+ * Simulador v2 (#gerador2): um formulário linear que se revela conforme o preenchimento.
+ * Cada seção aparece quando todos os campos da anterior estão preenchidos (os campos começam vazios).
+ * O resultado aparece com movimento e preços; a carteira entra depois; relatório e botões no fim.
  */
 export function SimuladorV2() {
-  const { state, result, patch, go } = useGerador()
-  const inputs = state.simulacao.inputs
-  const etapa = Math.min(state.simulacao.etapa ?? 0, PASSOS_V2)
-  const [editing, setEditing] = useState<number | null>(null)
+  const { state, go } = useGerador()
+  const prontas = secoesPreenchidas(state.simulacao.preenchidos)
+  const hasResult = prontas >= 3
+  const carteiraPending = prontas < 4
+  const complete = prontas >= 4
   const [shareOpen, setShareOpen] = useState(false)
   const [panelVisible, setPanelVisible] = useState(false)
   const [sideTop, setSideTop] = useState(24)
-  const stepRefs = useRef<(HTMLElement | null)[]>([])
   const panelRef = useRef<HTMLDivElement>(null)
   const sideRef = useRef<HTMLElement>(null)
-  const reportRef = useRef<HTMLDivElement>(null)
-  const scrollTarget = useRef<'step' | 'report' | null>(null)
-
-  const complete = etapa >= PASSOS_V2
-  const active = editing ?? (complete ? null : etapa)
-  const revealed = etapa >= 1
-  const carteiraPending = etapa <= CARTEIRA
-  const shown = complete ? PASSOS_V2 : etapa + 1
-
-  // Depois de concluir um passo, leva ao próximo (ou ao relatório, no fim)
-  useEffect(() => {
-    const target = scrollTarget.current
-    scrollTarget.current = null
-    if (target === 'report') reportRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    if (target === 'step' && active != null) stepRefs.current[active]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [active, complete])
 
   // A barra fixa do celular some enquanto o painel está na tela
   useEffect(() => {
@@ -70,7 +44,7 @@ export function SimuladorV2() {
     const observer = new IntersectionObserver(([entry]) => setPanelVisible(entry.isIntersecting), { threshold: 0.15 })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [revealed])
+  }, [hasResult])
 
   // Painel mais alto que a tela: gruda pela base, para os botões continuarem visíveis
   useEffect(() => {
@@ -84,23 +58,7 @@ export function SimuladorV2() {
       ro.disconnect()
       window.removeEventListener('resize', update)
     }
-  }, [revealed])
-
-  const concluir = (i: number) => {
-    if (editing != null) {
-      setEditing(null)
-      return
-    }
-    scrollTarget.current = i + 1 >= PASSOS_V2 ? 'report' : 'step'
-    const update = () => patch('simulacao', { etapa: i + 1 })
-    if (i === 0) withTransition(update)
-    else update()
-  }
-
-  const editar = (i: number) => {
-    scrollTarget.current = 'step'
-    setEditing(i)
-  }
+  }, [])
 
   const seguir = () => go('dados')
   const verResultado = () => panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -118,47 +76,32 @@ export function SimuladorV2() {
                   Simule seu <Highlight>eletroposto</Highlight>
                 </>
               }
-              subtitle="Grátis e sem compromisso. Responda em 5 passos e veja o resultado se formando ao lado."
+              subtitle="Grátis e sem compromisso. Preencha os dados e veja o resultado na hora."
             />
-            <div className={styles.steps}>
-              {PASSOS.slice(0, shown).map((p, i) => (
-                <GuidedStep
-                  key={p.short}
-                  n={i + 1}
-                  stepRef={(el) => {
-                    stepRefs.current[i] = el
-                  }}
-                  title={p.title}
-                  description={p.description}
-                  status={active === i ? 'active' : 'done'}
-                  summary={RESUMOS[i](inputs, result)}
-                  onEdit={() => editar(i)}
-                  action={editing != null ? 'Salvar e fechar' : i + 1 < PASSOS_V2 ? `Continuar para ${PASSOS[i + 1].short}` : 'Ver resultado completo'}
-                  onAction={() => concluir(i)}
-                  last={i === shown - 1}
-                >
-                  <p.Body />
-                </GuidedStep>
+            <div className={styles.sections}>
+              {SECOES.slice(0, Math.min(prontas + 1, SECOES.length)).map(({ title, description, Fields }) => (
+                <FormSection key={title} title={title} description={description}>
+                  <Fields />
+                </FormSection>
               ))}
             </div>
           </div>
         </div>
 
-        {revealed ? (
-          <aside ref={sideRef} className={styles.side} style={{ '--side-top': `${sideTop}px` } as CSSProperties}>
-            <ResultPanel
-              panelRef={panelRef}
-              carteiraPending={carteiraPending}
-              onContinue={complete ? seguir : undefined}
-              onShare={complete ? () => setShareOpen(true) : undefined}
-            />
-            {complete ? null : <p className={styles.sideHint}>Conclua os {PASSOS_V2} passos para ver o relatório completo e seguir para a proposta.</p>}
-          </aside>
-        ) : null}
+        <aside ref={sideRef} className={cn(styles.side, !hasResult && styles.sideEmpty)} style={{ '--side-top': `${sideTop}px` } as CSSProperties}>
+          <ResultPanel
+            panelRef={panelRef}
+            empty={!hasResult}
+            carteiraPending={carteiraPending}
+            onContinue={complete ? seguir : undefined}
+            onShare={complete ? () => setShareOpen(true) : undefined}
+          />
+          {hasResult && !complete ? <p className={styles.sideHint}>Informe a carteira iGreen para ver o relatório completo e seguir para a proposta.</p> : null}
+        </aside>
       </div>
 
       {complete ? (
-        <div ref={reportRef} className={styles.below}>
+        <div className={styles.below}>
           <SimReport />
           <section className={styles.final} aria-label="Próximos passos">
             <div className={styles.finalText}>
@@ -178,7 +121,7 @@ export function SimuladorV2() {
       <MobileResultBar
         onContinue={complete ? seguir : verResultado}
         actionLabel={complete ? 'Seguir' : 'Resultado'}
-        hidden={!revealed || panelVisible}
+        hidden={!hasResult || panelVisible}
         carteiraPending={carteiraPending}
       />
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />

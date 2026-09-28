@@ -42,18 +42,21 @@ function useShownScenario(carteiraPending: boolean): { scenario: Scenario; combi
 /**
  * Painel "Seu resultado" no padrão do simulador atual: card verde com o recebimento do período,
  * retorno e ROI, mini gráfico do saldo em 36 meses, origem do recebimento e aviso. Depois, os botões.
- * `carteiraPending`: simulador guiado antes do passo da carteira (mostra só recargas, sem a escolha do cenário).
+ * `carteiraPending`: formulário v2 antes da carteira (mostra só recargas, sem a escolha do cenário).
+ * `empty`: formulário v2 antes do movimento e dos preços (moldura do painel, sem números).
  */
 export function ResultPanel({
   onContinue,
   onShare,
   panelRef,
   carteiraPending = false,
+  empty = false,
 }: {
   onContinue?: () => void
   onShare?: () => void
   panelRef?: Ref<HTMLDivElement>
   carteiraPending?: boolean
+  empty?: boolean
 }) {
   const { state, setSim, result } = useGerador()
   const { view, month, year } = state.simulacao
@@ -69,6 +72,28 @@ export function ResultPanel({
   )
 
   const pendentes = [result.localTaxPending && 'sem ICMS adicional', combined && result.commissionTaxPending && 'com comissões antes de tributos'].filter(Boolean)
+
+  if (empty) {
+    return (
+      <div className={styles.wrap} ref={panelRef}>
+        <section className={styles.panel} aria-label="Seu resultado">
+          <div className={styles.top}>
+            <div className={styles.hero} style={{ backgroundImage: `url(${IMAGES.greenCard})` }}>
+              <div className={styles.heroValue}>
+                <p className={styles.overline}>RECEBIMENTO ESTIMADO NO MÊS 1</p>
+                <p className={styles.amount}>R$ —</p>
+              </div>
+              <p className={styles.heroNote}>O resultado aparece aqui assim que você informar o movimento e os preços.</p>
+            </div>
+            <div className={styles.stats}>
+              <Stat icon={ICONS.handMoney} label="RETORNO" value="—" />
+              <Stat icon={ICONS.moneyBag} label="ROI EM 36 MESES" value="—" />
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.wrap} ref={panelRef}>

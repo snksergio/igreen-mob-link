@@ -1,74 +1,82 @@
-import { useId, type ReactNode, type Ref } from 'react'
-import { ICONS } from '../../assets'
-import { Button } from '../../components/ui/Button'
-import { TextLink } from '../../components/ui/Controls'
-import { Icon } from '../../components/ui/Icon'
+import { useId, useState, type ReactNode } from 'react'
+import { Field } from '../../components/ui/Field'
 import { cn } from '../../lib/cn'
+import { parseLocaleNumber } from '../../lib/format'
+import { fixed } from '../format'
+import type { SimInputs } from '../model'
+import { useGerador } from '../state'
 import styles from './Guided.module.css'
 
-/**
- * Passo do simulador guiado. Ativo: título, descrição, campos e o botão para continuar.
- * Concluído: vira uma linha com o resumo do que foi escolhido e "Editar".
- */
-export function GuidedStep({
-  n,
-  title,
-  description,
-  status,
-  summary,
-  onEdit,
-  action,
-  onAction,
-  last,
-  stepRef,
-  children,
-}: {
-  n: number
-  title: string
-  description: string
-  status: 'active' | 'done'
-  summary: ReactNode
-  onEdit: () => void
-  action: string
-  onAction: () => void
-  last?: boolean
-  stepRef?: Ref<HTMLElement>
-  children: ReactNode
-}) {
+type NumericField = { [K in keyof SimInputs]: SimInputs[K] extends number ? K : never }[keyof SimInputs]
+
+/** Seção do formulário v2: título, descrição e campos. Entra com uma animação curta quando é liberada */
+export function FormSection({ title, description, children }: { title: string; description: string; children: ReactNode }) {
   const id = useId()
-  const active = status === 'active'
+  return (
+    <section className={styles.section} aria-labelledby={id}>
+      <header className={styles.sectionHead}>
+        <h2 id={id} className={cn('t-section-title', styles.sectionTitle)}>
+          {title}
+        </h2>
+        <p className={styles.sectionText}>{description}</p>
+      </header>
+      {children}
+    </section>
+  )
+}
+
+/**
+ * Campo numérico do formulário v2: começa vazio (com um exemplo), marca o campo como preenchido
+ * no primeiro número digitado e mostra o check quando está preenchido e fora de foco.
+ */
+export function FormNumber({
+  field,
+  label,
+  suffix,
+  decimals = 0,
+  min = 0,
+  max = Number.POSITIVE_INFINITY,
+  placeholder,
+  helper,
+}: {
+  field: NumericField
+  label: string
+  suffix?: string
+  decimals?: number
+  min?: number
+  max?: number
+  placeholder: string
+  helper?: ReactNode
+}) {
+  const { state, setSim, patch } = useGerador()
+  const { inputs, preenchidos } = state.simulacao
+  const filled = preenchidos.includes(field)
+  const [draft, setDraft] = useState<string | null>(null)
+  const shown = filled ? fixed(inputs[field], decimals) : ''
+  const typed = draft && /\d/.test(draft) ? parseLocaleNumber(draft) : null
 
   return (
-    <section ref={stepRef} className={cn(styles.step, active ? styles.active : styles.done, last && styles.last)} aria-labelledby={id}>
-      <div className={styles.rail} aria-hidden>
-        <span className={styles.marker}>{active ? n : <Icon src={ICONS.checkBold} size={11} color="var(--fg-primary)" />}</span>
-        <span className={styles.line} />
-      </div>
-
-      <div className={styles.main}>
-        <header className={styles.head}>
-          <div className={styles.headText}>
-            <h2 id={id} className={cn('t-section-title', styles.title)}>
-              {title}
-            </h2>
-            <p className={active ? styles.description : styles.summary}>{active ? description : summary}</p>
-          </div>
-          {active ? null : (
-            <TextLink tone="primary" onClick={onEdit}>
-              Editar
-            </TextLink>
-          )}
-        </header>
-
-        {active ? (
-          <div className={styles.body}>
-            {children}
-            <Button className={styles.action} onClick={onAction}>
-              {action}
-            </Button>
-          </div>
-        ) : null}
-      </div>
-    </section>
+    <Field
+      label={label}
+      value={draft ?? shown}
+      placeholder={placeholder}
+      suffix={suffix ? <span>{suffix}</span> : undefined}
+      helper={helper}
+      warning={typed != null && typed > max ? `Máximo de ${fixed(max, decimals)}: usamos esse valor` : undefined}
+      valid={filled && draft == null}
+      inputMode={decimals ? 'decimal' : 'numeric'}
+      onFocus={() => setDraft(shown)}
+      onBlur={() => setDraft(null)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+      }}
+      onChange={(text) => {
+        const clean = decimals ? text.replace(/[^\d,.]/g, '') : text.replace(/\D/g, '')
+        setDraft(clean)
+        if (!/\d/.test(clean)) return
+        setSim({ [field]: Math.min(max, Math.max(min, parseLocaleNumber(clean))) })
+        if (!filled) patch('simulacao', { preenchidos: [...preenchidos, field] })
+      }}
+    />
   )
 }

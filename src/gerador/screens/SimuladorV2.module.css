@@ -185,3 +185,15 @@
     animation: none;
   }
 }
+
+.sections {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Celular: o painel vazio (antes do resultado) não ocupa espaço no fim do formulário */
+@media (max-width: 999px) {
+  .sideEmpty {
+    display: none;
+  }
+}

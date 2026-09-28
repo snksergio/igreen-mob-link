@@ -2,7 +2,21 @@ import { money } from '../lib/format'
 import { fixed, num, pct } from './format'
 import { DEFAULTS, TERMS, type SimInputs, type SimResult } from './model'
 
-/* Dados do simulador guiado (v2) usados pelos passos, pelos resumos e pela visualização compartilhada */
+/* Dados do simulador v2 usados pelo formulário, pelos resumos e pela visualização compartilhada */
+
+/**
+ * Campos obrigatórios de cada seção do formulário v2, na ordem em que as seções aparecem:
+ * eletroposto → movimento → preços → carteira (depois vêm os tributos, opcionais, e o relatório).
+ */
+export const SECOES_V2: (keyof SimInputs)[][] = [['charger'], ['cars', 'days', 'kwh'], ['cost', 'sale'], ['monthlyClients']]
+export const CAMPOS_V2: string[] = SECOES_V2.flat()
+
+/** Quantas seções seguidas, a partir da primeira, já estão com todos os campos preenchidos */
+export function secoesPreenchidas(preenchidos: string[]) {
+  let n = 0
+  while (n < SECOES_V2.length && SECOES_V2[n].every((k) => preenchidos.includes(k))) n++
+  return n
+}
 
 export const POTENCIA = { lento: '7 kW', duo: '7 + 40 kW', ultra: '80 kW' } as const
 
