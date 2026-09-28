@@ -32,18 +32,27 @@ export function Reveal({ children, className }: { children: ReactNode; className
   )
 }
 
-/** Seção do formulário v2: título, descrição e campos, aparecendo na rolagem */
-export function FormSection({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+/**
+ * Seção do formulário v2: título, descrição e campos, aparecendo na rolagem.
+ * `compact`: só um rótulo no estilo dos campos (primeira seção, logo abaixo do título da página).
+ */
+export function FormSection({ title, description, compact, children }: { title: string; description?: string; compact?: boolean; children: ReactNode }) {
   const id = useId()
   return (
     <Reveal className={styles.sectionWrap}>
-      <section className={styles.section} aria-labelledby={id}>
-        <header className={styles.sectionHead}>
-          <h2 id={id} className={cn('t-section-title', styles.sectionTitle)}>
+      <section className={cn(styles.section, compact && styles.sectionCompact)} aria-labelledby={id}>
+        {compact ? (
+          <h2 id={id} className={cn('t-label', styles.sectionLabel)}>
             {title}
           </h2>
-          <p className={styles.sectionText}>{description}</p>
-        </header>
+        ) : (
+          <header className={styles.sectionHead}>
+            <h2 id={id} className={cn('t-section-title', styles.sectionTitle)}>
+              {title}
+            </h2>
+            {description ? <p className={styles.sectionText}>{description}</p> : null}
+          </header>
+        )}
         {children}
       </section>
     </Reveal>

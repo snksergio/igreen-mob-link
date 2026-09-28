@@ -11,8 +11,8 @@ import { SimReport } from '../components/SimReport'
 import { useGerador } from '../state'
 import styles from './SimuladorV2.module.css'
 
-const SECOES: { title: string; description: string; Fields: ComponentType }[] = [
-  { title: 'Escolha seu eletroposto', description: 'Um ponto, quatro fontes de receita: recarga, energia, seguros e telecom.', Fields: EletropostoFields },
+const SECOES: { title: string; description?: string; compact?: boolean; Fields: ComponentType }[] = [
+  { title: 'Escolha seu eletroposto', compact: true, Fields: EletropostoFields },
   { title: 'Movimento', description: 'Quantos carros recarregam por dia e quanta energia cada um leva.', Fields: MovimentoFields },
   { title: 'Preços', description: 'Quanto custa a energia, por quanto você vende e a parte do dono do local.', Fields: PrecosFields },
   { title: 'Carteira iGreen', description: 'Clientes de energia, seguros e telecom conectados pelo seu ponto geram comissões todo mês.', Fields: CarteiraFields },
@@ -61,19 +61,19 @@ export function SimuladorV2() {
     <main className={styles.page}>
       <div className={styles.container}>
         <GeradorHeader />
-        <GeradorPageHeader
-          title={
-            <>
-              Simule seu <Highlight>eletroposto</Highlight>
-            </>
-          }
-          subtitle="Grátis e sem compromisso: nada é contratado nesta etapa. Ajuste as premissas e veja o resultado na hora."
-        />
 
         <div className={styles.layout}>
           <div className={styles.form}>
-            {SECOES.map(({ title, description, Fields }) => (
-              <FormSection key={title} title={title} description={description}>
+            <GeradorPageHeader
+              title={
+                <>
+                  Simule seu <Highlight>eletroposto</Highlight>
+                </>
+              }
+              subtitle="Grátis e sem compromisso. Ajuste os valores e veja o resultado ao vivo."
+            />
+            {SECOES.map(({ title, description, compact, Fields }) => (
+              <FormSection key={title} title={title} description={description} compact={compact}>
                 <Fields />
               </FormSection>
             ))}

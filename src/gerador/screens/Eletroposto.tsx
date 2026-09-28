@@ -11,7 +11,7 @@ import { todayBr } from '../../lib/format'
 import { isValidCep } from '../../lib/validators'
 import type { Address } from '../../services/address'
 import { GeradorStepPage } from '../components/Shell'
-import { SimulationSummary } from '../components/SimulationSummary'
+import { SimulationAside, SimulationSummary } from '../components/SimulationSummary'
 import { useGerador } from '../state'
 import styles from './Steps.module.css'
 
@@ -44,6 +44,7 @@ export function Eletroposto() {
   return (
     <GeradorStepPage
       step={3}
+      aside={<SimulationAside />}
       title={
         <>
           Endereço do <Highlight>eletroposto</Highlight>
@@ -61,7 +62,7 @@ export function Eletroposto() {
       }
     >
       <Stack gap={40}>
-        <SimulationSummary />
+        <SimulationSummary mobileOnly />
         <AddressSection
           value={endereco}
           onChange={setEndereco}

@@ -16,7 +16,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 36px;
   width: 100%;
   max-width: 1120px;
   animation: enter 0.35s ease-out;

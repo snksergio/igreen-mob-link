@@ -272,6 +272,38 @@
 }
 
 /* ---------- Fluxo Gerador: página larga (simulador com painel lateral) ---------- */
+/* Etapa com lateral (resumo da simulação): coluna de 480px + lateral fixa, como um checkout */
+.withAside {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  max-width: 940px;
+}
+
+.withAside > .column {
+  flex: 0 1 480px;
+  min-width: 0;
+}
+
+.aside {
+  display: none;
+}
+
+@media (min-width: 1000px) {
+  .aside {
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+    width: 400px;
+    margin-top: 116px;
+  }
+}
+
 .wide .column {
   max-width: 1120px;
 }

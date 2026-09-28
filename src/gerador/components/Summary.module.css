@@ -1,11 +1,144 @@
+/* ================= Resumo da simulação nas etapas de cadastro ================= */
+
+/* ---------- Lateral (desktop), no padrão do painel do simulador ---------- */
+.aside {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  background: var(--bg-background);
+  box-shadow: var(--shadow-base);
+}
+
+.asideTop {
+  padding: 19px 19px 0;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background-color: #0a8a3c;
+  background-size: cover;
+  background-position: center;
+}
+
+.heroOverline {
+  font-family: var(--font-inter);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: -0.01em;
+  color: var(--fg-highlight);
+}
+
+.heroAmount {
+  font-family: var(--font-inter);
+  font-weight: 800;
+  font-size: 28px;
+  line-height: normal;
+  color: var(--fg-on-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.heroAmount span {
+  font-weight: 700;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.heroChip {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-xl-flag);
+  background: #fff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11.5px;
+  line-height: 16px;
+  color: var(--fg-primary-strong);
+  white-space: nowrap;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  margin: 8px 0 0;
+}
+
+.rows > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 19px;
+}
+
+.rows > div + div {
+  border-top: 1px solid var(--border);
+}
+
+.rows dt {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--fg-main);
+}
+
+.rows dd {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--fg-strong);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.asideFoot {
+  display: flex;
+  justify-content: center;
+  padding: 12px 19px;
+  border-top: 1px solid var(--border);
+}
+
+.link {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--fg-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.asideNote {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--fg-muted);
+  opacity: 0.8;
+}
+
+/* ---------- Cartão compacto no corpo (celular): cinza, sem disputar com o formulário ---------- */
 .summary {
   display: flex;
   flex-direction: column;
   gap: 14px;
   padding: 16px;
   border-radius: var(--radius-lg);
-  background: var(--bg-primary-subtle);
-  box-shadow: inset 0 0 0 1px var(--ring-primary-subtle);
+  background: var(--bg-muted);
+}
+
+@media (min-width: 1000px) {
+  .mobileOnly {
+    display: none;
+  }
 }
 
 .head {
@@ -29,7 +162,7 @@
   line-height: 14px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--fg-primary);
+  color: var(--fg-muted);
 }
 
 .model {
@@ -44,8 +177,8 @@
 .edit {
   flex-shrink: 0;
   height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--border-primary);
+  padding: 0 14px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-background);
   font-family: var(--font-sans);
@@ -56,7 +189,7 @@
 }
 
 .edit:hover {
-  background: var(--bg-primary-subtle-hover);
+  background: var(--bg-hover);
 }
 
 .stats {
@@ -97,10 +230,6 @@
 }
 
 @media (max-width: 420px) {
-  .edit {
-    padding: 0 10px;
-  }
-
   .stats {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }

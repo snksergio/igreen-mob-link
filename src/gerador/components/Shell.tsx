@@ -52,6 +52,7 @@ const etapaLabel = (step: number) => `ETAPA ${step} DE ${ETAPAS}`
 /**
  * Página de etapa: header + título + conteúdo + rodapé. Com `onSubmit` vira formulário.
  * `wide` libera a largura para o simulador (painel lateral).
+ * `aside`: conteúdo fixo à direita no desktop (ex.: resumo da simulação), alinhado ao título.
  */
 export function GeradorStepPage({
   step,
@@ -61,6 +62,7 @@ export function GeradorStepPage({
   footer,
   onSubmit,
   wide,
+  aside,
 }: {
   step: number
   title: ReactNode
@@ -69,6 +71,7 @@ export function GeradorStepPage({
   footer?: ReactNode
   onSubmit?: () => void
   wide?: boolean
+  aside?: ReactNode
 }) {
   const body = (
     <>
@@ -79,9 +82,8 @@ export function GeradorStepPage({
       </div>
     </>
   )
-  return (
-    <main className={cn(styles.page, wide && styles.wide)}>
-      <div className={styles.column}>
+  const column = (
+    <div className={styles.column}>
         <GeradorHeader step={step} label={etapaLabel(step)} />
         {onSubmit ? (
           <form
@@ -97,7 +99,19 @@ export function GeradorStepPage({
         ) : (
           <div className={styles.form}>{body}</div>
         )}
-      </div>
+    </div>
+  )
+
+  return (
+    <main className={cn(styles.page, wide && styles.wide)}>
+      {aside ? (
+        <div className={styles.withAside}>
+          {column}
+          <aside className={styles.aside}>{aside}</aside>
+        </div>
+      ) : (
+        column
+      )}
     </main>
   )
 }

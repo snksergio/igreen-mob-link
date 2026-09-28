@@ -12,7 +12,7 @@ import { isFullName, isValidCep, isValidCnpj, isValidCpf, isValidDate, isValidEm
 import type { Address } from '../../services/address'
 import { AUTO_ENDERECO_POR_DOCUMENTO, fetchAddressByDocument } from '../../services/document'
 import { GeradorStepPage } from '../components/Shell'
-import { SimulationSummary } from '../components/SimulationSummary'
+import { SimulationAside, SimulationSummary } from '../components/SimulationSummary'
 import { isAdult } from '../rules'
 import { useGerador } from '../state'
 import styles from './Steps.module.css'
@@ -94,6 +94,7 @@ export function Dados() {
   return (
     <GeradorStepPage
       step={2}
+      aside={<SimulationAside />}
       title={
         <>
           Informe os <Highlight>seus dados</Highlight>
@@ -108,7 +109,7 @@ export function Dados() {
       }
     >
       <Stack gap={40}>
-        <SimulationSummary />
+        <SimulationSummary mobileOnly />
         <Stack gap={28}>
           <div className={styles.labeled}>
             <p className={cn('t-label', styles.groupLabel)}>TIPO DE PESSOA</p>
