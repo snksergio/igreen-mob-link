@@ -198,15 +198,31 @@ export function CarteiraFields() {
 
   return (
     <>
-      <NumInput
-        label="NOVOS CLIENTES POR DIA"
-        value={porDia}
-        decimals={0}
-        suffix={porDia === 1 ? 'cliente' : 'clientes'}
-        max={MAX_CLIENTES_DIA}
-        onChange={(n) => setSim({ monthlyClients: n * s.days })}
-        helper={`Sugestão para este modelo: ${CLIENTES_DIA[s.charger]} por dia. São ${num(s.monthlyClients)} clientes por mês em ${s.days} dias de operação.`}
-      />
+      {/* Slider: arrastar com o dedo para aumentar ou diminuir; o modelo escolhido sugere o valor inicial */}
+      <div className={styles.field}>
+        <div className={sim.groupHead}>
+          <span className={sim.label}>Novos clientes por dia</span>
+          <span className={sim.bigValue}>
+            {porDia}
+            <small>{porDia === 1 ? 'cliente' : 'clientes'} por dia</small>
+          </span>
+        </div>
+        <Slider
+          value={porDia}
+          min={0}
+          max={MAX_CLIENTES_DIA}
+          onChange={(n) => setSim({ monthlyClients: n * s.days })}
+          label="Novos clientes por dia"
+          valueText={`${porDia} ${porDia === 1 ? 'cliente' : 'clientes'} por dia`}
+        />
+        <div className={sim.scale}>
+          <span>0</span>
+          <span className={sim.scaleLimit}>até {MAX_CLIENTES_DIA} por dia</span>
+        </div>
+        <span className={styles.help}>
+          Sugestão para este modelo: {CLIENTES_DIA[s.charger]} por dia. São {num(s.monthlyClients)} clientes por mês em {s.days} dias de operação.
+        </span>
+      </div>
 
       <div className={styles.field}>
         <span className={sim.label}>Conexões oferecidas</span>
