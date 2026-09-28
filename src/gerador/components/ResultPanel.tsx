@@ -6,7 +6,6 @@ import { Img } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { money, moneyCents, moneyParts } from '../../lib/format'
 import { compactMoney, paybackLabel, pct, signedMoney } from '../format'
-import { scenarioResult, type Scenario } from '../model'
 import { useGerador } from '../state'
 import { MiniReturnChart } from './MiniReturnChart'
 import { PeriodControl } from './PeriodControl'
@@ -28,39 +27,13 @@ function Stat({ icon, label, value }: { icon: string; label: string; value: stri
 }
 
 /**
- * Cenário exibido: enquanto a carteira não foi preenchida (simulador guiado), só recargas;
- * depois, o escolhido em "Carteira + recargas / Só recargas".
- */
-function useShownScenario(carteiraPending: boolean): { scenario: Scenario; combined: boolean } {
-  const { state, result, scenario } = useGerador()
-  const { view, month, year } = state.simulacao
-  const pendingScenario = useMemo(() => scenarioResult(result, 'charging', view, month, year), [result, view, month, year])
-  if (carteiraPending) return { scenario: pendingScenario, combined: false }
-  return { scenario, combined: state.simulacao.inputs.incomeMode === 'combined' }
-}
-
-/**
  * Painel "Seu resultado" no padrão do simulador atual: card verde com o recebimento do período,
  * retorno e ROI, mini gráfico do saldo em 36 meses, origem do recebimento e aviso. Depois, os botões.
- * `carteiraPending`: formulário v2 antes da carteira (mostra só recargas, sem a escolha do cenário).
- * `empty`: formulário v2 antes do movimento e dos preços (moldura do painel, sem números).
  */
-export function ResultPanel({
-  onContinue,
-  onShare,
-  panelRef,
-  carteiraPending = false,
-  empty = false,
-}: {
-  onContinue?: () => void
-  onShare?: () => void
-  panelRef?: Ref<HTMLDivElement>
-  carteiraPending?: boolean
-  empty?: boolean
-}) {
-  const { state, setSim, result } = useGerador()
+export function ResultPanel({ onContinue, onShare, panelRef }: { onContinue?: () => void; onShare?: () => void; panelRef?: Ref<HTMLDivElement> }) {
+  const { state, setSim, result, scenario } = useGerador()
   const { view, month, year } = state.simulacao
-  const { scenario, combined } = useShownScenario(carteiraPending)
+  const combined = state.simulacao.inputs.incomeMode === 'combined'
   const p = scenario.period
   const { int, cents } = moneyParts(scenario.receipt)
   const { charger, capital } = result
@@ -73,33 +46,10 @@ export function ResultPanel({
 
   const pendentes = [result.localTaxPending && 'sem ICMS adicional', combined && result.commissionTaxPending && 'com comissões antes de tributos'].filter(Boolean)
 
-  if (empty) {
-    return (
-      <div className={styles.wrap} ref={panelRef}>
-        <section className={styles.panel} aria-label="Seu resultado">
-          <div className={styles.top}>
-            <div className={styles.hero} style={{ backgroundImage: `url(${IMAGES.greenCard})` }}>
-              <div className={styles.heroValue}>
-                <p className={styles.overline}>RECEBIMENTO ESTIMADO NO MÊS 1</p>
-                <p className={styles.amount}>R$ —</p>
-              </div>
-              <p className={styles.heroNote}>O resultado aparece aqui assim que você informar o movimento e os preços.</p>
-            </div>
-            <div className={styles.stats}>
-              <Stat icon={ICONS.handMoney} label="RETORNO" value="—" />
-              <Stat icon={ICONS.moneyBag} label="ROI EM 36 MESES" value="—" />
-            </div>
-          </div>
-        </section>
-      </div>
-    )
-  }
-
   return (
     <div className={styles.wrap} ref={panelRef}>
       <section className={styles.panel} aria-label="Seu resultado">
         <div className={styles.top}>
-          {carteiraPending ? null : (
           <Segmented
             label="Receitas incluídas no resultado"
             value={combined ? 'combined' : 'charging'}
@@ -109,7 +59,6 @@ export function ResultPanel({
             ]}
             onChange={(incomeMode) => setSim({ incomeMode })}
           />
-          )}
 
           <div className={styles.hero} style={{ backgroundImage: `url(${IMAGES.greenCard})` }}>
             <div className={styles.heroValue}>
@@ -157,14 +106,7 @@ export function ResultPanel({
               </p>
               <p className={styles.rowValue}>{signedMoney(p.investorRechargeCash)}</p>
             </div>
-            {carteiraPending ? (
-              <div className={cn(styles.row, styles.rowPending)}>
-                <Img src={ICONS.userGreen} size={20} />
-                <p className={styles.rowLabel}>
-                  Carteira iGreen <small>entra no passo 4</small>
-                </p>
-              </div>
-            ) : combined ? (
+            {combined ? (
               <div className={cn(styles.row, styles.rowPrimary)}>
                 <Img src={ICONS.userGreen} size={20} />
                 <p className={styles.rowLabel}>
@@ -203,19 +145,8 @@ export function ResultPanel({
 }
 
 /** Barra fixa do celular: resultado resumido + ação (some quando o painel completo está na tela) */
-export function MobileResultBar({
-  onContinue,
-  hidden,
-  actionLabel = 'Seguir',
-  carteiraPending = false,
-}: {
-  onContinue: () => void
-  hidden: boolean
-  actionLabel?: string
-  carteiraPending?: boolean
-}) {
-  const { state } = useGerador()
-  const { scenario } = useShownScenario(carteiraPending)
+export function MobileResultBar({ onContinue, hidden, actionLabel = 'Seguir' }: { onContinue: () => void; hidden: boolean; actionLabel?: string }) {
+  const { state, scenario } = useGerador()
   const { view } = state.simulacao
   return (
     <div className={cn(styles.bar, hidden && styles.barHidden)} aria-hidden={hidden}>

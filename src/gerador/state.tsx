@@ -5,7 +5,7 @@ import { DEFAULTS, calculate, clampInputs, scenarioResult, type PeriodView, type
 export type GeradorScreen = 'inicio' | 'simulador' | 'dados' | 'eletroposto' | 'resumo' | 'proposta' | 'visualizar'
 const SCREENS: GeradorScreen[] = ['inicio', 'simulador', 'dados', 'eletroposto', 'resumo', 'proposta', 'visualizar']
 
-/** v1: simulador com abas (#gerador) · v2: formulário que se revela conforme o preenchimento (#gerador2). As demais etapas são as mesmas */
+/** v1: simulador com abas (#gerador) · v2: formulário linear com seções que aparecem na rolagem (#gerador2). As demais etapas são as mesmas */
 export type GeradorVersion = 'v1' | 'v2'
 const BASE: Record<GeradorVersion, string> = { v1: 'gerador', v2: 'gerador2' }
 
@@ -16,8 +16,6 @@ export type GeradorState = {
     view: PeriodView
     month: number
     year: number
-    /** v2: campos que a pessoa já preencheu (os demais aparecem vazios, mesmo com valor padrão no modelo) */
-    preenchidos: string[]
   }
   investidor: {
     tipo: 'pf' | 'pj'
@@ -50,7 +48,7 @@ type Action =
   | { type: 'proposta'; value: GeradorState['proposta'] }
 
 const initialState: GeradorState = {
-  simulacao: { inputs: DEFAULTS, view: 'month', month: 1, year: 1, preenchidos: [] },
+  simulacao: { inputs: DEFAULTS, view: 'month', month: 1, year: 1 },
   investidor: { tipo: 'pf', documento: '', nome: '', nascimento: '', email: '', whatsapp: '', endereco: emptyAddress },
   eletroposto: { endereco: emptyAddress, publicidade: false },
   assinatura: { data: '', nome: '', documento: '', testemunhaNome: '', testemunhaCpf: '', aceite: false },

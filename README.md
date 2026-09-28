@@ -80,24 +80,21 @@ Fluxo novo e independente, guiado pelo "Simulador de investimento e DRE | iGreen
 - **Motor de cálculo:** `gerador/model.ts` é o porte fiel do `model.mjs` da referência, coberto por testes em `gerador/model.test.ts` (`npm test`). Com as premissas padrão (DUO), dá R$ 7.311,47 no mês 1, retorno em 4,1 meses e ROI de 5.253% em 36 meses.
 - **Estado:** fica em `sessionStorage` (`igreen-mob-gerador-v1`), separado do fluxo atual. Abrir uma etapa sem as anteriores redireciona para a primeira que falta.
 
-### Versão 2: simulador guiado (`#gerador2`)
+### Versão 2: formulário linear (`#gerador2`)
 
 Mesmo fluxo e mesmas etapas 2 a 4, trocando só o simulador (`screens/SimuladorV2.tsx`). A versão com abas continua em `#gerador`. As rotas da v2 são as mesmas com o prefixo `#gerador2` (por exemplo, `#gerador2/dados`), e a navegação mantém a versão escolhida.
 
-- **Layout:** igual ao simulador atual. O header e as etapas acompanham a coluna de 480px, e o painel do investidor flutua à direita, alinhado ao título.
-- **Passos:** as premissas são preenchidas em 5 passos (eletroposto, movimento, preços, carteira e tributos), que aparecem conforme a pessoa conclui o anterior.
-  - Cada passo concluído vira uma linha com o resumo e "Editar".
-  - Nos campos, a ajuda fica logo abaixo em uma linha. As explicações longas ficam em "Como calculamos". O que é fixo (administração iGreen, premissas padrão de tributos) aparece como informação, não como campo.
-- **Resultado:**
-  - O painel entra depois do 1º passo, só com as recargas.
-  - A carteira iGreen entra no resultado depois do passo 4.
-  - O relatório "Entenda cada número" e os botões "Seguir para proposta" e "Compartilhar simulação" aparecem no fim.
-  - No celular, as abas do relatório ficam grudadas no topo durante a rolagem.
+- **Layout:** mesma largura do simulador com abas (1120px), com o painel do investidor fixo à direita. Não tem stepper nem selo de etapa: o título e a descrição vêm logo abaixo do logo.
+- **Premissas:** ficam em um formulário linear (eletroposto, movimento, preços, carteira e tributos), já preenchido com as premissas padrão.
+  - Cada seção entra com uma animação curta quando chega perto da área visível na rolagem. O conteúdo está sempre na página.
+  - A ajuda de cada campo fica logo abaixo, em uma linha e mais suave que o rótulo. As explicações longas ficam em "Como calculamos".
+  - O que é fixo (administração iGreen, premissas padrão de tributos) aparece como informação, não como campo.
+- **Resultado:** o painel mostra o resultado desde o início. Abaixo vêm o relatório "Entenda cada número" e os botões "Seguir para proposta" e "Compartilhar simulação". No celular, as abas do relatório ficam grudadas no topo durante a rolagem.
 - **Compartilhar** (`share.ts`, `shareImage.ts`, `components/ShareModal.tsx`):
   - Gera uma imagem 1080×1350 com o resultado (recebimento do mês 1, retorno, saldo e ROI em 36 meses, mini gráfico e origem do recebimento).
   - Gera também um link `#gerador2/visualizar?d=…`, que guarda só as premissas que diferem do padrão, sem dados pessoais.
   - No celular, "WhatsApp" abre o compartilhamento do sistema já com a imagem. No computador, abre o WhatsApp com a mensagem e o link, e a imagem pode ser baixada para anexar.
-- **Visualização** (`screens/Visualizar.tsx`): quem abre o link vê as premissas, o painel e o relatório. "Fazer minha simulação" abre o simulador guiado com esses valores.
+- **Visualização** (`screens/Visualizar.tsx`): quem abre o link vê as premissas, o painel e o relatório. "Fazer minha simulação" abre o simulador v2 com esses valores.
 
 ## Tema escuro (`lib/theme.ts`)
 

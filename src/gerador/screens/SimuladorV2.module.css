@@ -1,73 +1,49 @@
-/* Simulador guiado (v2): mesma estrutura do simulador atual — coluna de 480px com header e stepper,
-   painel flutuando à direita (entra depois do primeiro passo) */
+/* Simulador v2: mesma largura do simulador com abas (1120px), sem stepper; formulário à esquerda e painel à direita */
 .page {
   min-height: 100vh;
   min-height: 100svh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 56px;
+  justify-content: center;
   padding: 56px 16px 96px;
   background: var(--bg-surface);
 }
 
-.layout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 40px;
-  width: 100%;
-  max-width: 940px;
+/* Ajuda dos campos: mesma cor, mais suave, para não disputar com os rótulos (erros ficam como estão) */
+.page :global(p.t-caption[id$='-msg']:not([role='alert'])) {
+  opacity: 0.7;
 }
 
-.column {
+.container {
   display: flex;
   flex-direction: column;
-  gap: 42px;
+  gap: 40px;
   width: 100%;
-  max-width: 480px;
-  view-transition-name: sim2-form;
+  max-width: 1120px;
   animation: enter 0.35s ease-out;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  width: 100%;
-}
-
-.steps {
-  display: flex;
-  flex-direction: column;
+  min-width: 0;
 }
 
 .side {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  max-width: 480px;
-  view-transition-name: sim2-panel;
-  animation: panelIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.sideHint {
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--fg-muted);
-  text-align: center;
+  min-width: 0;
 }
 
 .below {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  width: 100%;
-  max-width: 940px;
-  scroll-margin-top: 24px;
+  min-width: 0;
 }
 
 /* ---------- Seguir ou compartilhar (fim da página) ---------- */
@@ -113,25 +89,21 @@
   padding: 0 24px;
 }
 
-/* ---------- Desktop: painel ao lado, alinhado ao título ---------- */
-@media (min-width: 1000px) {
+/* ---------- Desktop: painel lateral fixo ---------- */
+@media (min-width: 1024px) {
   .layout {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
+    grid-template-columns: minmax(0, 1fr) 392px;
+    gap: 32px;
   }
 
   .side {
     position: sticky;
     top: var(--side-top, 24px);
-    flex-shrink: 0;
-    width: 420px;
-    max-width: none;
-    margin-top: 116px;
   }
 }
 
-@media (max-width: 999px) {
+/* Celular/tablet: espaço para a barra fixa não cobrir o fim da página */
+@media (max-width: 1023px) {
   .below {
     padding-bottom: 72px;
   }
@@ -139,16 +111,15 @@
 
 @media (max-width: 560px) {
   .page {
-    gap: 40px;
     padding: 20px 16px 40px;
   }
 
-  .column {
-    gap: 20px;
+  .container {
+    gap: 24px;
   }
 
-  .form {
-    gap: 28px;
+  .layout {
+    gap: 32px;
   }
 
   .final {
@@ -172,28 +143,8 @@
   }
 }
 
-@keyframes panelIn {
-  from {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .column,
-  .side {
+  .container {
     animation: none;
-  }
-}
-
-.sections {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Celular: o painel vazio (antes do resultado) não ocupa espaço no fim do formulário */
-@media (max-width: 999px) {
-  .sideEmpty {
-    display: none;
   }
 }

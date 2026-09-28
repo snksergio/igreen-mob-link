@@ -35,10 +35,10 @@ export function GeradorHeader({ step, label }: { step?: number; label?: string }
   )
 }
 
-export function GeradorPageHeader({ badge, title, subtitle }: { badge: string; title: ReactNode; subtitle: ReactNode }) {
+export function GeradorPageHeader({ badge, title, subtitle }: { badge?: string; title: ReactNode; subtitle: ReactNode }) {
   return (
     <div className={styles.pageHeader}>
-      <span className={cn(styles.badge, styles.badgePage, 't-label')}>{badge}</span>
+      {badge ? <span className={cn(styles.badge, styles.badgePage, 't-label')}>{badge}</span> : null}
       <div className={styles.titleRow}>
         <h1 className="t-page-title">{title}</h1>
         <p className={cn('t-page-subtitle', styles.subtitle)}>{subtitle}</p>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Field } from '../../components/ui/Field'
 import { parseLocaleNumber } from '../../lib/format'
 import { fixed } from '../format'
@@ -13,7 +13,7 @@ type NumInputProps = {
   suffix?: string
   min?: number
   max?: number
-  helper?: string
+  helper?: ReactNode
   width?: number
 }
 

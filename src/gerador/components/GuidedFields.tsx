@@ -9,13 +9,13 @@ import { CONEXOES, TAX_KEYS, taxCustom } from '../guided'
 import { CHARGERS, DEFAULTS, TERMS, recurrenceProjection, type SimInputs } from '../model'
 import { useGerador } from '../state'
 import { ChargerCarousel } from './ChargerCarousel'
-import { FormNumber } from './Guided'
+import { NumInput } from './NumInput'
 import { Segmented } from './Segmented'
 import { TributosPanel } from './TributosPanel'
 import sim from './Sim.module.css'
 import styles from './Guided.module.css'
 
-/* Campos de cada seção do formulário v2 (as seções aparecem conforme as anteriores são preenchidas) */
+/* Campos de cada seção do formulário v2 (já preenchidos com as premissas padrão, como no simulador com abas) */
 
 const INCLUSO = ['Equipamento', 'Instalação', 'Pintura', 'Licença iGreen']
 const BATERIAS = [
@@ -36,30 +36,16 @@ function More({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function useFilled() {
-  const { state } = useGerador()
-  const set = new Set(state.simulacao.preenchidos)
-  return (...keys: string[]) => keys.every((k) => set.has(k))
-}
-
 /* ================= Eletroposto ================= */
 
 export function EletropostoFields() {
-  const { state, setSim, patch } = useGerador()
-  const filled = useFilled()
-  const { inputs, preenchidos } = state.simulacao
-
-  const choose = (charger: SimInputs['charger']) => {
-    // Carros ainda não informados seguem o padrão do modelo (não aparecem até a pessoa digitar)
-    setSim(filled('cars') ? { charger } : { charger, cars: CHARGERS[charger].defaultCars })
-    if (!filled('charger')) patch('simulacao', { preenchidos: [...preenchidos, 'charger'] })
-  }
+  const { state, setSim } = useGerador()
 
   return (
     <>
-      <ChargerCarousel inputs={inputs} selected={filled('charger') ? inputs.charger : null} onSelect={choose} />
+      <ChargerCarousel inputs={state.simulacao.inputs} onSelect={(charger) => setSim({ charger, cars: CHARGERS[charger].defaultCars })} />
       <div className={styles.included}>
-        <span className={styles.includedTitle}>Incluso em todos os modelos</span>
+        <span className={styles.includedTitle}>Incluso em todos os modelos:</span>
         <ul className={styles.includedList}>
           {INCLUSO.map((item) => (
             <li key={item}>
@@ -78,8 +64,7 @@ export function EletropostoFields() {
 /* ================= Movimento ================= */
 
 export function MovimentoFields() {
-  const { state, result } = useGerador()
-  const filled = useFilled()
+  const { state, setSim, result } = useGerador()
   const s = state.simulacao.inputs
   const cap = result.capacity
   const max = Math.max(1, cap.maxCars)
@@ -91,17 +76,17 @@ export function MovimentoFields() {
   return (
     <>
       <div className={sim.row2}>
-        <FormNumber field="cars" label="CARROS POR DIA" suffix="carros" min={1} max={max} placeholder="Ex.: 7" helper={`Até ${max} por dia neste modelo`} />
-        <FormNumber field="days" label="DIAS DE OPERAÇÃO" suffix="por mês" min={1} max={31} placeholder="Ex.: 30" helper="De 1 a 31 dias" />
+        <NumInput label="CARROS POR DIA" value={s.cars} decimals={0} suffix="carros" min={1} max={max} onChange={(cars) => setSim({ cars })} helper={`Até ${max} por dia neste modelo`} />
+        <NumInput label="DIAS DE OPERAÇÃO" value={s.days} decimals={0} suffix="por mês" min={1} max={31} onChange={(days) => setSim({ days })} helper="De 1 a 31 dias" />
       </div>
-      <FormNumber
-        field="kwh"
+      <NumInput
         label="ENERGIA POR RECARGA"
+        value={s.kwh}
         suffix="kWh"
         decimals={1}
         min={0.1}
         max={500}
-        placeholder="Ex.: 25"
+        onChange={(kwh) => setSim({ kwh })}
         helper={
           <>
             Média vendida por carro. Baterias de referência:{' '}
@@ -117,27 +102,25 @@ export function MovimentoFields() {
         }
       />
 
-      {filled('cars', 'kwh') ? (
-        <div className={styles.field}>
-          <div className={sim.groupHead}>
-            <span className={sim.label}>Capacidade usada</span>
-            <span className={sim.meterValue}>{pct(cap.utilization * 100)}</span>
-          </div>
-          <div className={sim.meterTrack} role="meter" aria-label="Capacidade usada" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(cap.utilization * 100)}>
-            <span className={cn(sim.meterFill, cap.utilization >= 0.9 && sim.meterHigh)} style={{ width: `${Math.min(100, cap.utilization * 100)}%` }} />
-          </div>
-          <More label="Como calculamos a capacidade">
-            <p>
-              Por dia: {perConnector}. <b>Limite estimado: {max} carros/dia.</b>
-            </p>
-            <p>
-              Premissas: {s.powerUse}% da potência nominal e {s.turnoverMinutes} min entre carros.
-              {s.charger === 'duo' ? ` Conectores simultâneos; divisão aproximada de ${s.acShare}% em 7 kW.` : ''} Potência efetiva e permanência variam conforme o
-              veículo. Capacidade não garante movimento.
-            </p>
-          </More>
+      <div className={styles.field}>
+        <div className={sim.groupHead}>
+          <span className={sim.label}>Capacidade usada</span>
+          <span className={sim.meterValue}>{pct(cap.utilization * 100)}</span>
         </div>
-      ) : null}
+        <div className={sim.meterTrack} role="meter" aria-label="Capacidade usada" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(cap.utilization * 100)}>
+          <span className={cn(sim.meterFill, cap.utilization >= 0.9 && sim.meterHigh)} style={{ width: `${Math.min(100, cap.utilization * 100)}%` }} />
+        </div>
+        <More label="Como calculamos a capacidade">
+          <p>
+            Por dia: {perConnector}. <b>Limite estimado: {max} carros/dia.</b>
+          </p>
+          <p>
+            Premissas: {s.powerUse}% da potência nominal e {s.turnoverMinutes} min entre carros.
+            {s.charger === 'duo' ? ` Conectores simultâneos; divisão aproximada de ${s.acShare}% em 7 kW.` : ''} Potência efetiva e permanência variam conforme o
+            veículo. Capacidade não garante movimento.
+          </p>
+        </More>
+      </div>
     </>
   )
 }
@@ -146,7 +129,6 @@ export function MovimentoFields() {
 
 export function PrecosFields() {
   const { state, setSim } = useGerador()
-  const filled = useFilled()
   const s = state.simulacao.inputs
   const margem = s.sale - s.cost
 
@@ -154,12 +136,10 @@ export function PrecosFields() {
     <>
       <div className={styles.field}>
         <div className={sim.row2}>
-          <FormNumber field="cost" label="CUSTO DA ENERGIA" suffix="R$/kWh" decimals={2} max={100} placeholder="Ex.: 0,80" helper="Com os tributos da fatura" />
-          <FormNumber field="sale" label="PREÇO DE VENDA" suffix="R$/kWh" decimals={2} max={100} placeholder="Ex.: 2,20" helper="Cobrado do motorista" />
+          <NumInput label="CUSTO DA ENERGIA" value={s.cost} suffix="R$/kWh" max={100} onChange={(cost) => setSim({ cost })} helper="Com os tributos da fatura" />
+          <NumInput label="PREÇO DE VENDA" value={s.sale} suffix="R$/kWh" max={100} onChange={(sale) => setSim({ sale })} helper="Cobrado do motorista" />
         </div>
-        {filled('cost', 'sale') ? (
-          <span className={cn(sim.margin, margem < 0 && sim.marginNegative, styles.alignStart)}>Margem bruta: R$ {fixed(margem)} por kWh</span>
-        ) : null}
+        <span className={cn(sim.margin, margem < 0 && sim.marginNegative, styles.alignStart)}>Margem bruta: R$ {fixed(margem)} por kWh</span>
       </div>
 
       <div className={styles.field}>
@@ -193,7 +173,6 @@ export function PrecosFields() {
 
 export function CarteiraFields() {
   const { state, setSim } = useGerador()
-  const filled = useFilled()
   const s = state.simulacao.inputs
   const rec = recurrenceProjection(s)
   const linhas = [
@@ -203,7 +182,15 @@ export function CarteiraFields() {
 
   return (
     <>
-      <FormNumber field="monthlyClients" label="NOVOS CLIENTES POR MÊS" suffix="clientes" min={0} max={500} placeholder="Ex.: 90" helper="Clientes conectados pelo seu ponto, de 0 a 500 por mês" />
+      <NumInput
+        label="NOVOS CLIENTES POR MÊS"
+        value={s.monthlyClients}
+        decimals={0}
+        suffix="clientes"
+        max={500}
+        onChange={(monthlyClients) => setSim({ monthlyClients })}
+        helper="Clientes conectados pelo seu ponto, de 0 a 500 por mês"
+      />
 
       <div className={styles.field}>
         <span className={sim.label}>Conexões oferecidas</span>
@@ -226,26 +213,24 @@ export function CarteiraFields() {
         </div>
       </div>
 
-      {filled('monthlyClients') ? (
-        <div className={styles.field}>
-          <span className={sim.label}>Quanto a carteira rende por mês</span>
-          <dl className={styles.list}>
-            {linhas.map((l) => (
-              <div key={l.titulo} className={styles.listRow}>
-                <div className={styles.listLeft}>
-                  <dt>{l.titulo}</dt>
-                  <span>{num(l.clientes)} clientes na carteira</span>
-                </div>
-                <dd className={styles.listRight}>
-                  <b>{moneyCents(l.mensal)}/mês</b>
-                  <span>acumulado {moneyCents(l.acumulado)}</span>
-                </dd>
+      <div className={styles.field}>
+        <span className={sim.label}>Quanto a carteira rende por mês</span>
+        <dl className={styles.list}>
+          {linhas.map((l) => (
+            <div key={l.titulo} className={styles.listRow}>
+              <div className={styles.listLeft}>
+                <dt>{l.titulo}</dt>
+                <span>{num(l.clientes)} clientes na carteira</span>
               </div>
-            ))}
-          </dl>
-          <span className={styles.help}>{moneyCents(rec.perClient)}/mês por cliente nas conexões escolhidas. Entra no resultado do investidor.</span>
-        </div>
-      ) : null}
+              <dd className={styles.listRight}>
+                <b>{moneyCents(l.mensal)}/mês</b>
+                <span>acumulado {moneyCents(l.acumulado)}</span>
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <span className={styles.help}>{moneyCents(rec.perClient)}/mês por cliente nas conexões escolhidas. Entra no resultado do investidor.</span>
+      </div>
     </>
   )
 }
