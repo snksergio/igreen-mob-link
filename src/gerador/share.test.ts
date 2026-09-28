@@ -1,38 +1,72 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULTS, calculate } from './model'
+import { DEFAULTS, calculate, clampInputs } from './model'
 import { readSimulationFile, sanitizeInputs, shareText } from './share'
 import { buildSimulationDocument } from './simulationDoc'
 
 const meta = { codigo: 'SIM-TESTE', geradoEm: new Date('2026-09-28T12:00:00Z'), responsavel: 'Juliana Martins', logoSvg: '' }
+const documento = (inputs = DEFAULTS, extra: Partial<typeof meta> = {}) => buildSimulationDocument({ inputs, result: calculate(inputs), ...meta, ...extra })
+
+/** Troca o JSON embutido no documento (simula alguém editando o arquivo) */
+const adulterar = (html: string, fn: (payload: Record<string, any>) => void) =>
+  html.replace(/(<script type="application\/json" id="igreen-mob-simulacao">)([\s\S]*?)(<\/script>)/, (_, a: string, json: string, c: string) => {
+    const payload = JSON.parse(json)
+    fn(payload)
+    return a + JSON.stringify(payload).replace(/</g, '\\u003c') + c
+  })
 
 describe('documento da simulação', () => {
   it('guarda as premissas no próprio HTML e o importar lê de volta', () => {
     const inputs = { ...DEFAULTS, charger: 'ultra' as const, cars: 12, energyEnabled: false, sale: 2.5 }
-    const html = buildSimulationDocument({ inputs, result: calculate(inputs), ...meta })
-    expect(html).toContain('<!doctype html>')
-    expect(readSimulationFile(html)).toEqual(inputs)
+    expect(readSimulationFile(documento(inputs))).toEqual({ inputs: clampInputs(inputs), divergente: false })
   })
 
   it('traz o essencial para analisar: recebimento, premissas, DRE e mês a mês', () => {
-    const html = buildSimulationDocument({ inputs: DEFAULTS, result: calculate(DEFAULTS), ...meta })
+    const html = documento()
     for (const trecho of ['R$ 7.311', '4,1 meses', 'CARROS POR DIA', 'PREÇO DE VENDA', 'Lucro disponível aos sócios', 'Mês a mês', 'SIM-TESTE', 'Juliana Martins']) {
       expect(html).toContain(trecho)
     }
   })
 
-  it('o texto das premissas não quebra o JSON embutido', () => {
-    const html = buildSimulationDocument({ inputs: DEFAULTS, result: calculate(DEFAULTS), ...meta, responsavel: '</script><b>x' })
-    expect(readSimulationFile(html)).toEqual(DEFAULTS)
+  it('o texto do documento não quebra o JSON embutido', () => {
+    expect(readSimulationFile(documento(DEFAULTS, { responsavel: '</script><b>x' }))?.inputs).toEqual(DEFAULTS)
   })
 })
 
-describe('importar simulação', () => {
-  it('aceita o JSON das premissas', () => {
-    expect(readSimulationFile(JSON.stringify({ inputs: { cars: 9, charger: 'lento' } }))).toEqual({ cars: 9, charger: 'lento' })
+describe('importar protege contra documento editado', () => {
+  it('aplica os limites dos campos', () => {
+    const html = adulterar(documento(), (p) => Object.assign(p.inputs, { cars: 5000, share: 90, monthlyClients: -3, kwh: 0 }))
+    const lido = readSimulationFile(html)!.inputs
+    expect(lido.cars).toBe(calculate(lido).capacity.maxCars)
+    expect(lido.share).toBe(20)
+    expect(lido.monthlyClients).toBe(0)
+    expect(lido.kwh).toBe(0.1)
   })
 
-  it('ignora chaves desconhecidas e tipos errados', () => {
-    expect(sanitizeInputs({ cars: '9', hack: 1, days: 20, charger: 42 })).toEqual({ days: 20 })
+  it('ignora campos que não são editáveis no simulador e valores fora das opções', () => {
+    const html = adulterar(documento(), (p) => Object.assign(p.inputs, { powerUse: 100, loss: 0, fixed: 999, localMode: 'isento', charger: 'turbo' }))
+    const lido = readSimulationFile(html)!.inputs
+    expect(lido.powerUse).toBe(DEFAULTS.powerUse)
+    expect(lido.loss).toBe(DEFAULTS.loss)
+    expect(lido.fixed).toBe(DEFAULTS.fixed)
+    expect(lido.localMode).toBe(DEFAULTS.localMode)
+    expect(lido.charger).toBe(DEFAULTS.charger)
+  })
+
+  it('recalcula e avisa quando os números do documento não batem com o cálculo atual', () => {
+    const html = adulterar(documento(), (p) => {
+      p.resumo.recebimentoMes1 = 99999
+    })
+    expect(readSimulationFile(html)).toEqual({ inputs: DEFAULTS, divergente: true })
+  })
+})
+
+describe('importar outros formatos', () => {
+  it('aceita o JSON das premissas', () => {
+    expect(readSimulationFile(JSON.stringify({ inputs: { cars: 3, charger: 'lento' } }))?.inputs).toEqual(clampInputs({ ...DEFAULTS, cars: 3, charger: 'lento' }))
+  })
+
+  it('só aceita chaves editáveis, com o tipo e as opções certas', () => {
+    expect(sanitizeInputs({ cars: '9', hack: 1, days: 20, charger: 42, hours: 12, incomeMode: 'charging' })).toEqual({ days: 20, incomeMode: 'charging' })
   })
 
   it('arquivo que não é uma simulação devolve null', () => {

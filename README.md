@@ -89,15 +89,16 @@ Mesmo fluxo e mesmas etapas 2 a 4, trocando só o simulador (`screens/SimuladorV
   - A ajuda de cada campo fica logo abaixo, em uma linha e mais suave que o rótulo. As explicações longas ficam em "Como calculamos".
   - O que é fixo (administração iGreen, premissas padrão de tributos) aparece como informação, não como campo.
 - **Resultado:** o painel mostra o resultado desde o início. Abaixo vêm o relatório "Entenda cada número" e os botões "Seguir para proposta" e "Compartilhar simulação". No celular, as abas do relatório ficam grudadas no topo durante a rolagem.
-- **Compartilhar** (`simulationDoc.ts`, `share.ts`, `shareImage.ts`, `components/ShareModal.tsx`):
-  - Gera o **documento da simulação**: um HTML único, sem dependências, que abre no navegador, no e-mail e no WhatsApp e imprime bem.
-    - Traz o resultado, as premissas com os mesmos nomes dos campos do simulador (para preencher lado a lado), o gráfico de 36 meses, o DRE do mês 1, a carteira e o mês a mês.
-    - Leva código, data e responsável, e nenhum dado pessoal do cliente.
-  - Gera também uma imagem 1080×1350 com o resultado.
-  - No celular, "WhatsApp" e "Mais opções" usam o compartilhamento do sistema já com os arquivos. No computador, o documento é baixado para anexar.
-- **Importar simulação** (`components/ImportSimulation.tsx`, botão secundário na linha do título do simulador v2):
-  - Lê o documento, onde as premissas vão embutidas num `<script type="application/json" id="igreen-mob-simulacao">`, ou um JSON, e preenche todos os campos.
-  - É uma leitura direta, sem IA: só entram chaves conhecidas e com o tipo certo. Um arquivo que não é uma simulação mostra um aviso.
+- **Compartilhar** (`simulationDoc.ts`, `share.ts`, `components/ShareModal.tsx`): envia sempre o **documento da simulação**, nunca só uma imagem.
+  - O documento é um HTML único, sem dependências, que abre no navegador, no e-mail e no WhatsApp e imprime bem.
+  - Traz o resultado, as premissas com os mesmos nomes dos campos do simulador (para preencher lado a lado), o gráfico de 36 meses, o DRE do mês 1, a carteira e o mês a mês.
+  - Leva código, data e responsável, e nenhum dado pessoal do cliente.
+  - O modal mostra uma prévia do próprio documento.
+  - No celular, "WhatsApp" e "Mais opções" usam o compartilhamento do sistema já com o arquivo. No computador, o documento é baixado para anexar.
+- **Importar simulação** (`components/ImportSimulation.tsx`, botão na linha do título do simulador v2, no mesmo acabamento dos campos):
+  - Lê o documento, onde as premissas vão embutidas num `<script type="application/json" id="igreen-mob-simulacao">`, ou um JSON, e preenche os campos. É uma leitura direta, sem IA.
+  - Como o arquivo pode ser editado, só entram os campos editáveis no simulador, com o tipo e as opções válidas e dentro dos limites do modelo. Campos técnicos, como potência útil, perdas e tempo entre carros, seguem as regras atuais.
+  - Todo o cálculo é refeito com o modelo atual. Se o resultado não bater com o registrado no documento (documento alterado ou regra atualizada), aparece um aviso.
 
 ## Tema escuro (`lib/theme.ts`)
 

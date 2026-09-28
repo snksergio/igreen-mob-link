@@ -1,46 +1,48 @@
 import { useEffect, useRef, useState } from 'react'
 import { ICONS } from '../../assets'
-import { Button } from '../../components/ui/Button'
 import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
-import { DEFAULTS } from '../model'
 import { readSimulationFile } from '../share'
 import { useGerador } from '../state'
 import styles from './ImportSimulation.module.css'
 
+type Aviso = { tom: 'ok' | 'alerta' | 'erro'; texto: string }
+
 /**
  * "Importar simulação" (ao lado do título do simulador): lê o documento HTML gerado em "Compartilhar"
- * (ou um JSON) e preenche todos os campos com as premissas guardadas nele. Leitura direta, sem IA.
+ * (ou um JSON), aplica só os campos editáveis dentro dos limites e refaz o cálculo com as regras atuais.
  */
 export function ImportSimulation({ className }: { className?: string }) {
   const { setSim } = useGerador()
   const inputRef = useRef<HTMLInputElement>(null)
-  const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null)
+  const [aviso, setAviso] = useState<Aviso | null>(null)
 
   useEffect(() => {
-    if (!notice) return
-    const t = setTimeout(() => setNotice(null), 3200)
+    if (!aviso) return
+    const t = setTimeout(() => setAviso(null), aviso.tom === 'ok' ? 3200 : 6000)
     return () => clearTimeout(t)
-  }, [notice])
+  }, [aviso])
 
   const importar = async (file: File) => {
-    const inputs = readSimulationFile(await file.text())
-    if (!inputs) {
-      setNotice({ ok: false, text: 'Arquivo não reconhecido. Use o documento de simulação gerado pelo iGreen Mob.' })
+    const lido = readSimulationFile(await file.text())
+    if (!lido) {
+      setAviso({ tom: 'erro', texto: 'Arquivo não reconhecido. Use o documento de simulação gerado pelo iGreen Mob.' })
       return
     }
-    setSim({ ...DEFAULTS, ...inputs })
-    setNotice({ ok: true, text: 'Simulação importada: os campos foram preenchidos.' })
+    setSim(lido.inputs)
+    setAviso(
+      lido.divergente
+        ? { tom: 'alerta', texto: 'Simulação importada e recalculada com as regras atuais. Os valores diferem dos que estavam no documento.' }
+        : { tom: 'ok', texto: 'Simulação importada: os campos foram preenchidos e o cálculo foi refeito.' },
+    )
   }
 
   return (
     <>
-      <Button variant="secondary" className={cn(styles.button, className)} onClick={() => inputRef.current?.click()}>
-        <span className={styles.inner}>
-          <Icon src={ICONS.arrowRight} size={18} className={styles.icon} />
-          Importar simulação
-        </span>
-      </Button>
+      <button type="button" className={cn(styles.button, className)} onClick={() => inputRef.current?.click()}>
+        <Icon src={ICONS.arrowRight} size={18} className={styles.icon} />
+        <span>Importar simulação</span>
+      </button>
       <input
         ref={inputRef}
         type="file"
@@ -54,9 +56,9 @@ export function ImportSimulation({ className }: { className?: string }) {
           if (file) void importar(file)
         }}
       />
-      {notice ? (
-        <div className={cn(styles.toast, !notice.ok && styles.toastError)} role="status">
-          {notice.text}
+      {aviso ? (
+        <div className={cn(styles.toast, aviso.tom === 'alerta' && styles.toastAlerta, aviso.tom === 'erro' && styles.toastErro)} role="status">
+          {aviso.texto}
         </div>
       ) : null}
     </>

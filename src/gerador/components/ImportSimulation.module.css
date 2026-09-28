@@ -1,18 +1,47 @@
-/* Botão secundário do DS (como "Compartilhar simulação"), no tamanho do conteúdo, com ícone de upload */
+/* Mesmo acabamento dos campos do DS (fundo, borda, sombra, altura e anel de foco), com ícone de upload */
 .button {
-  flex: none;
-  width: auto;
-  padding: 0 20px;
-}
-
-.inner {
   display: inline-flex;
+  flex: none;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  height: var(--h-form-lg);
+  padding: 0 20px 0 18px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-base);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--fg-main);
+  white-space: nowrap;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease;
 }
 
-/* Seta para cima: "trazer" o arquivo; acompanha a cor do texto do botão */
+.button:hover {
+  border-color: var(--fg-subtle);
+  color: var(--fg-strong);
+}
+
+.button:focus-visible {
+  outline: none;
+  border-color: var(--border-primary);
+  box-shadow: 0 0 0 var(--ring-base) var(--ring-primary);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+/* Seta para cima ("trazer" o arquivo), acompanhando a cor do texto */
 .icon {
+  flex-shrink: 0;
   background-color: currentColor;
   transform: rotate(-90deg);
 }
@@ -26,10 +55,10 @@
   z-index: 1100;
   left: 50%;
   bottom: 32px;
-  max-width: calc(100vw - 32px);
+  max-width: min(560px, calc(100vw - 32px));
   padding: 12px 18px;
   transform: translateX(-50%);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-lg);
   background: var(--bg-tooltip);
   box-shadow: var(--shadow-md);
   font-family: var(--font-sans);
@@ -40,13 +69,16 @@
   text-align: center;
 }
 
-.toastError {
+.toastAlerta {
+  background: var(--bg-warning);
+}
+
+.toastErro {
   background: var(--border-critical);
 }
 
 @media (max-width: 560px) {
   .toast {
     bottom: 96px;
-    border-radius: var(--radius-lg);
   }
 }

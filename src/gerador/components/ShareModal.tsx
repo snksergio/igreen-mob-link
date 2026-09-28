@@ -1,18 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ICONS } from '../../assets'
 import { FancyIcon } from '../../components/ui/Controls'
 import { DialogHeader, Modal } from '../../components/ui/Modal'
 import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { getResponsavel } from '../../services/responsavel'
-import { POTENCIA } from '../guided'
 import { shareText } from '../share'
-import { renderShareImage } from '../shareImage'
 import { buildSimulationDocument } from '../simulationDoc'
 import { useGerador } from '../state'
 import styles from './ShareModal.module.css'
 
-type Arquivos = { codigo: string; documento: File; documentoUrl: string; imagem: File | null; imagemUrl: string }
+type Documento = { codigo: string; html: string; arquivo: File; url: string }
+
+/** Largura em que o documento é desenhado na prévia (depois reduzido para caber no modal) */
+const LARGURA_DOC = 900
 
 let logoCache: Promise<string> | null = null
 /** SVG do logo iGreen Energy, embutido no documento (sem depender de rede para abrir) */
@@ -29,70 +30,63 @@ function ShareAction({ icon, label, onClick, iconClass, disabled }: { icon: stri
   )
 }
 
-const baixar = (url: string, nome: string) => {
-  const a = document.createElement('a')
-  a.href = url
-  a.download = nome
-  a.click()
+/** Prévia do próprio documento (topo), reduzida para a largura do modal */
+function DocPreview({ html }: { html: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(0.5)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const ro = new ResizeObserver(([entry]) => setScale(entry.contentRect.width / LARGURA_DOC))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  return (
+    <div ref={ref} className={styles.docPreview}>
+      <iframe title="Prévia do documento da simulação" srcDoc={html} sandbox="" scrolling="no" tabIndex={-1} style={{ width: LARGURA_DOC, height: `${100 / scale}%`, transform: `scale(${scale})` }} />
+    </div>
+  )
 }
 
 /**
- * Compartilhar a simulação: gera o documento completo (HTML que abre em qualquer lugar e serve para
- * importar depois) e a imagem do resultado. No celular, o compartilhamento do sistema já leva os arquivos.
+ * Compartilhar a simulação: sempre o documento completo (HTML que abre em qualquer lugar e serve para
+ * importar depois), nunca só uma imagem. No celular, o compartilhamento do sistema já envia o arquivo.
  */
 export function ShareModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { state, result } = useGerador()
   const inputs = state.simulacao.inputs
   const combined = inputs.incomeMode === 'combined'
-  const [arquivos, setArquivos] = useState<Arquivos | null>(null)
+  const [doc, setDoc] = useState<Documento | null>(null)
   const [failed, setFailed] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
 
   const m1 = result.months[0]
-  const recebimento = combined ? m1.totalInvestor : m1.investorRechargeCash
-  const payback = combined ? result.payback : result.chargingPayback
-  const net36 = combined ? result.net36 : result.months[35].chargingNetAccumulated
-  const message = shareText({ modelo: result.charger.name, recebimento, payback })
+  const message = shareText({
+    modelo: result.charger.name,
+    recebimento: combined ? m1.totalInvestor : m1.investorRechargeCash,
+    payback: combined ? result.payback : result.chargingPayback,
+  })
 
   useEffect(() => {
     if (!open) return
     let alive = true
-    const urls: string[] = []
+    let url = ''
     const agora = new Date()
     const codigo = `SIM-${agora.getTime().toString(36).toUpperCase().slice(-6)}`
-    const solo = result.charger.investorShare === 1
-
-    ;(async () => {
-      const html = buildSimulationDocument({ inputs, result, codigo, geradoEm: agora, responsavel: getResponsavel().nome, logoSvg: await logoSvg() })
-      const documento = new File([html], `simulacao-igreen-mob-${codigo}.html`, { type: 'text/html' })
-      const imagemBlob = await renderShareImage({
-        modelo: result.charger.name,
-        potencia: POTENCIA[inputs.charger],
-        investimento: result.capital.investor,
-        sociedade: solo ? '100% seu' : `Sociedade ${result.charger.investorShare * 100}/${result.charger.igreenShare * 100}`,
-        recebimento,
-        payback,
-        net36,
-        roi36: (net36 / result.investment) * 100,
-        saldo: [-result.investment, ...result.months.map((m) => (combined ? m.netAccumulated : m.chargingNetAccumulated))],
-        recargas: m1.investorRechargeCash,
-        carteira: combined ? m1.commissionNet : null,
-        clientes: m1.clients,
-        site: 'iGreen Mob',
-      }).catch(() => null)
-      if (!alive) return
-      const imagem = imagemBlob ? new File([imagemBlob], `simulacao-igreen-mob-${codigo}.png`, { type: 'image/png' }) : null
-      const documentoUrl = URL.createObjectURL(documento)
-      const imagemUrl = imagem ? URL.createObjectURL(imagem) : ''
-      urls.push(documentoUrl, imagemUrl)
-      setArquivos({ codigo, documento, documentoUrl, imagem, imagemUrl })
-    })().catch(() => alive && setFailed(true))
-
+    logoSvg()
+      .then((logo) => {
+        if (!alive) return
+        const html = buildSimulationDocument({ inputs, result, codigo, geradoEm: agora, responsavel: getResponsavel().nome, logoSvg: logo })
+        const arquivo = new File([html], `simulacao-igreen-mob-${codigo}.html`, { type: 'text/html' })
+        url = URL.createObjectURL(arquivo)
+        setDoc({ codigo, html, arquivo, url })
+      })
+      .catch(() => alive && setFailed(true))
     return () => {
       alive = false
-      urls.forEach((u) => u && URL.revokeObjectURL(u))
+      if (url) URL.revokeObjectURL(url)
     }
-  }, [open, inputs, result, combined, recebimento, payback, net36, m1])
+  }, [open, inputs, result])
 
   useEffect(() => {
     if (!notice) return
@@ -100,37 +94,41 @@ export function ShareModal({ open, onClose }: { open: boolean; onClose: () => vo
     return () => clearTimeout(t)
   }, [notice])
 
-  const files = arquivos ? [arquivos.documento, ...(arquivos.imagem ? [arquivos.imagem] : [])] : []
-  const canShareFiles = files.length > 0 && Boolean(navigator.canShare?.({ files }))
+  const canShareFile = Boolean(doc && navigator.canShare?.({ files: [doc.arquivo] }))
 
-  const compartilharArquivos = async () => {
+  const compartilharArquivo = async () => {
+    if (!doc) return false
     try {
-      await navigator.share({ files, title: 'Simulação iGreen Mob', text: message })
+      await navigator.share({ files: [doc.arquivo], title: 'Simulação iGreen Mob', text: message })
       return true
     } catch {
       return false
     }
   }
 
+  const baixar = () => {
+    if (!doc) return
+    const a = document.createElement('a')
+    a.href = doc.url
+    a.download = doc.arquivo.name
+    a.click()
+  }
+
   const whatsapp = async () => {
-    // Celular: compartilhamento do sistema já com o documento e a imagem (a pessoa escolhe o WhatsApp)
-    if (canShareFiles && (await compartilharArquivos())) return
+    // Celular: compartilhamento do sistema já com o documento (a pessoa escolhe o WhatsApp)
+    if (canShareFile && (await compartilharArquivo())) return
+    // Computador: baixa o documento e abre a conversa para anexá-lo
+    baixar()
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener')
-    setNotice('Anexe o documento baixado na conversa')
+    setNotice('Documento baixado: anexe na conversa do WhatsApp')
   }
 
-  const email = () => {
-    const assunto = `Simulação iGreen Mob · ${result.charger.name}${arquivos ? ` · ${arquivos.codigo}` : ''}`
-    window.location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(`${message}\n\n(Anexe o documento da simulação baixado.)`)}`
-  }
-
-  const maisOpcoes = async () => {
-    if (canShareFiles && (await compartilharArquivos())) return
-    try {
-      await navigator.share({ title: 'Simulação iGreen Mob', text: message })
-    } catch {
-      /* cancelado */
-    }
+  const email = async () => {
+    if (canShareFile && (await compartilharArquivo())) return
+    baixar()
+    const assunto = `Simulação iGreen Mob · ${result.charger.name}${doc ? ` · ${doc.codigo}` : ''}`
+    window.location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(`${message}\n\n(Documento da simulação em anexo.)`)}`
+    setNotice('Documento baixado: anexe no e-mail')
   }
 
   return (
@@ -143,47 +141,26 @@ export function ShareModal({ open, onClose }: { open: boolean; onClose: () => vo
             <span className={styles.docTitle}>Documento da simulação</span>
             <span className={styles.docHint}>Resultado, premissas, gráfico, DRE e mês a mês · abre no navegador, e-mail e WhatsApp</span>
           </div>
-          {arquivos ? (
-            <a className={styles.docOpen} href={arquivos.documentoUrl} target="_blank" rel="noreferrer">
+          {doc ? (
+            <a className={styles.docOpen} href={doc.url} target="_blank" rel="noreferrer">
               Abrir
             </a>
-          ) : (
-            <span className={styles.docHint}>{failed ? 'Falhou' : 'Gerando…'}</span>
-          )}
+          ) : null}
         </div>
 
-        <div className={styles.preview}>
-          {arquivos?.imagemUrl ? (
-            <img src={arquivos.imagemUrl} alt={`Imagem do resultado: ${result.charger.name}, recebimento estimado no mês 1 e retorno`} />
-          ) : (
-            <span className={styles.previewPlaceholder}>{failed ? 'Não foi possível gerar os arquivos.' : 'Gerando a imagem…'}</span>
-          )}
-        </div>
+        {doc ? <DocPreview html={doc.html} /> : <div className={styles.docPreview}>{failed ? 'Não foi possível gerar o documento.' : 'Gerando o documento…'}</div>}
 
         <div className={styles.actions}>
-          <ShareAction icon={ICONS.whatsapp} label="WhatsApp" onClick={whatsapp} disabled={!arquivos} />
-          <ShareAction icon={ICONS.mailShare} label="E-mail" onClick={email} disabled={!arquivos} />
-          <ShareAction
-            icon={ICONS.arrowRight}
-            iconClass={styles.down}
-            label="Baixar documento"
-            onClick={() => arquivos && (baixar(arquivos.documentoUrl, arquivos.documento.name), setNotice('Documento baixado'))}
-            disabled={!arquivos}
-          />
-          <ShareAction
-            icon={ICONS.arrowRight}
-            iconClass={styles.down}
-            label="Baixar imagem"
-            onClick={() => arquivos?.imagem && (baixar(arquivos.imagemUrl, arquivos.imagem.name), setNotice('Imagem baixada'))}
-            disabled={!arquivos?.imagem}
-          />
-          {'share' in navigator ? <ShareAction icon={ICONS.circleArrowRight} label="Mais opções" onClick={maisOpcoes} disabled={!arquivos} /> : null}
+          <ShareAction icon={ICONS.whatsapp} label="WhatsApp" onClick={whatsapp} disabled={!doc} />
+          <ShareAction icon={ICONS.mailShare} label="E-mail" onClick={email} disabled={!doc} />
+          <ShareAction icon={ICONS.arrowRight} iconClass={styles.down} label="Baixar documento" onClick={() => (baixar(), setNotice('Documento baixado'))} disabled={!doc} />
+          {canShareFile ? <ShareAction icon={ICONS.circleArrowRight} label="Mais opções" onClick={() => void compartilharArquivo()} /> : null}
         </div>
 
         <p className={styles.message}>{message}</p>
         <p className={styles.hint}>
-          {canShareFiles ? '' : 'No computador, baixe o documento e anexe na conversa ou no e-mail. '}
-          Para retomar depois, use “Importar simulação” no topo do simulador e escolha o documento.
+          {canShareFile ? '' : 'No computador, o documento é baixado para você anexar na conversa ou no e-mail. '}
+          Para retomar depois, use “Importar simulação” no simulador e escolha o documento.
         </p>
       </div>
       {notice ? (

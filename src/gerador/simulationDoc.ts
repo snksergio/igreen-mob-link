@@ -2,7 +2,7 @@ import { money, moneyCents } from '../lib/format'
 import { compactMoney, fixed, num, paybackLabel, pct, signedMoney } from './format'
 import { CONEXOES, POTENCIA } from './guided'
 import { TERMS, recurrenceProjection, type SimInputs, type SimResult } from './model'
-import { embedPayload, type SimulationPayload } from './share'
+import { embedPayload, resumoDe, type SimulationPayload } from './share'
 
 /*
  * Documento da simulação (HTML único, sem dependências): abre no navegador, e-mail e WhatsApp, imprime bem
@@ -119,7 +119,7 @@ export function buildSimulationDocument({ inputs: s, result, codigo, geradoEm, r
     )
     .join('')
 
-  const payload: SimulationPayload = { app: 'igreen-mob', tipo: 'simulacao-eletroposto', versao: 1, codigo, geradoEm: geradoEm.toISOString(), inputs: s }
+  const payload: SimulationPayload = { app: 'igreen-mob', tipo: 'simulacao-eletroposto', versao: 1, codigo, geradoEm: geradoEm.toISOString(), inputs: s, resumo: resumoDe(s, result) }
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -307,7 +307,7 @@ footer{text-align:center;font-size:11px;color:#8a8d93}
     <li>Comissões da carteira: energia 4% de R$ 500, seguros 5% de R$ 500 e telecom R$ 7 por linha, por cliente ativo.</li>
     <li>Tributos em prévia gerencial (Lucro Real · base 2026); alíquotas, créditos e escrituração da SCP devem ser confirmados pela contabilidade.</li>
   </ul>
-  <div class="import"><b>Importar simulação:</b> no simulador iGreen Mob, use “Importar simulação” no topo da tela e escolha este arquivo. Todos os campos são preenchidos com os valores acima.</div>
+  <div class="import"><b>Importar simulação:</b> no simulador iGreen Mob, use “Importar simulação” no topo da tela e escolha este arquivo. Os campos são preenchidos com as premissas acima, dentro dos limites do simulador, e o cálculo é refeito com as regras atuais.</div>
 </section>
 
 <footer>iGreen Mob · Simulação ${esc(codigo)} · gerada em ${dataBr(geradoEm)}</footer>
