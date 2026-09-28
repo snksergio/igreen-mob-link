@@ -312,7 +312,19 @@
   gap: 24px;
 }
 
-@media (min-width: 900px) {
+/* Duas colunas conforme a largura do cartão (painel, modal ou proposta), não da tela */
+.dreCard {
+  container-type: inline-size;
+}
+
+.embedded {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+@container (min-width: 680px) {
   .dreGrid {
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
     gap: 28px;

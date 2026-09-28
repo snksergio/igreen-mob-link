@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { moneyCents } from '../../lib/format'
 import { fixed, num, pct } from '../format'
@@ -30,7 +30,23 @@ function Rows({ lines }: { lines: Line[] }) {
  * DRE do período (mês ou ano escolhido no painel) em duas partes: a SCP das recargas (Lucro Real estimado)
  * e os recebimentos do investidor (lucros da SCP + comissões da carteira).
  */
-export function DreTable({ period, inputs, charger, periodLabel, combined }: { period: MonthRow; inputs: SimInputs; charger: Charger; periodLabel: string; combined: boolean }) {
+export function DreTable({
+  period,
+  inputs,
+  charger,
+  periodLabel,
+  combined,
+  embedded = false,
+}: {
+  period: MonthRow
+  inputs: SimInputs
+  charger: Charger
+  periodLabel: string
+  combined: boolean
+  /** Dentro de outro cartão (modal, proposta): sem borda/sombra própria */
+  embedded?: boolean
+}) {
+  const titleId = useId()
   const mult = periodLabel.startsWith('Ano') ? 12 : 1
   const recargas = inputs.cars * inputs.days * mult
   const kwh = inputs.cars * inputs.kwh * inputs.days * mult
@@ -88,11 +104,11 @@ export function DreTable({ period, inputs, charger, periodLabel, combined }: { p
   ]
 
   return (
-    <section className={styles.card} aria-labelledby="dre-titulo">
+    <section className={cn(styles.card, styles.dreCard, embedded && styles.embedded)} aria-labelledby={titleId}>
       <header className={styles.cardHead}>
         <div className={styles.cardText}>
           <span className={styles.overline}>DRE · {combined ? 'carteira iGreen + recargas' : 'só recargas'}</span>
-          <h2 id="dre-titulo" className={cn('t-section-title', styles.cardTitle)}>
+          <h2 id={titleId} className={cn('t-section-title', styles.cardTitle)}>
             Como o resultado é formado
           </h2>
           <p className={styles.cardSubtitle}>Recargas · SCP do eletroposto · Lucro Real estimado.</p>
