@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { cn } from '../../lib/cn'
+import { moneyCents } from '../../lib/format'
+import { recebidoAcumulado } from '../guided'
 import { compactMoney, paybackLabel, pct, signedMoney } from '../format'
 import type { IncomeMode, SimResult } from '../model'
 import styles from './Report.module.css'
@@ -23,13 +25,13 @@ export function ReturnChart({
   result,
   mode,
   embedded = false,
-  hideStart = false,
+  recebido = false,
 }: {
   result: SimResult
   mode: IncomeMode
   embedded?: boolean
-  /** o tooltip começa no mês 1, sem mostrar o saldo inicial (o valor do investimento) */
-  hideStart?: boolean
+  /** v2: mostra o recebido acumulado (começa em zero), sem investimento, retorno nem ROI */
+  recebido?: boolean
 }) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(640)
@@ -45,13 +47,13 @@ export function ReturnChart({
 
   const series = useMemo<Series[]>(() => {
     const start = -result.investment
-    const combined = [start, ...result.months.map((m) => m.netAccumulated)]
-    const charging = [start, ...result.months.map((m) => m.chargingNetAccumulated)]
+    const combined = recebido ? recebidoAcumulado(result, true) : [start, ...result.months.map((m) => m.netAccumulated)]
+    const charging = recebido ? recebidoAcumulado(result, false) : [start, ...result.months.map((m) => m.chargingNetAccumulated)]
     const same = combined.every((v, i) => Math.abs(v - charging[i]) < 0.5)
     const list: Series[] = [{ key: 'combined', label: 'Recargas + carteira iGreen', values: combined, className: styles.seriesA }]
     if (!same) list.push({ key: 'charging', label: 'Somente recargas', values: charging, className: styles.seriesB })
     return same ? [{ ...list[0], label: 'Recargas' }] : list
-  }, [result])
+  }, [result, recebido])
 
   const narrow = width < 520
   const height = narrow ? 230 : 280
@@ -71,10 +73,11 @@ export function ReturnChart({
   const path = (values: number[]) => values.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('')
   const area = (values: number[]) => `${path(values)}L${x(36).toFixed(1)},${y(0).toFixed(1)}L${x(0).toFixed(1)},${y(0).toFixed(1)}Z`
 
-  const payback = mode === 'combined' || series.length === 1 ? result.payback : result.chargingPayback
-  const net = mode === 'combined' || series.length === 1 ? result.net36 : result.months[35].chargingNetAccumulated
+  const main = mode === 'combined' || series.length === 1
+  const payback = recebido ? null : main ? result.payback : result.chargingPayback
+  const net = recebido ? series[main ? 0 : series.length - 1].values[36] : main ? result.net36 : result.months[35].chargingNetAccumulated
 
-  const first = hideStart ? 1 : 0
+  const first = recebido ? 1 : 0
   const pick = (clientX: number) => {
     const rect = wrapRef.current!.getBoundingClientRect()
     const month = Math.round(((clientX - rect.left - m.left) / w) * 36)
@@ -93,17 +96,26 @@ export function ReturnChart({
     <section className={cn(styles.card, embedded && styles.embedded)} aria-labelledby="retorno-titulo">
       <header className={styles.cardHead}>
         <div className={styles.cardText}>
-          <span className={styles.overline}>Retorno do capital</span>
+          <span className={styles.overline}>{recebido ? 'Recebimentos' : 'Retorno do capital'}</span>
           <h2 id="retorno-titulo" className={cn('t-section-title', styles.cardTitle)}>
-            O impacto da carteira no seu investimento
+            {recebido ? 'O impacto da carteira nos seus recebimentos' : 'O impacto da carteira no seu investimento'}
           </h2>
-          <p className={styles.cardSubtitle}>Recebimentos acumulados, descontando o investimento inicial.</p>
+          <p className={styles.cardSubtitle}>
+            {recebido ? 'Quanto você recebe, somado mês a mês, com e sem a carteira iGreen.' : 'Recebimentos acumulados, descontando o investimento inicial.'}
+          </p>
         </div>
-        <div className={styles.headStat}>
-          <span>Saldo em 36 meses</span>
-          <b>{signedMoney(net)}</b>
-          <small>ROI acumulado: {pct((net / result.investment) * 100, 0)}</small>
-        </div>
+        {recebido ? (
+          <div className={styles.headStat}>
+            <span>Recebido em 36 meses</span>
+            <b>{moneyCents(net)}</b>
+          </div>
+        ) : (
+          <div className={styles.headStat}>
+            <span>Saldo em 36 meses</span>
+            <b>{signedMoney(net)}</b>
+            <small>ROI acumulado: {pct((net / result.investment) * 100, 0)}</small>
+          </div>
+        )}
       </header>
 
       {series.length > 1 ? (
@@ -122,7 +134,11 @@ export function ReturnChart({
         className={styles.chart}
         tabIndex={0}
         role="img"
-        aria-label={`Gráfico do saldo acumulado em 36 meses. Retorno em ${paybackLabel(payback)}. Saldo final ${signedMoney(net)}.`}
+        aria-label={
+          recebido
+            ? `Gráfico do recebido acumulado em 36 meses. Total de ${moneyCents(net)}.`
+            : `Gráfico do saldo acumulado em 36 meses. Retorno em ${paybackLabel(payback)}. Saldo final ${signedMoney(net)}.`
+        }
         onPointerMove={onPointer}
         onPointerDown={onPointer}
         onPointerLeave={() => setHover(null)}

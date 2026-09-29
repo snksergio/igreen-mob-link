@@ -1,5 +1,5 @@
 import { money } from '../lib/format'
-import { paybackLabel } from './format'
+import { recebidoAcumulado } from './guided'
 import { CHARGER_IDS, DEFAULTS, calculate, clampInputs, type SimInputs, type SimResult } from './model'
 
 /*
@@ -45,8 +45,12 @@ const OPCOES: Partial<Record<keyof SimInputs, readonly string[]>> = {
   commissionMode: ['unset', 'rate'],
 }
 
-/** Resultado registrado no documento (para conferir com o recálculo ao importar) */
-export type ResumoDocumento = { recebimentoMes1: number; retornoMeses: number | null; saldo36: number }
+/**
+ * Resultado registrado no documento (para conferir com o recálculo ao importar). Sem retorno nem saldo: somados ao
+ * recebido, revelariam o investimento. Documentos antigos trazem `retornoMeses` e `saldo36`, que ainda são conferidos.
+ */
+export type ResumoDocumento = { recebimentoMes1: number; recebido36: number }
+type ResumoAntigo = { retornoMeses?: number | null; saldo36?: number }
 
 /** Conteúdo do bloco embutido no documento */
 export type SimulationPayload = {
@@ -65,8 +69,7 @@ export function resumoDe(inputs: SimInputs, result: SimResult): ResumoDocumento 
   const m1 = result.months[0]
   return {
     recebimentoMes1: combined ? m1.totalInvestor : m1.investorRechargeCash,
-    retornoMeses: combined ? result.payback : result.chargingPayback,
-    saldo36: combined ? result.net36 : result.months[35].chargingNetAccumulated,
+    recebido36: recebidoAcumulado(result, combined)[36],
   }
 }
 
@@ -115,19 +118,22 @@ export function readSimulationFile(text: string): { inputs: SimInputs; divergent
   if (!campos) return null
 
   const inputs = clampInputs({ ...DEFAULTS, ...campos })
-  const registrado = wrapped ? (data as { resumo?: Partial<ResumoDocumento> }).resumo : undefined
+  const registrado = wrapped ? (data as { resumo?: Partial<ResumoDocumento> & ResumoAntigo }).resumo : undefined
   let divergente = false
   if (registrado && typeof registrado === 'object') {
-    const atual = resumoDe(inputs, calculate(inputs))
+    const calculado = calculate(inputs)
+    const atual = resumoDe(inputs, calculado)
+    const combined = inputs.incomeMode === 'combined'
     divergente =
       !igual(atual.recebimentoMes1, Number(registrado.recebimentoMes1)) ||
-      !igual(atual.saldo36, Number(registrado.saldo36)) ||
-      !igual(atual.retornoMeses, registrado.retornoMeses == null ? null : Number(registrado.retornoMeses))
+      ('recebido36' in registrado && !igual(atual.recebido36, Number(registrado.recebido36))) ||
+      ('saldo36' in registrado && !igual(combined ? calculado.net36 : calculado.months[35].chargingNetAccumulated, Number(registrado.saldo36))) ||
+      ('retornoMeses' in registrado &&
+        !igual(combined ? calculado.payback : calculado.chargingPayback, registrado.retornoMeses == null ? null : Number(registrado.retornoMeses)))
   }
   return { inputs, divergente }
 }
 
-export function shareText({ modelo, recebimento, payback }: { modelo: string; recebimento: number; payback: number | null }) {
-  const retorno = payback == null ? 'sem retorno nos primeiros 36 meses' : `retorno em ${paybackLabel(payback)}`
-  return `Simulei um eletroposto ${modelo} na iGreen Mob: recebimento estimado de ${money(recebimento)} no mês 1 e ${retorno}. Envio o documento com a simulação completa (premissas, DRE e mês a mês).`
+export function shareText({ modelo, recebimento }: { modelo: string; recebimento: number }) {
+  return `Simulei um eletroposto ${modelo} na iGreen Mob: recebimento estimado de ${money(recebimento)} no mês 1. Envio o documento com a simulação completa (premissas, DRE e mês a mês).`
 }

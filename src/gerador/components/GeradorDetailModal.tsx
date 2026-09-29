@@ -4,7 +4,7 @@ import { DialogHeader, Modal } from '../../components/ui/Modal'
 import { Img } from '../../components/ui/Icon'
 import { money, moneyCents, moneyParts } from '../../lib/format'
 import { compactMoney, paybackLabel, pct } from '../format'
-import { POTENCIA, semInvestimento } from '../guided'
+import { POTENCIA, ocultaCapital, totaisRecebidos } from '../guided'
 import { useGerador } from '../state'
 import { DreTable } from './DreTable'
 import { MonthTable } from './MonthTable'
@@ -38,7 +38,7 @@ export function GeradorDetailModal({
   resumo?: ResumoItem[]
 }) {
   const { state, result, scenario, version } = useGerador()
-  const hideInvestment = semInvestimento(version)
+  const hideCapital = ocultaCapital(version)
   const s = state.simulacao.inputs
   const { view, month, year } = state.simulacao
   const combined = s.incomeMode === 'combined'
@@ -48,10 +48,23 @@ export function GeradorDetailModal({
   const net36 = combined ? result.net36 : result.months[35].chargingNetAccumulated
   const { int, cents } = moneyParts(receipt)
   const solo = result.charger.investorShare === 1
+  const totais = totaisRecebidos(result, combined)
+  // v2: só recebidos (sem retorno, saldo descontando o investimento nem ROI)
+  const stats = hideCapital
+    ? [
+        { icon: ICONS.handMoney, label: 'RECEBIDO NO ANO 1', value: compactMoney(totais.ano1) },
+        { icon: ICONS.moneyBag, label: 'RECEBIDO EM 36 MESES', value: compactMoney(totais.total36) },
+        { icon: ICONS.moneyBag, label: 'MÉDIA POR MÊS', value: compactMoney(totais.mediaMes) },
+      ]
+    : [
+        { icon: ICONS.handMoney, label: 'RETORNO', value: paybackLabel(payback) },
+        { icon: ICONS.moneyBag, label: 'SALDO EM 36 MESES', value: compactMoney(net36) },
+        { icon: ICONS.moneyBag, label: 'ROI EM 36 MESES', value: pct((net36 / result.investment) * 100, 0) },
+      ]
 
   const abas: { value: Aba; label: string }[] = [
     ...(resumo?.length ? [{ value: 'proposta' as const, label: 'Proposta' }] : []),
-    { value: 'retorno', label: 'Retorno' },
+    { value: 'retorno', label: hideCapital ? 'Acumulado' : 'Retorno' },
     { value: 'dre', label: 'DRE' },
     { value: 'mes', label: 'Mês a mês' },
     { value: 'premissas', label: 'Premissas' },
@@ -85,9 +98,9 @@ export function GeradorDetailModal({
                 <p className={styles.heroOverline}>RECEBIMENTO ESTIMADO NO MÊS 1 · {combined ? 'CARTEIRA + RECARGAS' : 'SÓ RECARGAS'}</p>
               </div>
               <span className={styles.heroFlag}>
-                {hideInvestment ? (
+                {hideCapital ? (
                   <>
-                    Retorno em <b>{paybackLabel(payback)}</b>
+                    <b>{compactMoney(totais.total36)}</b> recebidos em 36 meses
                   </>
                 ) : (
                   <>
@@ -102,33 +115,17 @@ export function GeradorDetailModal({
           </section>
 
           <div className={styles.stats}>
-            <div className={styles.stat}>
-              <span className={styles.statIcon}>
-                <Img src={ICONS.handMoney} size={22} />
-              </span>
-              <div>
-                <p className={styles.statLabel}>RETORNO</p>
-                <p className={styles.statValue}>{paybackLabel(payback)}</p>
+            {stats.map((st) => (
+              <div key={st.label} className={styles.stat}>
+                <span className={styles.statIcon}>
+                  <Img src={st.icon} size={22} />
+                </span>
+                <div>
+                  <p className={styles.statLabel}>{st.label}</p>
+                  <p className={styles.statValue}>{st.value}</p>
+                </div>
               </div>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statIcon}>
-                <Img src={ICONS.moneyBag} size={22} />
-              </span>
-              <div>
-                <p className={styles.statLabel}>SALDO EM 36 MESES</p>
-                <p className={styles.statValue}>{compactMoney(net36)}</p>
-              </div>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statIcon}>
-                <Img src={ICONS.moneyBag} size={22} />
-              </span>
-              <div>
-                <p className={styles.statLabel}>ROI EM 36 MESES</p>
-                <p className={styles.statValue}>{pct((net36 / result.investment) * 100, 0)}</p>
-              </div>
-            </div>
+            ))}
           </div>
 
           <div className={styles.tabsBar}>
@@ -146,7 +143,7 @@ export function GeradorDetailModal({
                 ))}
               </dl>
             ) : null}
-            {aba === 'retorno' ? <ReturnChart result={result} mode={s.incomeMode} embedded hideStart={hideInvestment} /> : null}
+            {aba === 'retorno' ? <ReturnChart result={result} mode={s.incomeMode} embedded recebido={hideCapital} /> : null}
             {aba === 'dre' ? (
               <DreTable
                 period={scenario.period}
@@ -158,7 +155,7 @@ export function GeradorDetailModal({
                 headerAside={<PeriodControl />}
               />
             ) : null}
-            {aba === 'mes' ? <MonthTable months={result.months} embedded /> : null}
+            {aba === 'mes' ? <MonthTable months={result.months} embedded recebido={hideCapital} /> : null}
             {aba === 'premissas' ? <Premissas /> : null}
           </TabPanel>
         </div>

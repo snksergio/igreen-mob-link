@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { cn } from '../../lib/cn'
 import { moneyCents } from '../../lib/format'
 import { signedMoney } from '../format'
 import type { MonthRow } from '../model'
 import styles from './Report.module.css'
 
-/** Mês a mês dos 3 anos: tabela no desktop, cards no celular */
-export function MonthTable({ months, embedded = false }: { months: MonthRow[]; embedded?: boolean }) {
+/** Mês a mês dos 3 anos: tabela no desktop, cards no celular. `recebido` (v2): última coluna com o recebido acumulado, sem descontar o investimento */
+export function MonthTable({ months, embedded = false, recebido = false }: { months: MonthRow[]; embedded?: boolean; recebido?: boolean }) {
   const [ano, setAno] = useState(1)
   const rows = months.slice((ano - 1) * 12, ano * 12)
+  const acumulado = useMemo(() => months.reduce<number[]>((acc, m) => [...acc, (acc.at(-1) ?? 0) + m.totalInvestor], []), [months])
 
   return (
     <section className={cn(styles.card, embedded && styles.embedded)} aria-labelledby="mes-titulo">
@@ -38,7 +39,7 @@ export function MonthTable({ months, embedded = false }: { months: MonthRow[]; e
               <th scope="col">Seguros²</th>
               <th scope="col">Telecom²</th>
               <th scope="col">Total com carteira³</th>
-              <th scope="col">Saldo com carteira³</th>
+              <th scope="col">{recebido ? 'Recebido acumulado³' : 'Saldo com carteira³'}</th>
             </tr>
           </thead>
           <tbody>
@@ -50,7 +51,11 @@ export function MonthTable({ months, embedded = false }: { months: MonthRow[]; e
                 <td>{moneyCents(r.insuranceCommission)}</td>
                 <td>{moneyCents(r.telecomCommission)}</td>
                 <td className={styles.strong}>{moneyCents(r.totalInvestor)}</td>
-                <td className={cn(styles.strong, r.netAccumulated < 0 ? styles.negative : styles.positive)}>{signedMoney(r.netAccumulated)}</td>
+                {recebido ? (
+                  <td className={styles.strong}>{moneyCents(acumulado[r.month - 1])}</td>
+                ) : (
+                  <td className={cn(styles.strong, r.netAccumulated < 0 ? styles.negative : styles.positive)}>{signedMoney(r.netAccumulated)}</td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -62,7 +67,11 @@ export function MonthTable({ months, embedded = false }: { months: MonthRow[]; e
           <li key={r.month} className={styles.monthCard}>
             <div className={styles.monthHead}>
               <b>Mês {r.month}</b>
-              <span className={r.netAccumulated < 0 ? styles.negative : styles.positive}>Saldo {signedMoney(r.netAccumulated)}</span>
+              {recebido ? (
+                <span>Acumulado {moneyCents(acumulado[r.month - 1])}</span>
+              ) : (
+                <span className={r.netAccumulated < 0 ? styles.negative : styles.positive}>Saldo {signedMoney(r.netAccumulated)}</span>
+              )}
             </div>
             <div className={styles.monthTotal}>
               <span>Total com carteira</span>
@@ -79,8 +88,8 @@ export function MonthTable({ months, embedded = false }: { months: MonthRow[]; e
       </ul>
 
       <p className={styles.footnote}>
-        ¹ Recebimentos das recargas, líquidos de eventuais aportes estimados. ² Comissões brutas. ³ Total inclui a carteira após a provisão informada sobre comissões. O
-        saldo desconta seu investimento inicial.
+        ¹ Recebimentos das recargas, líquidos de eventuais aportes estimados. ² Comissões brutas. ³ Total inclui a carteira após a provisão informada sobre comissões.{' '}
+        {recebido ? 'O acumulado soma o total com carteira desde o mês 1.' : 'O saldo desconta seu investimento inicial.'}
       </p>
     </section>
   )

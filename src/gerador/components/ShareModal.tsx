@@ -64,7 +64,6 @@ export function ShareModal({ open, onClose }: { open: boolean; onClose: () => vo
   const message = shareText({
     modelo: result.charger.name,
     recebimento: combined ? m1.totalInvestor : m1.investorRechargeCash,
-    payback: combined ? result.payback : result.chargingPayback,
   })
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { cn } from '../../lib/cn'
-import { CLIENTES_DIA, MAX_CLIENTES_DIA, semInvestimento } from '../guided'
+import { CLIENTES_DIA, MAX_CLIENTES_DIA, ocultaCapital } from '../guided'
 import { useGerador } from '../state'
 import styles from './Report.module.css'
 
@@ -21,7 +21,7 @@ const FONTES = [
 /** Premissas, regras de cálculo e fontes (textos da referência), na aba do relatório. Na v2: sem o valor do investimento e com clientes por dia */
 export function Premissas() {
   const { version } = useGerador()
-  const hideInvestment = semInvestimento(version)
+  const hideCapital = ocultaCapital(version)
   const porDia = version === 'v2'
   return (
     <section className={cn(styles.card, styles.embedded)} aria-labelledby="premissas-titulo">
@@ -38,9 +38,9 @@ export function Premissas() {
         <article className={styles.prose}>
           <h3>Recargas e sociedade</h3>
           <p>
-            No 7 kW, o investimento{hideInvestment ? '' : ' de R$ 9.997'} é integralmente do investidor; a iGreen fornece o sistema e recebe a taxa de administração, sem participação
+            No 7 kW, o investimento{hideCapital ? '' : ' de R$ 9.997'} é integralmente do investidor; a iGreen fornece o sistema e recebe a taxa de administração, sem participação
             societária. No DUO e no Ultra, a composição de capital é uma proposta: o investimento do usuário corresponde a 80% do total proposto, e os 20% restantes
-            são uma contrapartida iGreen a formalizar. O simulador não comprova aporte realizado. Payback e ROI usam apenas o investimento do usuário.
+            são uma contrapartida iGreen a formalizar. O simulador não comprova aporte realizado.{hideCapital ? '' : ' Payback e ROI usam apenas o investimento do usuário.'}
           </p>
           <p>
             Capacidade: tempo por sessão = kWh por carro ÷ (potência nominal × aproveitamento informado) + intervalo entre carros. O número máximo de sessões
@@ -83,7 +83,7 @@ export function Premissas() {
         </article>
 
         <article className={styles.prose}>
-          <h3>Carteira e retorno</h3>
+          <h3>{hideCapital ? 'Carteira e recebimentos' : 'Carteira e retorno'}</h3>
           <p>
             {porDia
               ? `Entram de 0 a ${MAX_CLIENTES_DIA} novos clientes por dia de operação, conforme o valor informado (sugestão inicial: ${CLIENTES_DIA.lento} no 7 kW, ${CLIENTES_DIA.duo} no DUO e ${CLIENTES_DIA.ultra} no Ultra rápido). Por mês, são os clientes por dia × os dias de operação.`
@@ -94,8 +94,10 @@ export function Premissas() {
             simulador de 10 anos usa apenas comissões brutas; seus valores não são somados outra vez ao DRE.
           </p>
           <p>
-            Payback é o primeiro mês em que os recebimentos acumulados cobrem o investimento, com interpolação no mês. O ROI de 36 meses desconta o investimento uma
-            única vez. Não há financiamento, inflação, reajustes, valor de revenda ou reinvestimento.
+            {hideCapital
+              ? 'O recebido acumulado soma, mês a mês, o que o investidor recebe das recargas e da carteira, sem descontar o investimento.'
+              : 'Payback é o primeiro mês em que os recebimentos acumulados cobrem o investimento, com interpolação no mês. O ROI de 36 meses desconta o investimento uma única vez.'}{' '}
+            Não há financiamento, inflação, reajustes, valor de revenda ou reinvestimento.
           </p>
           <p>
             O modelo não calcula o IR final do investidor. Desde 2026, distribuições mensais acima de R$ 50 mil da mesma PJ para a mesma PF residente podem ter IRRF

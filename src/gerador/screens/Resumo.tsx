@@ -15,7 +15,7 @@ import { GeradorStepPage } from '../components/Shell'
 import { compactMoney, paybackLabel } from '../format'
 import type { ChargerId } from '../model'
 import { createGeradorProposal } from '../proposal'
-import { semInvestimento } from '../guided'
+import { ocultaCapital, totaisRecebidos } from '../guided'
 import { useGerador } from '../state'
 import styles from './Steps.module.css'
 
@@ -31,7 +31,7 @@ const POTENCIA: Record<ChargerId, string> = { lento: '7 KW', duo: '7 + 40 KW', u
 
 export function Resumo() {
   const { state, patch, go, result, setProposta, version } = useGerador()
-  const hideInvestment = semInvestimento(version)
+  const hideCapital = ocultaCapital(version)
   const { investidor: inv, eletroposto, assinatura: ass } = state
   const s = state.simulacao.inputs
   const combined = s.incomeMode === 'combined'
@@ -122,15 +122,15 @@ export function Resumo() {
               </div>
               <div className={styles.investBottom}>
                 <div className={styles.investValue}>
-                  <AnimatedMoney value={hideInvestment ? recebimento : result.capital.investor} className={cn(styles.investAmount, styles.riseIn)} style={delay(0.45)} />
+                  <AnimatedMoney value={hideCapital ? recebimento : result.capital.investor} className={cn(styles.investAmount, styles.riseIn)} style={delay(0.45)} />
                   <p className={cn(styles.investOverline, styles.riseIn)} style={delay(0.6)}>
-                    {hideInvestment ? 'RECEBIMENTO ESTIMADO NO MÊS 1' : 'VALOR DO SEU INVESTIMENTO'}
+                    {hideCapital ? 'RECEBIMENTO ESTIMADO NO MÊS 1' : 'VALOR DO SEU INVESTIMENTO'}
                   </p>
                 </div>
                 <span className={cn(styles.investFlag, styles.riseIn)} style={delay(0.75)}>
-                  {hideInvestment ? (
+                  {hideCapital ? (
                     <>
-                      Retorno em <b>{paybackLabel(payback)}</b> · {combined ? 'carteira + recargas' : 'só recargas'}
+                      <b>{compactMoney(totaisRecebidos(result, combined).total36)}</b> em 36 meses · {combined ? 'carteira + recargas' : 'só recargas'}
                     </>
                   ) : (
                     <>
@@ -303,7 +303,10 @@ export function Resumo() {
               <a href="#termos" className={styles.noWrap} onClick={(e) => e.preventDefault()}>
                 Termos de Uso
               </a>
-              . Entendo que o retorno acompanha o faturamento do eletroposto e não é rendimento garantido.
+              .{' '}
+              {hideCapital
+                ? 'Entendo que os recebimentos acompanham o faturamento do eletroposto e não são rendimento garantido.'
+                : 'Entendo que o retorno acompanha o faturamento do eletroposto e não é rendimento garantido.'}
             </Checkbox>
             {showErrors && errors.aceite ? <p className={cn('t-caption', styles.errorText)}>{errors.aceite}</p> : null}
           </div>

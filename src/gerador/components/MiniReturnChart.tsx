@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
+import { moneyCents } from '../../lib/format'
 import { paybackLabel, signedMoney } from '../format'
 import styles from './ResultPanel.module.css'
 
@@ -6,8 +7,8 @@ import styles from './ResultPanel.module.css'
  * Mini gráfico do painel: saldo acumulado nos 36 meses do cenário escolhido (índice 0 = investimento),
  * linha do zero e o ponto do retorno. Passar o mouse, tocar ou usar as setas mostra o saldo de cada mês.
  */
-/** `hideStart`: o tooltip começa no mês 1, sem mostrar o saldo inicial (o valor do investimento) */
-export function MiniReturnChart({ values, payback, hideStart = false }: { values: number[]; payback: number | null; hideStart?: boolean }) {
+/** `kind="recebido"` (v2): os valores são o recebido acumulado, sem investimento nem retorno; o tooltip começa no mês 1 */
+export function MiniReturnChart({ values, payback, kind = 'saldo' }: { values: number[]; payback: number | null; kind?: 'saldo' | 'recebido' }) {
   const ref = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(320)
   const [hover, setHover] = useState<number | null>(null)
@@ -21,7 +22,8 @@ export function MiniReturnChart({ values, payback, hideStart = false }: { values
   }, [])
 
   const last = values.length - 1
-  const first = hideStart ? 1 : 0
+  const recebido = kind === 'recebido'
+  const first = recebido ? 1 : 0
   const height = 84
   const pad = { top: 10, right: 6, bottom: 10, left: 6 }
   const min = Math.min(...values, 0)
@@ -50,7 +52,11 @@ export function MiniReturnChart({ values, payback, hideStart = false }: { values
       className={styles.mini}
       tabIndex={0}
       role="img"
-      aria-label={`Saldo acumulado em ${last} meses: retorno em ${paybackLabel(payback)}, saldo final ${signedMoney(values[last])}.`}
+      aria-label={
+        recebido
+          ? `Recebido acumulado em ${last} meses: ${moneyCents(values[last])}.`
+          : `Saldo acumulado em ${last} meses: retorno em ${paybackLabel(payback)}, saldo final ${signedMoney(values[last])}.`
+      }
       onPointerMove={pick}
       onPointerDown={pick}
       onPointerLeave={() => setHover(null)}

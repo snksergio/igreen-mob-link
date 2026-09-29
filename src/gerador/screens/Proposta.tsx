@@ -13,7 +13,7 @@ import { useMediaQuery } from '../../lib/useMediaQuery'
 import { GeradorDetailModal } from '../components/GeradorDetailModal'
 import { compactMoney, paybackLabel, pct } from '../format'
 import type { ChargerId } from '../model'
-import { semInvestimento } from '../guided'
+import { ocultaCapital, totaisRecebidos } from '../guided'
 import { useGerador } from '../state'
 import styles from './Proposta.module.css'
 
@@ -26,7 +26,7 @@ const VIDEO_RATIO = 1920 / 814
 
 export function Proposta() {
   const { state, result, go, version } = useGerador()
-  const hideInvestment = semInvestimento(version)
+  const hideCapital = ocultaCapital(version)
   const { investidor: inv, eletroposto, proposta } = state
   const inputs = state.simulacao.inputs
   const combined = inputs.incomeMode === 'combined'
@@ -64,14 +64,29 @@ export function Proposta() {
   const m1 = result.months[0]
   const recebimento = combined ? m1.totalInvestor : m1.investorRechargeCash
   const payback = combined ? result.payback : result.chargingPayback
+  const totais = totaisRecebidos(result, combined)
   const net36 = combined ? result.net36 : result.months[35].chargingNetAccumulated
   const solo = result.charger.investorShare === 1
   const modelo = `${result.charger.name} (${POTENCIA[inputs.charger]})`
   const sociedade = solo ? '100% do investidor' : `Você ${result.charger.investorShare * 100}% · iGreen ${result.charger.igreenShare * 100}%`
   const link = `${window.location.origin}${window.location.pathname}#proposta`
-  const message = hideInvestment
+  const message = hideCapital
     ? `Minha proposta iGreen Mob #${proposta.id}: ${modelo}, com recebimento estimado de ${money(recebimento)}/mês.`
     : `Minha proposta iGreen Mob #${proposta.id}: investimento de ${money(result.capital.investor)} no ${modelo}.`
+  // v2: só recebidos (sem retorno, saldo descontando o investimento nem ROI)
+  const kpis = hideCapital
+    ? [
+        { label: 'Recebimento no mês 1', value: moneyCents(recebimento) },
+        { label: 'Recebido no ano 1', value: compactMoney(totais.ano1) },
+        { label: 'Recebido em 36 meses', value: compactMoney(totais.total36) },
+        { label: 'Média por mês', value: compactMoney(totais.mediaMes) },
+      ]
+    : [
+        { label: 'Recebimento no mês 1', value: moneyCents(recebimento) },
+        { label: 'Retorno', value: paybackLabel(payback) },
+        { label: 'Saldo em 36 meses', value: compactMoney(net36) },
+        { label: 'ROI em 36 meses', value: pct((net36 / result.investment) * 100, 0) },
+      ]
   const nomeCurto = inv.nome.trim().split(/\s+/).filter((_, i, all) => i === 0 || i === all.length - 1).join(' ')
 
   const copyLink = async () => {
@@ -123,12 +138,14 @@ export function Proposta() {
         <div className={styles.group}>
           <section className={styles.valueCard}>
             <div className={styles.valueText}>
-              <p className={styles.caption}>{hideInvestment ? 'Recebimento estimado no mês 1' : 'Valor do seu investimento no eletroposto'}</p>
-              <p className={styles.value}>{money(hideInvestment ? recebimento : result.capital.investor)}</p>
+              <p className={styles.caption}>{hideCapital ? 'Recebimento estimado no mês 1' : 'Valor do seu investimento no eletroposto'}</p>
+              <p className={styles.value}>{money(hideCapital ? recebimento : result.capital.investor)}</p>
             </div>
             <div className={styles.badges}>
               <span className={cn(styles.badge, styles.badgeGreen)}>{result.charger.name}</span>
-              <span className={cn(styles.badge, styles.badgeOrange)}>Retorno em {paybackLabel(payback)}</span>
+              <span className={cn(styles.badge, styles.badgeOrange)}>
+                {hideCapital ? `${compactMoney(totais.total36)} em 36 meses` : `Retorno em ${paybackLabel(payback)}`}
+              </span>
             </div>
             <Button className={styles.fullButton} onClick={() => setDetailOpen(true)} aria-label="Ver detalhamento da proposta">
               Ver detalhamento<span className={styles.buttonRest}> da proposta</span>
@@ -160,7 +177,7 @@ export function Proposta() {
               <CheckItem>
                 Eletroposto: <b>{modelo}</b> · até {result.maxCars} carros/dia
               </CheckItem>
-              {hideInvestment ? null : (
+              {hideCapital ? null : (
                 <CheckItem>
                   Seu investimento: <b>{moneyCents(result.capital.investor)}</b>
                   {solo ? null : <> · valor total {moneyCents(result.capital.total)}</>}
@@ -172,9 +189,15 @@ export function Proposta() {
               <CheckItem>
                 Recebimento estimado no mês 1: <b>{moneyCents(recebimento)}</b> ({combined ? 'carteira + recargas' : 'só recargas'})
               </CheckItem>
-              <CheckItem>
-                Retorno: <b>{paybackLabel(payback)}</b> · ROI em 36 meses de {pct((net36 / result.investment) * 100, 0)}
-              </CheckItem>
+              {hideCapital ? (
+                <CheckItem>
+                  Recebido em 36 meses: <b>{moneyCents(totais.total36)}</b>
+                </CheckItem>
+              ) : (
+                <CheckItem>
+                  Retorno: <b>{paybackLabel(payback)}</b> · ROI em 36 meses de {pct((net36 / result.investment) * 100, 0)}
+                </CheckItem>
+              )}
               <CheckItem>
                 Investidor: <b>{inv.nome}</b>
               </CheckItem>
@@ -185,28 +208,18 @@ export function Proposta() {
               onToggle={() => toggle('detalhe')}
               icon={<FancyIcon src={ICONS.dollarWhite} bg="var(--bg-primary)" multicolor />}
               title="Detalhamento do investimento"
-              meta={[`${compactMoney(recebimento)}/mês`, `retorno em ${paybackLabel(payback)}`]}
+              meta={[`${compactMoney(recebimento)}/mês`, hideCapital ? `${compactMoney(totais.total36)} em 36 meses` : `retorno em ${paybackLabel(payback)}`]}
               plain
             >
               {/* Só o essencial; o detalhamento completo (gráfico, DRE, mês a mês) fica no modal */}
               <div className={styles.detailSummary}>
                 <dl className={styles.kpis}>
-                  <div>
-                    <dt>Recebimento no mês 1</dt>
-                    <dd>{moneyCents(recebimento)}</dd>
-                  </div>
-                  <div>
-                    <dt>Retorno</dt>
-                    <dd>{paybackLabel(payback)}</dd>
-                  </div>
-                  <div>
-                    <dt>Saldo em 36 meses</dt>
-                    <dd>{compactMoney(net36)}</dd>
-                  </div>
-                  <div>
-                    <dt>ROI em 36 meses</dt>
-                    <dd>{pct((net36 / result.investment) * 100, 0)}</dd>
-                  </div>
+                  {kpis.map((k) => (
+                    <div key={k.label}>
+                      <dt>{k.label}</dt>
+                      <dd>{k.value}</dd>
+                    </div>
+                  ))}
                 </dl>
                 <Button className={styles.fullButton} onClick={() => setDetailOpen(true)}>
                   Ver detalhamento da proposta
@@ -273,13 +286,13 @@ export function Proposta() {
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
         title="Detalhamento da proposta"
-        subtitle="Resumo do investimento e projeção de retorno"
+        subtitle={hideCapital ? 'Resumo da proposta e projeção de recebimentos' : 'Resumo do investimento e projeção de retorno'}
         resumo={[
           { label: 'Proposta', value: `#${proposta.id}` },
           { label: 'Investidor', value: inv.nome },
           { label: 'Eletroposto', value: modelo },
           { label: 'Sociedade', value: sociedade },
-          ...(hideInvestment
+          ...(hideCapital
             ? []
             : [
                 { label: 'Seu investimento', value: moneyCents(result.capital.investor) },

@@ -24,9 +24,30 @@ describe('documento da simulação', () => {
 
   it('traz o essencial para analisar: recebimento, premissas, DRE e mês a mês', () => {
     const html = documento()
-    for (const trecho of ['R$ 7.311', '4,1 meses', 'CARROS POR DIA', 'PREÇO DE VENDA', 'Lucro disponível aos sócios', 'Mês a mês', 'SIM-TESTE', 'Juliana Martins']) {
+    for (const trecho of ['R$ 7.311', 'Recebido em 36 meses', 'CARROS POR DIA', 'PREÇO DE VENDA', 'Lucro disponível aos sócios', 'Mês a mês', 'SIM-TESTE', 'Juliana Martins']) {
       expect(html).toContain(trecho)
     }
+  })
+
+  it('não mostra retorno, ROI nem saldo descontando o investimento', () => {
+    const html = documento(defaultsFor('v2'))
+    const texto = html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '')
+    expect(texto).not.toMatch(/\bROI\b|[Rr]etorno|[Pp]ayback|[Ss]aldo/)
+    // o bloco embutido também não guarda retorno nem saldo (somados ao recebido, revelariam o investimento)
+    const embutido = html.match(/<script type="application\/json"[^>]*>([\s\S]*?)<\/script>/)![1]
+    expect(embutido).not.toMatch(/retorno|saldo|payback|investment/i)
+  })
+
+  it('documento antigo (com retorno e saldo registrados) continua importando e conferindo', () => {
+    const html = adulterar(documento(), (p) => {
+      const r = calculate(DEFAULTS)
+      p.resumo = { recebimentoMes1: p.resumo.recebimentoMes1, retornoMeses: r.payback, saldo36: r.net36 }
+    })
+    expect(readSimulationFile(html)).toEqual({ inputs: DEFAULTS, divergente: false })
+    const mexido = adulterar(html, (p) => {
+      p.resumo.saldo36 = 1
+    })
+    expect(readSimulationFile(mexido)?.divergente).toBe(true)
   })
 
   it('não mostra o valor do investimento e traz os clientes por dia', () => {
@@ -89,11 +110,11 @@ describe('importar outros formatos', () => {
 })
 
 describe('mensagem de compartilhamento', () => {
-  it('traz modelo, recebimento e retorno, sem link', () => {
-    const text = shareText({ modelo: 'iGreen DUO', recebimento: 7311.47, payback: 4.1 })
+  it('traz modelo e recebimento, sem retorno nem link', () => {
+    const text = shareText({ modelo: 'iGreen DUO', recebimento: 7311.47 })
     expect(text).toContain('iGreen DUO')
     expect(text).toContain('R$ 7.311')
-    expect(text).toContain('4,1 meses')
+    expect(text).not.toMatch(/retorno|ROI/i)
     expect(text).not.toMatch(/https?:\/\//)
   })
 })

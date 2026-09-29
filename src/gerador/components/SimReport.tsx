@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from 'react'
 import { cn } from '../../lib/cn'
-import { semInvestimento } from '../guided'
+import { ocultaCapital } from '../guided'
 import { useGerador } from '../state'
 import { DreTable } from './DreTable'
 import { MonthTable } from './MonthTable'
@@ -22,7 +22,7 @@ const TABS: { value: ReportTab; label: string }[] = [
 /** Relatório completo abaixo do simulador, em abas: retorno em 36 meses, DRE do período, mês a mês e premissas */
 export function SimReport() {
   const { state, result, scenario, version } = useGerador()
-  const hideInvestment = semInvestimento(version)
+  const hideCapital = ocultaCapital(version)
   const inputs = state.simulacao.inputs
   const { view, month, year } = state.simulacao
   const [tab, setTab] = useState<ReportTab>('retorno')
@@ -50,11 +50,18 @@ export function SimReport() {
       </header>
       {/* Filho direto do relatório: no celular as abas grudam no topo enquanto a pessoa rola o conteúdo */}
       <div ref={barRef} className={styles.reportTabsBar}>
-        <TabBar className={styles.reportTabs} label="Seções do relatório" value={tab} options={TABS} onChange={choose} idBase={id} />
+        <TabBar
+          className={styles.reportTabs}
+          label="Seções do relatório"
+          value={tab}
+          options={hideCapital ? TABS.map((t) => (t.value === 'retorno' ? { ...t, label: 'Acumulado' } : t)) : TABS}
+          onChange={choose}
+          idBase={id}
+        />
       </div>
 
       <TabPanel idBase={id} value={tab} className={styles.reportPanel}>
-        {tab === 'retorno' ? <ReturnChart result={result} mode={inputs.incomeMode} embedded hideStart={hideInvestment} /> : null}
+        {tab === 'retorno' ? <ReturnChart result={result} mode={inputs.incomeMode} embedded recebido={hideCapital} /> : null}
         {tab === 'dre' ? (
           <DreTable
             period={scenario.period}
@@ -66,7 +73,7 @@ export function SimReport() {
             headerAside={<PeriodControl />}
           />
         ) : null}
-        {tab === 'mes' ? <MonthTable months={result.months} embedded /> : null}
+        {tab === 'mes' ? <MonthTable months={result.months} embedded recebido={hideCapital} /> : null}
         {tab === 'premissas' ? <Premissas /> : null}
       </TabPanel>
     </section>

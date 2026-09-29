@@ -1,5 +1,5 @@
 import { money } from '../lib/format'
-import { DEFAULTS, TERMS, type ChargerId, type SimInputs } from './model'
+import { DEFAULTS, TERMS, type ChargerId, type SimInputs, type SimResult } from './model'
 import type { GeradorVersion } from './routes'
 
 /* Dados do simulador v2 usados pelo formulário, pelo painel e pelo documento da simulação */
@@ -29,5 +29,20 @@ export const clientesPorDia = (s: SimInputs) => Math.round(s.monthlyClients / s.
 export const defaultsFor = (version: GeradorVersion): SimInputs =>
   version === 'v2' ? { ...DEFAULTS, monthlyClients: CLIENTES_DIA[DEFAULTS.charger] * DEFAULTS.days } : DEFAULTS
 
-/** A v2 não mostra o valor do investimento (retorno e ROI continuam) */
-export const semInvestimento = (version: GeradorVersion) => version === 'v2'
+/**
+ * A v2 não mostra o valor do investimento nem o que depende dele: retorno (payback), ROI e saldo descontando o
+ * investimento. No lugar, os gráficos e totais usam o recebido acumulado (começa em zero).
+ */
+export const ocultaCapital = (version: GeradorVersion) => version === 'v2'
+
+/** Recebido acumulado mês a mês; índice 0 = início (zero), índice 36 = total dos 36 meses */
+export function recebidoAcumulado(result: SimResult, combined: boolean): number[] {
+  let soma = 0
+  return [0, ...result.months.map((m) => (soma += combined ? m.totalInvestor : m.investorRechargeCash))]
+}
+
+/** Totais do recebido para os cards da v2: ano 1, 36 meses e média por mês */
+export function totaisRecebidos(result: SimResult, combined: boolean) {
+  const acc = recebidoAcumulado(result, combined)
+  return { ano1: acc[12], total36: acc[36], mediaMes: acc[36] / 36 }
+}

@@ -1,6 +1,6 @@
 import { moneyCents } from '../lib/format'
-import { compactMoney, fixed, num, paybackLabel, pct, signedMoney } from './format'
-import { CONEXOES, POTENCIA, clientesPorDia } from './guided'
+import { compactMoney, fixed, num, pct, signedMoney } from './format'
+import { CONEXOES, POTENCIA, clientesPorDia, recebidoAcumulado, totaisRecebidos } from './guided'
 import { TERMS, recurrenceProjection, type SimInputs, type SimResult } from './model'
 import { embedPayload, resumoDe, type SimulationPayload } from './share'
 
@@ -28,8 +28,9 @@ function chartSvg(result: SimResult, combined: boolean) {
   const W = 720
   const H = 240
   const m = { top: 16, right: 78, bottom: 28, left: 64 }
-  const a = [-result.investment, ...result.months.map((r) => r.netAccumulated)]
-  const b = [-result.investment, ...result.months.map((r) => r.chargingNetAccumulated)]
+  // Recebido acumulado (começa em zero): o documento não mostra investimento, retorno nem ROI
+  const a = recebidoAcumulado(result, true)
+  const b = recebidoAcumulado(result, false)
   const same = a.every((v, i) => Math.abs(v - b[i]) < 0.5)
   const all = same ? a : [...a, ...b]
   const step = niceStep(Math.max(...all, 0) - Math.min(...all, 0))
@@ -49,16 +50,15 @@ function chartSvg(result: SimResult, combined: boolean) {
     .map((mo) => `<text x="${x(mo)}" y="${H - 8}" text-anchor="middle" class="ax">${mo === 0 ? 'Início' : `${mo} m`}</text>`)
     .join('')
   const main = combined || same ? a : b
-  const payback = combined || same ? result.payback : result.chargingPayback
   const areaPath = `${path(main)}L${x(36)},${y(0)}L${x(0)},${y(0)}Z`
   const second = same ? '' : `<path d="${path(combined ? b : a)}" fill="none" stroke="#5b6fd6" stroke-width="2"/>`
   const end = (vals: number[], color: string, dy: number) =>
     `<circle cx="${x(36)}" cy="${y(vals[36])}" r="4" fill="${color}"/><text x="${x(36) + 8}" y="${y(vals[36]) + dy}" class="end">${esc(compactMoney(vals[36]))}</text>`
   const closeEnds = !same && Math.abs(y(a[36]) - y(b[36])) < 16
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Saldo acumulado em 36 meses">${ticks.join('')}${xs}
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Recebido acumulado em 36 meses">${ticks.join('')}${xs}
 <path d="${areaPath}" fill="#00a859" fill-opacity="0.1"/>${second}<path d="${path(main)}" fill="none" stroke="#00a859" stroke-width="2.5"/>
 ${end(main, '#00a859', closeEnds && main[36] < (combined ? b : a)[36] ? 12 : 4)}${same ? '' : end(combined ? b : a, '#5b6fd6', closeEnds ? -8 : 4)}
-${payback != null ? `<circle cx="${x(payback)}" cy="${y(0)}" r="5" fill="#fff" stroke="#00a859" stroke-width="2.5"/>` : ''}</svg>`
+</svg>`
 }
 
 const row = (label: string, value: string, extra = '') => `<tr class="${extra}"><th>${label}</th><td>${value}</td></tr>`
@@ -70,9 +70,8 @@ export function buildSimulationDocument({ inputs: s, result, codigo, geradoEm, r
   const combined = s.incomeMode === 'combined'
   const m1 = result.months[0]
   const receipt = combined ? m1.totalInvestor : m1.investorRechargeCash
-  const payback = combined ? result.payback : result.chargingPayback
-  const net36 = combined ? result.net36 : result.months[35].chargingNetAccumulated
-  const roi = (net36 / result.investment) * 100
+  const totais = totaisRecebidos(result, combined)
+  const acumulado = recebidoAcumulado(result, true)
   const { charger, capacity } = result
   const solo = charger.investorShare === 1
   const sociedade = solo ? '100% do investidor' : `Você ${charger.investorShare * 100}% · iGreen ${charger.igreenShare * 100}%`
@@ -113,8 +112,8 @@ export function buildSimulationDocument({ inputs: s, result, codigo, geradoEm, r
   const meses = result.months
     .map(
       (r) =>
-        // Total e saldo primeiro: é o que se lê no celular sem precisar deslizar
-        `<tr><th>${r.month}</th><td><b>${moneyCents(r.totalInvestor)}</b></td><td class="${r.netAccumulated < 0 ? 'neg' : 'pos'}">${signedMoney(r.netAccumulated)}</td><td>${signedMoney(
+        // Total e acumulado primeiro: é o que se lê no celular sem precisar deslizar
+        `<tr><th>${r.month}</th><td><b>${moneyCents(r.totalInvestor)}</b></td><td>${moneyCents(acumulado[r.month])}</td><td>${signedMoney(
           r.investorRechargeCash,
         )}</td><td>${moneyCents(r.energyCommission + r.insuranceCommission + r.telecomCommission)}</td></tr>`,
     )
@@ -228,12 +227,12 @@ header h1{font-size:22px;line-height:28px}
     <div class="chips"><span class="chip">${esc(charger.name)} · ${POTENCIA[s.charger]}</span><span class="chip">${solo ? '100% seu' : `Sociedade ${charger.investorShare * 100}/${charger.igreenShare * 100}`}</span><span class="chip">${combined ? 'Carteira + recargas' : 'Só recargas'}</span></div>
     <p class="amount">${esc(moneyCents(receipt).replace(/,(\d\d)$/, ''))}<small>,${moneyCents(receipt).slice(-2)}</small></p>
     <p class="over">RECEBIMENTO ESTIMADO NO MÊS 1</p>
-    <span class="flag">Retorno em <b>${paybackLabel(payback)}</b></span>
+    <span class="flag"><b>${compactMoney(totais.total36)}</b> recebidos em 36 meses</span>
   </div>
   <div class="kpis">
-    <div class="kpi"><span>Retorno</span><b>${paybackLabel(payback)}</b></div>
-    <div class="kpi"><span>ROI em 36 meses</span><b>${pct(roi, 0)}</b></div>
-    <div class="kpi"><span>Saldo em 36 meses</span><b>${compactMoney(net36)}</b></div>
+    <div class="kpi"><span>Recebido no ano 1</span><b>${compactMoney(totais.ano1)}</b></div>
+    <div class="kpi"><span>Recebido em 36 meses</span><b>${compactMoney(totais.total36)}</b></div>
+    <div class="kpi"><span>Média por mês</span><b>${compactMoney(totais.mediaMes)}</b></div>
     <div class="kpi"><span>Recargas por mês</span><b>${num(s.cars * s.days)}</b></div>
   </div>
 </div>
@@ -282,10 +281,10 @@ header h1{font-size:22px;line-height:28px}
 </section>
 
 <section>
-  <p class="over2">Retorno do capital</p>
-  <h2>Saldo acumulado em 36 meses</h2>
-  <p>Recebimentos acumulados descontando o investimento inicial. Saldo em 36 meses: <b>${signedMoney(net36)}</b> · ROI ${pct(roi, 0)}.</p>
-  <div class="legend"><span><i style="background:#00a859"></i>Carteira + recargas</span><span><i style="background:#5b6fd6"></i>Somente recargas</span><span>○ retorno em ${paybackLabel(payback)}</span></div>
+  <p class="over2">Recebimentos</p>
+  <h2>Recebido acumulado em 36 meses</h2>
+  <p>Quanto você recebe, somado mês a mês. Em 36 meses: <b>${moneyCents(totais.total36)}</b>.</p>
+  <div class="legend"><span><i style="background:#00a859"></i>Carteira + recargas</span><span><i style="background:#5b6fd6"></i>Somente recargas</span></div>
   <div class="x">${chartSvg(result, combined)}</div>
   <p class="swipe">Deslize para o lado para ver o gráfico inteiro →</p>
 </section>
@@ -316,7 +315,7 @@ header h1{font-size:22px;line-height:28px}
   <h2>Mês a mês · 36 meses</h2>
   <p class="swipe">Deslize para o lado para ver recargas e carteira →</p>
   <div class="x"><table class="months">
-    <thead><tr><th>Mês</th><th>Total do mês</th><th>Saldo acumulado</th><th>Recargas</th><th>Carteira</th></tr></thead>
+    <thead><tr><th>Mês</th><th>Total do mês</th><th>Recebido acumulado</th><th>Recargas</th><th>Carteira</th></tr></thead>
     <tbody>${meses}</tbody>
   </table></div>
 </section>

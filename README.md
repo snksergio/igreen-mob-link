@@ -91,7 +91,10 @@ Link para avaliação: **https://igreen-mob-link.vercel.app/#investir**
   - A ajuda de cada campo fica logo abaixo, em uma linha e mais suave que o rótulo. As explicações longas ficam em "Como calculamos".
   - O que é fixo (administração iGreen, premissas padrão de tributos) aparece como informação, não como campo.
   - A carteira pergunta **novos clientes por dia**, em um slider de 0 a 20 (arrastar com o dedo para aumentar ou diminuir). Cada modelo sugere uma quantidade ao ser escolhido (7 kW: 1, DUO: 2, Ultra rápido: 5), e o valor pode ser ajustado. O modelo usa clientes por mês = clientes por dia × dias de operação (`CLIENTES_DIA` em `gerador/guided.ts`).
-- **Sem valor do investimento:** a v2 não mostra quanto o investidor aplica, nem no simulador, nem no detalhamento, no documento compartilhado, no resumo ou na proposta. Nos cards dos modelos fica a sociedade, e no resumo e na proposta o destaque é o recebimento estimado do mês 1. Retorno, ROI e o gráfico de saldo continuam (`semInvestimento` em `gerador/guided.ts`). A v1 segue mostrando o investimento.
+- **Sem investimento, retorno nem ROI:** a v2 não mostra quanto o investidor aplica nem o que depende disso: retorno (payback), ROI e saldo descontando o investimento. Vale para o simulador, o detalhamento, o documento compartilhado (inclusive o bloco embutido), as mensagens, o resumo e a proposta.
+  - Nos cards dos modelos fica a sociedade. No resumo e na proposta, o destaque é o recebimento estimado do mês 1.
+  - Os gráficos e totais mostram o **recebido acumulado**, que começa em zero (aba "Acumulado", coluna "Recebido acumulado" no mês a mês, cards de recebido no ano 1, em 36 meses e média por mês).
+  - Controle em `ocultaCapital` e `recebidoAcumulado` (`gerador/guided.ts`). A v1 segue mostrando investimento, retorno e ROI.
 - **Resultado:** o painel mostra o resultado desde o início. Abaixo vêm o relatório "Entenda cada número" e os botões "Seguir para proposta" e "Compartilhar simulação". No celular, as abas do relatório ficam grudadas no topo durante a rolagem.
 - **Compartilhar** (`simulationDoc.ts`, `share.ts`, `components/ShareModal.tsx`): envia sempre o **documento da simulação**, nunca só uma imagem.
   - O documento é um HTML único, sem dependências, que abre no navegador, no e-mail e no WhatsApp e imprime bem.

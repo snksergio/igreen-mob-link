@@ -47,7 +47,7 @@ export function EletropostoFields() {
       {/* Trocar o modelo sugere os carros e os clientes por dia dele (dá para ajustar depois) */}
       <ChargerCarousel
         inputs={s}
-        hideInvestment
+        hideCapital
         onSelect={(charger) => setSim({ charger, cars: CHARGERS[charger].defaultCars, monthlyClients: CLIENTES_DIA[charger] * s.days })}
       />
       <div className={styles.included}>

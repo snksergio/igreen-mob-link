@@ -6,7 +6,7 @@ import { Icon, Img } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { money, moneyCents, moneyParts } from '../../lib/format'
 import { compactMoney, paybackLabel, pct, signedMoney } from '../format'
-import { POTENCIA, semInvestimento } from '../guided'
+import { POTENCIA, ocultaCapital, recebidoAcumulado } from '../guided'
 import { scenarioResult } from '../model'
 import { useGerador } from '../state'
 import { MiniReturnChart } from './MiniReturnChart'
@@ -50,7 +50,7 @@ export function ResultPanel({
   bare?: boolean
 }) {
   const { state, setSim, result, scenario: current, version } = useGerador()
-  const hideInvestment = semInvestimento(version)
+  const hideCapital = ocultaCapital(version)
   const { inputs, view, month, year } = state.simulacao
   const summary = variant === 'summary'
   const combined = inputs.incomeMode === 'combined'
@@ -62,9 +62,11 @@ export function ResultPanel({
   const solo = charger.investorShare === 1
   const periodo = summary || view === 'month' ? `NO MÊS ${summary ? 1 : month}` : `NO ANO ${year}`
 
-  const saldo = useMemo(
-    () => [-result.investment, ...result.months.map((m) => (combined ? m.netAccumulated : m.chargingNetAccumulated))],
-    [result, combined],
+  // v1: saldo descontando o investimento · v2: recebido acumulado (sem investimento, retorno nem ROI)
+  const serie = useMemo(
+    () =>
+      hideCapital ? recebidoAcumulado(result, combined) : [-result.investment, ...result.months.map((m) => (combined ? m.netAccumulated : m.chargingNetAccumulated))],
+    [result, combined, hideCapital],
   )
 
   const pendentes = [result.localTaxPending && 'sem ICMS adicional', combined && result.commissionTaxPending && 'com comissões antes de tributos'].filter(Boolean)
@@ -103,28 +105,30 @@ export function ResultPanel({
               </p>
             </div>
             <div className={styles.chips}>
-              {hideInvestment ? null : <span className={styles.chip}>Investimento {money(capital.investor)}</span>}
+              {hideCapital ? null : <span className={styles.chip}>Investimento {money(capital.investor)}</span>}
               <span className={styles.chip}>{solo ? '100% seu' : `Sociedade ${charger.investorShare * 100}/${charger.igreenShare * 100}`}</span>
             </div>
           </div>
 
           {summary ? null : <PeriodControl />}
 
-          <div className={styles.stats}>
-            <Stat icon={ICONS.handMoney} label="RETORNO" value={paybackLabel(scenario.payback)} />
-            <Stat icon={ICONS.moneyBag} label="ROI EM 36 MESES" value={pct(scenario.roi36, 0)} />
-          </div>
+          {hideCapital ? null : (
+            <div className={styles.stats}>
+              <Stat icon={ICONS.handMoney} label="RETORNO" value={paybackLabel(scenario.payback)} />
+              <Stat icon={ICONS.moneyBag} label="ROI EM 36 MESES" value={pct(scenario.roi36, 0)} />
+            </div>
+          )}
         </div>
 
         <div className={styles.middle}>
           <div className={styles.miniHead}>
-            <p className={cn('t-label', styles.sectionLabel)}>SALDO EM 36 MESES</p>
-            <p className={styles.miniValue}>{signedMoney(scenario.net36)}</p>
+            <p className={cn('t-label', styles.sectionLabel)}>{hideCapital ? 'RECEBIDO EM 36 MESES' : 'SALDO EM 36 MESES'}</p>
+            <p className={styles.miniValue}>{hideCapital ? moneyCents(serie[36]) : signedMoney(scenario.net36)}</p>
           </div>
-          <MiniReturnChart values={saldo} payback={scenario.payback} hideStart={hideInvestment} />
+          <MiniReturnChart values={serie} payback={hideCapital ? null : scenario.payback} kind={hideCapital ? 'recebido' : 'saldo'} />
           <div className={styles.miniAxis} aria-hidden>
-            <span>{hideInvestment ? 'Início' : 'Investimento'}</span>
-            {scenario.payback != null ? (
+            <span>{hideCapital ? 'Início' : 'Investimento'}</span>
+            {!hideCapital && scenario.payback != null ? (
               <span className={styles.miniAxisPayback}>
                 <i /> retorno em {paybackLabel(scenario.payback)}
               </span>
@@ -164,7 +168,9 @@ export function ResultPanel({
         {summary ? null : (
           <div className={styles.bottom}>
             {result.feasible ? (
-              <Flag icon={ICONS.alert}>Projeção estimada. O retorno varia com o movimento e não é garantido.</Flag>
+              <Flag icon={ICONS.alert}>
+                {hideCapital ? 'Projeção estimada. Os recebimentos variam com o movimento e não são garantidos.' : 'Projeção estimada. O retorno varia com o movimento e não é garantido.'}
+              </Flag>
             ) : (
               <Flag icon={ICONS.alert} tone="warning">
                 Acima da capacidade estimada: reduza os carros por dia ou os kWh por carro.
@@ -191,7 +197,7 @@ export function ResultPanel({
 
 /** Barra fixa do celular: resultado resumido + ação (some quando o painel completo está na tela) */
 export function MobileResultBar({ onContinue, hidden, actionLabel = 'Seguir' }: { onContinue: () => void; hidden: boolean; actionLabel?: string }) {
-  const { state, scenario } = useGerador()
+  const { state, scenario, version } = useGerador()
   const { view } = state.simulacao
   return (
     <div className={cn(styles.bar, hidden && styles.barHidden)} aria-hidden={hidden}>
@@ -200,7 +206,7 @@ export function MobileResultBar({ onContinue, hidden, actionLabel = 'Seguir' }: 
           {compactMoney(scenario.receipt)}
           <small>{view === 'month' ? '/mês' : '/ano'}</small>
         </b>
-        <span>Retorno em {paybackLabel(scenario.payback).toLowerCase()}</span>
+        <span>{ocultaCapital(version) ? 'Recebimento estimado' : `Retorno em ${paybackLabel(scenario.payback).toLowerCase()}`}</span>
       </div>
       <Button className={styles.barButton} onClick={onContinue} tabIndex={hidden ? -1 : 0}>
         {actionLabel}

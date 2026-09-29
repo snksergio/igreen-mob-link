@@ -20,18 +20,18 @@ const INFO: Record<ChargerId, { icon: string; power: string; connectors: string 
  * Carrossel horizontal dos 3 eletropostos (scroll-snap). Quando nem todos cabem, aparecem abaixo
  * os pontos (cards visíveis) e as setas. Cada card é um radio: escolher troca o modelo da simulação.
  * `selected={null}`: nenhum escolhido ainda (formulário v2); sem a prop, vale o modelo das entradas.
- * `hideInvestment`: o rodapé do card mostra só a sociedade, sem o valor do investimento (v2).
+ * `hideCapital`: o rodapé do card mostra só a sociedade, sem o valor do investimento (v2).
  */
 export function ChargerCarousel({
   inputs,
   onSelect,
   selected: selectedProp,
-  hideInvestment = false,
+  hideCapital = false,
 }: {
   inputs: SimInputs
   onSelect: (id: ChargerId) => void
   selected?: ChargerId | null
-  hideInvestment?: boolean
+  hideCapital?: boolean
 }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Record<string, HTMLButtonElement | null>>({})
@@ -143,7 +143,7 @@ export function ChargerCarousel({
                 Até {maxCars} carros por dia
               </span>
 
-              {hideInvestment ? (
+              {hideCapital ? (
                 <span className={styles.invest}>
                   <span className={styles.investLabel}>Sociedade</span>
                   <span className={styles.investValue}>{solo ? '100% seu' : `${c.investorShare * 100}/${c.igreenShare * 100}`}</span>
