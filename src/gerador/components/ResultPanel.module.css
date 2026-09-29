@@ -223,15 +223,18 @@
 }
 
 .statLabel {
+  overflow: hidden;
   font-family: var(--font-sans);
   font-weight: 600;
   font-size: 10.5px;
   letter-spacing: 0.01em;
   color: var(--fg-muted);
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .statValue {
+  overflow: hidden;
   font-family: var(--font-sans);
   font-weight: 700;
   font-size: 14px;
@@ -239,6 +242,26 @@
   letter-spacing: 0.01em;
   color: var(--fg-stat);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* v2 (recargas e energia): ícone e respiros um pouco menores para sobrar espaço ao número */
+.statCompact {
+  gap: 10px;
+  padding: 12px;
+}
+
+.statCompact .statIcon {
+  width: 38px;
+  height: 38px;
+}
+
+/* Unidade menor ao lado do número (ex.: "5.250 kWh") */
+.statValue small {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--fg-muted);
 }
 
 /* ---------- Mini gráfico do saldo ---------- */

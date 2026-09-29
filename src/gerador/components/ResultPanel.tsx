@@ -5,7 +5,7 @@ import { Flag } from '../../components/ui/Controls'
 import { Icon, Img } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { money, moneyCents, moneyParts } from '../../lib/format'
-import { compactMoney, paybackLabel, pct, signedMoney } from '../format'
+import { compactMoney, num, paybackLabel, pct, signedMoney } from '../format'
 import { POTENCIA, ocultaCapital, recebidoAcumulado } from '../guided'
 import { scenarioResult } from '../model'
 import { useGerador } from '../state'
@@ -14,23 +14,31 @@ import { PeriodControl } from './PeriodControl'
 import { Segmented } from './Segmented'
 import styles from './ResultPanel.module.css'
 
-function Stat({ icon, label, value }: { icon: string; label: string; value: string }) {
+/**
+ * `unit` vai menor ao lado do número; `tint` pinta de verde um ícone que não é colorido; `compact` dá um pouco mais
+ * de espaço ao texto (os valores anuais de recargas e energia são mais longos que retorno e ROI)
+ */
+function Stat({ icon, label, value, unit, tint = false, compact = false }: { icon: string; label: string; value: string; unit?: string; tint?: boolean; compact?: boolean }) {
   return (
-    <div className={styles.stat}>
-      <span className={styles.statIcon}>
-        <Img src={icon} size={24} />
-      </span>
+    <div className={cn(styles.stat, compact && styles.statCompact)}>
+      <span className={styles.statIcon}>{tint ? <Icon src={icon} size={22} color="var(--fg-primary)" /> : <Img src={icon} size={24} />}</span>
       <div className={styles.statText}>
         <p className={styles.statLabel}>{label}</p>
-        <p className={styles.statValue}>{value}</p>
+        <p className={styles.statValue}>
+          {value}
+          {unit ? <small> {unit}</small> : null}
+        </p>
       </div>
     </div>
   )
 }
 
+/** Energia em kWh curta para caber no card: até 99.999 por extenso, acima disso em "mil kWh" */
+const energiaCurta = (kwh: number) => (kwh < 100_000 ? { value: num(Math.round(kwh)), unit: 'kWh' } : { value: num(kwh / 1000), unit: 'mil kWh' })
+
 /**
  * Painel "Seu resultado" no padrão do simulador atual: card verde com o recebimento do período,
- * retorno e ROI, mini gráfico do saldo em 36 meses, origem do recebimento e aviso. Depois, os botões.
+ * retorno e ROI (v1) ou recargas e energia vendida no período (v2), mini gráfico do saldo em 36 meses, origem do recebimento e aviso. Depois, os botões.
  * `variant="summary"`: resumo para as etapas de cadastro (mês 1, sem os controles; "Editar simulação" discreto no rodapé).
  * `bare`: sem a moldura própria, para ficar dentro de outro cartão (resumo expansível do celular).
  */
@@ -68,6 +76,11 @@ export function ResultPanel({
       hideCapital ? recebidoAcumulado(result, combined) : [-result.investment, ...result.months.map((m) => (combined ? m.netAccumulated : m.chargingNetAccumulated))],
     [result, combined, hideCapital],
   )
+
+  // Movimento do período escolhido (v2, no lugar de retorno e ROI): recargas e energia vendida (kWh)
+  const meses = summary || view === 'month' ? 1 : 12
+  const recargas = inputs.cars * inputs.days * meses
+  const energia = energiaCurta(result.delivered * meses)
 
   const pendentes = [result.localTaxPending && 'sem ICMS adicional', combined && result.commissionTaxPending && 'com comissões antes de tributos'].filter(Boolean)
 
@@ -112,12 +125,19 @@ export function ResultPanel({
 
           {summary ? null : <PeriodControl />}
 
-          {hideCapital ? null : (
-            <div className={styles.stats}>
-              <Stat icon={ICONS.handMoney} label="RETORNO" value={paybackLabel(scenario.payback)} />
-              <Stat icon={ICONS.moneyBag} label="ROI EM 36 MESES" value={pct(scenario.roi36, 0)} />
-            </div>
-          )}
+          <div className={styles.stats}>
+            {hideCapital ? (
+              <>
+                <Stat icon={ICONS.fuel} tint compact label="RECARGAS" value={num(recargas)} />
+                <Stat icon={ICONS.lightning} tint compact label="ENERGIA" value={energia.value} unit={energia.unit} />
+              </>
+            ) : (
+              <>
+                <Stat icon={ICONS.handMoney} label="RETORNO" value={paybackLabel(scenario.payback)} />
+                <Stat icon={ICONS.moneyBag} label="ROI EM 36 MESES" value={pct(scenario.roi36, 0)} />
+              </>
+            )}
+          </div>
         </div>
 
         <div className={styles.middle}>
