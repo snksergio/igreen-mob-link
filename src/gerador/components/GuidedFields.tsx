@@ -5,8 +5,8 @@ import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { moneyCents } from '../../lib/format'
 import { fixed, hoursLabel, num, pct } from '../format'
-import { CLIENTES_DIA, CONEXOES, MAX_CLIENTES_DIA, TAX_KEYS, clientesPorDia, taxCustom } from '../guided'
-import { CHARGERS, DEFAULTS, TERMS, recurrenceProjection, type SimInputs } from '../model'
+import { CLIENTES_DIA, CONEXOES, MAX_CLIENTES_DIA, NOMES_V2, TAX_KEYS, clientesPorDia, escolhaModeloV2, taxCustom } from '../guided'
+import { DEFAULTS, recurrenceProjection, type SimInputs } from '../model'
 import { useGerador } from '../state'
 import { ChargerCarousel } from './ChargerCarousel'
 import { NumInput } from './NumInput'
@@ -44,12 +44,8 @@ export function EletropostoFields() {
 
   return (
     <>
-      {/* Trocar o modelo sugere os carros e os clientes por dia dele (dá para ajustar depois) */}
-      <ChargerCarousel
-        inputs={s}
-        hideCapital
-        onSelect={(charger) => setSim({ charger, cars: CHARGERS[charger].defaultCars, monthlyClients: CLIENTES_DIA[charger] * s.days })}
-      />
+      {/* Trocar o modelo sugere os carros, os clientes por dia e liga as três conexões (dá para ajustar depois) */}
+      <ChargerCarousel inputs={s} hideCapital names={NOMES_V2} onSelect={(charger) => setSim(escolhaModeloV2(charger, s.days))} />
       <div className={styles.included}>
         <span className={styles.includedTitle}>Incluso em todos os modelos:</span>
         <ul className={styles.includedList}>
@@ -178,7 +174,7 @@ export function PrecosFields() {
           <span className={styles.infoTitle}>Administração iGreen</span>
           <span className={styles.help}>Fixa, sobre o faturamento: plataforma, atendimento e taxas de cartão.</span>
         </div>
-        <span className={styles.infoValue}>{pct(TERMS.administration * 100, 0)}</span>
+        <span className={styles.infoValue}>{pct(s.adminRate, 0)}</span>
       </div>
     </>
   )

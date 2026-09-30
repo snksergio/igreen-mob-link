@@ -2,7 +2,7 @@ import { useId, type ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { moneyCents } from '../../lib/format'
 import { fixed, num, pct } from '../format'
-import { TERMS, type Charger, type MonthRow, type SimInputs } from '../model'
+import type { Charger, MonthRow, SimInputs } from '../model'
 import styles from './Report.module.css'
 
 type Line = { label: ReactNode; detail?: ReactNode; value: number; kind?: 'minus' | 'plus' | 'total' | 'highlight' }
@@ -58,7 +58,7 @@ export function DreTable({
 
   const scp: Line[] = [
     { label: 'Faturamento bruto de recargas', value: period.revenue, kind: 'total' },
-    { label: 'Administração iGreen', detail: pct(TERMS.administration * 100, 0), value: period.administration, kind: 'minus' },
+    { label: 'Administração iGreen', detail: pct(inputs.adminRate, 0), value: period.administration, kind: 'minus' },
     { label: 'PIS', detail: pct(inputs.pisRate, 2), value: period.pis, kind: 'minus' },
     { label: 'Cofins', detail: pct(inputs.cofinsRate, 2), value: period.cofins, kind: 'minus' },
     ...(period.creditUsed > 0 ? [{ label: 'Créditos PIS/Cofins', value: period.creditUsed, kind: 'plus' as const }] : []),
@@ -66,7 +66,7 @@ export function DreTable({
     { label: 'Receita após tributos e administração', value: period.revenue - period.federalRevenueTax - period.localTax - period.administration, kind: 'total' },
     {
       label: 'Custo de energia',
-      detail: `≈ ${num(period.purchased, 3)} kWh × R$ ${fixed(inputs.cost)}/kWh · inclui ${num(inputs.loss)}% de perdas`,
+      detail: `≈ ${num(period.purchased, 3)} kWh × R$ ${fixed(inputs.cost)}/kWh${inputs.loss > 0 ? ` · inclui ${num(inputs.loss)}% de perdas` : ''}`,
       value: period.energy,
       kind: 'minus',
     },

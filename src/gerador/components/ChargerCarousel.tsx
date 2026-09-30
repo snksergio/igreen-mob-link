@@ -27,11 +27,14 @@ export function ChargerCarousel({
   onSelect,
   selected: selectedProp,
   hideCapital = false,
+  names,
 }: {
   inputs: SimInputs
   onSelect: (id: ChargerId) => void
   selected?: ChargerId | null
   hideCapital?: boolean
+  /** nomes próprios da versão (v2: Carga lenta, rápida e ultra rápida) */
+  names?: Record<ChargerId, string>
 }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Record<string, HTMLButtonElement | null>>({})
@@ -132,7 +135,7 @@ export function ChargerCarousel({
                 </span>
               </span>
 
-              <span className={styles.name}>{c.name}</span>
+              <span className={styles.name}>{names?.[id] ?? c.name}</span>
               <span className={styles.power}>
                 {info.power}
                 <small>kW</small>
@@ -188,7 +191,7 @@ export function ChargerCarousel({
                 type="button"
                 className={cn(styles.dot, visible[id] && styles.dotOn)}
                 onClick={() => reveal(id)}
-                aria-label={`Mostrar ${CHARGERS[id].name}`}
+                aria-label={`Mostrar ${names?.[id] ?? CHARGERS[id].name}`}
                 tabIndex={-1}
               />
             ))}

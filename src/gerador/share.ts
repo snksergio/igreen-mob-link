@@ -101,7 +101,8 @@ const igual = (a: number | null, b: number | null) => (a == null || b == null ? 
  * `divergente`: o resultado recalculado com as regras atuais não bate com o registrado no documento
  * (documento alterado ou cálculo atualizado desde que foi gerado).
  */
-export function readSimulationFile(text: string): { inputs: SimInputs; divergente: boolean } | null {
+/** `base`: premissas da versão que importa (os campos não editáveis vêm dela, não do arquivo) */
+export function readSimulationFile(text: string, base: SimInputs = DEFAULTS): { inputs: SimInputs; divergente: boolean } | null {
   const source = text.trim()
   if (!source) return null
   const embedded = source.match(new RegExp(`<script[^>]*id="${SIM_SCRIPT_ID}"[^>]*>([\\s\\S]*?)</script>`))
@@ -117,7 +118,7 @@ export function readSimulationFile(text: string): { inputs: SimInputs; divergent
   const campos = sanitizeInputs(wrapped ? (data as { inputs: unknown }).inputs : data)
   if (!campos) return null
 
-  const inputs = clampInputs({ ...DEFAULTS, ...campos })
+  const inputs = clampInputs({ ...base, ...campos })
   const registrado = wrapped ? (data as { resumo?: Partial<ResumoDocumento> & ResumoAntigo }).resumo : undefined
   let divergente = false
   if (registrado && typeof registrado === 'object') {

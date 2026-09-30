@@ -50,6 +50,8 @@ export type SimInputs = {
   powerUse: number
   turnoverMinutes: number
   loss: number
+  /** administração iGreen (taxa de sistema) sobre o faturamento, em pontos percentuais */
+  adminRate: number
   fixed: number
   acShare: number
   monthlyClients: number
@@ -80,6 +82,7 @@ export const DEFAULTS: SimInputs = {
   powerUse: 80,
   turnoverMinutes: 10,
   loss: 5,
+  adminRate: TERMS.administration * 100,
   fixed: 0,
   acShare: 15,
   monthlyClients: 90,
@@ -114,6 +117,7 @@ export const LIMITS: Record<Exclude<NumericKey, never>, [number, number, boolean
   powerUse: [1, 100],
   turnoverMinutes: [0, 120],
   loss: [0, 50],
+  adminRate: [0, 100],
   fixed: [0, 1e6],
   acShare: [0, 100],
   // até 20 clientes por dia × 31 dias (a v2 pergunta por dia; ver guided.ts)
@@ -328,7 +332,7 @@ export function calculate(s: SimInputs): SimResult {
   const { acHours, dcHours, requiredHours, utilization, feasible, maxCars } = capacity
   const revenue = delivered * s.sale
   const energy = purchased * s.cost
-  const administration = revenue * TERMS.administration
+  const administration = revenue * (s.adminRate / 100)
   const pisBase = Math.max(0, revenue - s.pisExclusion)
   const pis = (pisBase * s.pisRate) / 100
   const cofins = (pisBase * s.cofinsRate) / 100

@@ -1,7 +1,7 @@
 import { moneyCents } from '../lib/format'
 import { compactMoney, fixed, num, pct, signedMoney } from './format'
 import { CONEXOES, POTENCIA, clientesPorDia, recebidoAcumulado, totaisRecebidos } from './guided'
-import { TERMS, recurrenceProjection, type SimInputs, type SimResult } from './model'
+import { recurrenceProjection, type SimInputs, type SimResult } from './model'
 import { embedPayload, resumoDe, type SimulationPayload } from './share'
 
 /*
@@ -81,13 +81,13 @@ export function buildSimulationDocument({ inputs: s, result, codigo, geradoEm, r
 
   const dre = [
     row('Faturamento bruto de recargas', moneyCents(m1.revenue), 'total'),
-    row(`Administração iGreen <small>${pct(TERMS.administration * 100, 0)}</small>`, `− ${moneyCents(m1.administration)}`),
+    row(`Administração iGreen <small>${pct(s.adminRate, 0)}</small>`, `− ${moneyCents(m1.administration)}`),
     row(`PIS <small>${pct(s.pisRate, 2)}</small>`, `− ${moneyCents(m1.pis)}`),
     row(`Cofins <small>${pct(s.cofinsRate, 2)}</small>`, `− ${moneyCents(m1.cofins)}`),
     m1.creditUsed > 0 ? row('Créditos PIS/Cofins', `+ ${moneyCents(m1.creditUsed)}`) : '',
     m1.localTax > 0 ? row(`Tributo local provisionado <small>${pct(s.localRate, 1)}</small>`, `− ${moneyCents(m1.localTax)}`) : '',
     row('Receita após tributos e administração', moneyCents(m1.revenue - m1.federalRevenueTax - m1.localTax - m1.administration), 'total'),
-    row(`Custo de energia <small>≈ ${num(m1.purchased, 3)} kWh × R$ ${fixed(s.cost)}/kWh · ${num(s.loss)}% de perdas</small>`, `− ${moneyCents(m1.energy)}`),
+    row(`Custo de energia <small>≈ ${num(m1.purchased, 3)} kWh × R$ ${fixed(s.cost)}/kWh${s.loss > 0 ? ` · ${num(s.loss)}% de perdas` : ''}</small>`, `− ${moneyCents(m1.energy)}`),
     row('Despesas operacionais', `− ${moneyCents(m1.fixed)}`),
     row('Resultado antes de IRPJ/CSLL', moneyCents(m1.beforeRent), 'total'),
     row('IRPJ <small>15%</small>', `− ${moneyCents(m1.irpj)}`),
@@ -258,7 +258,7 @@ header h1{font-size:22px;line-height:28px}
       ${field('Preço de venda', `R$ ${fixed(s.sale)}/kWh`)}
       ${field('Margem bruta', `R$ ${fixed(s.sale - s.cost)}/kWh`)}
       ${field('Participação do dono do ponto', pct(s.share, 0))}
-      ${field('Administração iGreen', `${pct(TERMS.administration * 100, 0)} (fixa)`)}
+      ${field('Administração iGreen', `${pct(s.adminRate, 0)} (fixa)`)}
     </table></div>
     <div><h3>Carteira iGreen</h3><table>
       ${field('Novos clientes por dia', `${clientesPorDia(s)} por dia · ${num(s.monthlyClients)} por mês`)}

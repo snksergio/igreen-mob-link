@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { money } from '../lib/format'
-import { CLIENTES_DIA, clientesPorDia, defaultsFor } from './guided'
+import { CARROS_V2, CLIENTES_DIA, FIXOS_V2, NOMES_V2, clientesPorDia, defaultsFor, escolhaModeloV2 } from './guided'
 import { DEFAULTS, calculate, clampInputs } from './model'
 import { readSimulationFile, sanitizeInputs, shareText } from './share'
 import { buildSimulationDocument } from './simulationDoc'
@@ -120,8 +120,8 @@ describe('mensagem de compartilhamento', () => {
 })
 
 describe('clientes da carteira por dia (v2)', () => {
-  it('cada modelo sugere a sua quantidade: 7 kW 1, DUO 2, Ultra 5', () => {
-    expect(CLIENTES_DIA).toEqual({ lento: 1, duo: 2, ultra: 5 })
+  it('cada modelo sugere a sua quantidade: carga lenta 1, rápida 2, ultra rápida 3', () => {
+    expect(CLIENTES_DIA).toEqual({ lento: 1, duo: 2, ultra: 3 })
   })
 
   it('a v2 parte de 2 clientes por dia no DUO; a v1 continua com as premissas da referência', () => {
@@ -132,5 +132,36 @@ describe('clientes da carteira por dia (v2)', () => {
 
   it('o limite do modelo comporta 20 clientes por dia em 31 dias', () => {
     expect(clampInputs({ ...DEFAULTS, days: 31, monthlyClients: 20 * 31 }).monthlyClients).toBe(620)
+  })
+})
+
+describe('modelos e premissas da v2', () => {
+  it('nomes e carros sugeridos: Carga lenta 2, Carga rápida 7, Carga ultra rápida 15', () => {
+    expect(NOMES_V2).toEqual({ lento: 'Carga lenta', duo: 'Carga rápida', ultra: 'Carga ultra rápida' })
+    expect(CARROS_V2).toEqual({ lento: 2, duo: 7, ultra: 15 })
+  })
+
+  it('escolher o modelo sugere carros e clientes por dia e liga energia, seguros e telecom', () => {
+    expect(escolhaModeloV2('ultra', 30)).toEqual({ charger: 'ultra', cars: 15, monthlyClients: 90, energyEnabled: true, insuranceEnabled: true, telecomEnabled: true })
+    expect(escolhaModeloV2('lento', 20).monthlyClients).toBe(20)
+  })
+
+  it('taxa de sistema de 14% e compra de energia sem perdas; a v1 segue com 15% e 5%', () => {
+    expect(FIXOS_V2).toEqual({ adminRate: 14, loss: 0 })
+    expect(defaultsFor('v2')).toMatchObject({ adminRate: 14, loss: 0 })
+    expect(defaultsFor('v1')).toMatchObject({ adminRate: 15, loss: 5 })
+    const m1 = calculate(defaultsFor('v2')).months[0]
+    expect(m1.administration).toBeCloseTo(m1.revenue * 0.14, 6)
+    expect(m1.purchased).toBeCloseTo(7 * 25 * 30, 6)
+  })
+
+  it('o modelo da referência (v1) continua com os mesmos números', () => {
+    expect(calculate(DEFAULTS).months[0].totalInvestor).toBeCloseTo(7311.47, 2)
+  })
+
+  it('importar na v2 usa as premissas da v2 e confere sem divergência', () => {
+    const v2 = defaultsFor('v2')
+    const lido = readSimulationFile(documento(v2), v2)
+    expect(lido).toEqual({ inputs: v2, divergente: false })
   })
 })

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ICONS } from '../../assets'
 import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
+import { defaultsFor } from '../guided'
 import { readSimulationFile } from '../share'
 import { useGerador } from '../state'
 import styles from './ImportSimulation.module.css'
@@ -13,7 +14,7 @@ type Aviso = { tom: 'ok' | 'alerta' | 'erro'; texto: string }
  * (ou um JSON), aplica só os campos editáveis dentro dos limites e refaz o cálculo com as regras atuais.
  */
 export function ImportSimulation({ className }: { className?: string }) {
-  const { setSim } = useGerador()
+  const { setSim, version } = useGerador()
   const inputRef = useRef<HTMLInputElement>(null)
   const [aviso, setAviso] = useState<Aviso | null>(null)
 
@@ -24,7 +25,7 @@ export function ImportSimulation({ className }: { className?: string }) {
   }, [aviso])
 
   const importar = async (file: File) => {
-    const lido = readSimulationFile(await file.text())
+    const lido = readSimulationFile(await file.text(), defaultsFor(version))
     if (!lido) {
       setAviso({ tom: 'erro', texto: 'Arquivo não reconhecido. Use o documento de simulação gerado pelo iGreen Mob.' })
       return

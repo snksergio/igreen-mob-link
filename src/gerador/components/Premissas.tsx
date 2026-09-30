@@ -1,5 +1,6 @@
 import { cn } from '../../lib/cn'
-import { CLIENTES_DIA, MAX_CLIENTES_DIA, ocultaCapital } from '../guided'
+import { pct } from '../format'
+import { CLIENTES_DIA, MAX_CLIENTES_DIA, NOMES_V2, ocultaCapital } from '../guided'
 import { useGerador } from '../state'
 import styles from './Report.module.css'
 
@@ -20,9 +21,16 @@ const FONTES = [
 
 /** Premissas, regras de cálculo e fontes (textos da referência), na aba do relatório. Na v2: sem o valor do investimento e com clientes por dia */
 export function Premissas() {
-  const { version } = useGerador()
+  const { version, state } = useGerador()
   const hideCapital = ocultaCapital(version)
-  const porDia = version === 'v2'
+  const v2 = version === 'v2'
+  const porDia = v2
+  const { adminRate, loss } = state.simulacao.inputs
+  // v2: nomes Carga lenta / rápida / ultra rápida; v1: 7 kW, DUO e Ultra
+  const noLento = v2 ? `na ${NOMES_V2.lento}` : 'no 7 kW'
+  const noDuo = v2 ? `na ${NOMES_V2.duo}` : 'no DUO'
+  const noDuoUltra = v2 ? `na ${NOMES_V2.duo} e na ${NOMES_V2.ultra}` : 'no DUO e no Ultra'
+  const cap = (t: string) => t[0].toUpperCase() + t.slice(1)
   return (
     <section className={cn(styles.card, styles.embedded)} aria-labelledby="premissas-titulo">
       <header className={styles.cardHead}>
@@ -38,30 +46,32 @@ export function Premissas() {
         <article className={styles.prose}>
           <h3>Recargas e sociedade</h3>
           <p>
-            No 7 kW, o investimento{hideCapital ? '' : ' de R$ 9.997'} é integralmente do investidor; a iGreen fornece o sistema e recebe a taxa de administração, sem participação
-            societária. No DUO e no Ultra, a composição de capital é uma proposta: o investimento do usuário corresponde a 80% do total proposto, e os 20% restantes
+            {cap(noLento)}, o investimento{hideCapital ? '' : ' de R$ 9.997'} é integralmente do investidor; a iGreen fornece o sistema e recebe a taxa de administração, sem participação
+            societária. {cap(noDuoUltra)}, a composição de capital é uma proposta: o investimento do usuário corresponde a 80% do total proposto, e os 20% restantes
             são uma contrapartida iGreen a formalizar. O simulador não comprova aporte realizado.{hideCapital ? '' : ' Payback e ROI usam apenas o investimento do usuário.'}
           </p>
           <p>
             Capacidade: tempo por sessão = kWh por carro ÷ (potência nominal × aproveitamento informado) + intervalo entre carros. O número máximo de sessões
-            completas considera a premissa de 24 horas disponíveis por dia. No DUO, as sessões são distribuídas e arredondadas entre os conectores de 7 e 40 kW,
+            completas considera a premissa de 24 horas disponíveis por dia. {cap(noDuo)}, as sessões são distribuídas e arredondadas entre os conectores de 7 e 40 kW,
             considerados simultâneos. As premissas iniciais de 80% e 10 minutos são ilustrativas. A procura de clientes precisa ser estimada separadamente.{' '}
             <a href="https://afdc.energy.gov/fuels/electricity-stations" target="_blank" rel="noreferrer">
               Referência: fatores que afetam o tempo de recarga ↗
             </a>
           </p>
           <p>
-            Carros/dia × kWh por recarga × dias de operação forma a energia vendida. A compra de energia considera as perdas. As premissas iniciais consideram 5% de
-            perdas de energia e despesas operacionais adicionais zeradas. Os 15% de administração incidem sobre o faturamento bruto da recarga e já incluem cartão,
-            plataforma e atendimento.
+            Carros/dia × kWh por recarga × dias de operação forma a energia vendida.{' '}
+            {loss > 0
+              ? `A compra de energia considera as perdas. As premissas iniciais consideram ${pct(loss, 0)} de perdas de energia e despesas operacionais adicionais zeradas.`
+              : 'A energia comprada é a mesma vendida, sem perdas, e as despesas operacionais adicionais estão zeradas.'}{' '}
+            Os {pct(adminRate, 0)} de administração incidem sobre o faturamento bruto da recarga e já incluem cartão, plataforma e atendimento.
           </p>
           <p>
             O repasse ao ponto é limitado a 20% do lucro contábil positivo após impostos. Nesta simulação é uma destinação contratual após a apuração, sem dedução
-            fiscal. Após esse repasse, o saldo pertence 100% ao investidor no 7 kW. No DUO e no Ultra, é dividido em 80% para o investidor e 20% para a iGreen. A
+            fiscal. Após esse repasse, o saldo pertence 100% ao investidor {noLento}. {cap(noDuoUltra)}, é dividido em 80% para o investidor e 20% para a iGreen. A
             contabilidade deve validar a classificação do pagamento ao ponto. Comissões do licenciado são separadas da SCP, sem essa divisão.
           </p>
           <p>
-            Em déficit de caixa, o modelo considera 100% do déficit a cargo do investidor no 7 kW e 80% no DUO e no Ultra; confirme as obrigações no contrato
+            Em déficit de caixa, o modelo considera 100% do déficit a cargo do investidor {noLento} e 80% {noDuoUltra}; confirme as obrigações no contrato
             aplicável. Não há distribuição sobre prejuízo.
           </p>
         </article>
@@ -86,7 +96,7 @@ export function Premissas() {
           <h3>{hideCapital ? 'Carteira e recebimentos' : 'Carteira e retorno'}</h3>
           <p>
             {porDia
-              ? `Entram de 0 a ${MAX_CLIENTES_DIA} novos clientes por dia de operação, conforme o valor informado (sugestão inicial: ${CLIENTES_DIA.lento} no 7 kW, ${CLIENTES_DIA.duo} no DUO e ${CLIENTES_DIA.ultra} no Ultra rápido). Por mês, são os clientes por dia × os dias de operação.`
+              ? `Entram de 0 a ${MAX_CLIENTES_DIA} novos clientes por dia de operação, conforme o valor informado (sugestão inicial: ${CLIENTES_DIA.lento} ${noLento}, ${CLIENTES_DIA.duo} ${noDuo} e ${CLIENTES_DIA.ultra} na ${NOMES_V2.ultra}). Por mês, são os clientes por dia × os dias de operação.`
               : 'Entram de 0 a 500 novos clientes por mês, conforme a meta informada.'}{' '}
             Cada cliente contrata todas as soluções selecionadas, com uma linha telecom por
             cliente; a contagem de clientes não é multiplicada pela quantidade de produtos. A carteira começa em zero e acumula sem cancelamentos e sem ajuste por

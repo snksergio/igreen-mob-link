@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState, type ReactNode } from 'react'
 import { emptyAddress, type Address } from '../services/address'
 import { DEFAULTS, calculate, clampInputs, scenarioResult, type PeriodView, type Scenario, type SimInputs, type SimResult } from './model'
-import { defaultsFor } from './guided'
+import { FIXOS_V2, NOMES_V2, defaultsFor } from './guided'
 import { BASE, baseOf, versionOfBase, type GeradorVersion } from './routes'
 
 export type GeradorScreen = 'inicio' | 'simulador' | 'dados' | 'eletroposto' | 'resumo' | 'proposta'
@@ -80,7 +80,8 @@ function loadState(version: GeradorVersion): GeradorState {
         simulacao: {
           ...initialState.simulacao,
           ...saved.simulacao,
-          inputs: clampInputs({ ...defaults, ...saved.simulacao?.inputs }),
+          // v2: taxa de sistema e perdas são fixas (não vêm de sessões antigas)
+          inputs: clampInputs({ ...defaults, ...saved.simulacao?.inputs, ...(version === 'v2' ? FIXOS_V2 : null) }),
         },
         investidor: { ...initialState.investidor, ...saved.investidor },
         eletroposto: { ...initialState.eletroposto, ...saved.eletroposto },
@@ -165,11 +166,18 @@ export function GeradorProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'patch', section, value } as Action)
   }, [])
 
-  const setSim = useCallback((value: Partial<SimInputs>) => dispatch({ type: 'sim', value }), [])
+  const setSim = useCallback(
+    (value: Partial<SimInputs>) => dispatch({ type: 'sim', value: version === 'v2' ? { ...value, ...FIXOS_V2 } : value }),
+    [version],
+  )
   const setProposta = useCallback((value: GeradorState['proposta']) => dispatch({ type: 'proposta', value }), [])
 
   const { inputs, view, month, year } = state.simulacao
-  const result = useMemo(() => calculate(inputs), [inputs])
+  const result = useMemo(() => {
+    const r = calculate(inputs)
+    // v2: os modelos se chamam Carga lenta, Carga rápida e Carga ultra rápida em todas as telas
+    return version === 'v2' ? { ...r, charger: { ...r.charger, name: NOMES_V2[inputs.charger] } } : r
+  }, [inputs, version])
   const scenario = useMemo(() => scenarioResult(result, inputs.incomeMode, view, month, year), [result, inputs.incomeMode, view, month, year])
 
   const value = useMemo(
