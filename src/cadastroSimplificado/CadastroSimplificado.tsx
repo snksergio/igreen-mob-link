@@ -178,7 +178,19 @@ export function CadastroSimplificado() {
               {modelo ? (
                 <>
                   <FormSection title="Seus dados" description="Para o contrato e para a licenciada falar com você.">
+                    {/* CPF primeiro; e-mail e WhatsApp lado a lado no desktop e um por linha no celular */}
                     <div className={styles.campos}>
+                      <Field
+                        label="CPF"
+                        value={dados.cpf}
+                        onChange={(cpf) => setDados({ ...dados, cpf })}
+                        mask={maskCpf}
+                        inputMode="numeric"
+                        placeholder="000.000.000-00"
+                        required
+                        valid={!erros.cpf}
+                        error={mostra(erros.cpf)}
+                      />
                       <Field
                         label="NOME COMPLETO"
                         value={dados.nome}
@@ -191,15 +203,16 @@ export function CadastroSimplificado() {
                       />
                       <FieldRow stackOnMobile>
                         <Field
-                          label="CPF"
-                          value={dados.cpf}
-                          onChange={(cpf) => setDados({ ...dados, cpf })}
-                          mask={maskCpf}
-                          inputMode="numeric"
-                          placeholder="000.000.000-00"
+                          label="E-MAIL"
+                          type="email"
+                          value={dados.email}
+                          onChange={(email) => setDados({ ...dados, email })}
+                          inputMode="email"
+                          autoComplete="email"
+                          placeholder="seuemail@mail.com.br"
                           required
-                          valid={!erros.cpf}
-                          error={mostra(erros.cpf)}
+                          valid={!erros.email}
+                          error={mostra(erros.email)}
                         />
                         <Field
                           label="WHATSAPP"
@@ -214,18 +227,6 @@ export function CadastroSimplificado() {
                           error={mostra(erros.whatsapp)}
                         />
                       </FieldRow>
-                      <Field
-                        label="E-MAIL"
-                        type="email"
-                        value={dados.email}
-                        onChange={(email) => setDados({ ...dados, email })}
-                        inputMode="email"
-                        autoComplete="email"
-                        placeholder="seuemail@mail.com.br"
-                        required
-                        valid={!erros.email}
-                        error={mostra(erros.email)}
-                      />
                     </div>
                   </FormSection>
 

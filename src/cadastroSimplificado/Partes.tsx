@@ -42,25 +42,9 @@ function Linhas({ itens }: { itens: [string, ReactNode][] }) {
 
 const ICONE: Record<ChargerId, string> = { lento: ICONS.energyCircle, duo: ICONS.eletric, ultra: ICONS.energyLink }
 
-function Dado({ icon, rotulo, valor, unidade }: { icon: string; rotulo: string; valor: string; unidade: string }) {
-  return (
-    <div className={styles.dado}>
-      <span className={styles.dadoIcone} aria-hidden>
-        <Icon src={icon} size={20} color="var(--fg-primary)" />
-      </span>
-      <div className={styles.dadoTexto}>
-        <p className={styles.dadoRotulo}>{rotulo}</p>
-        <p className={styles.dadoValor}>
-          {valor} <small>{unidade}</small>
-        </p>
-      </div>
-    </div>
-  )
-}
-
 /**
- * Modelo escolhido, no padrão do painel do simulador: nome e valor no topo, card verde com a entrada de hoje
- * (e as parcelas como informação secundária), potência e capacidade em destaque e o detalhamento no "+".
+ * Modelo escolhido, no padrão do painel do simulador: nome, potência, capacidade e valor no topo; card verde
+ * compacto com a entrada de hoje, o selo da sociedade e as parcelas como informação secundária; o detalhamento no "+".
  */
 export function Escolhido({ id }: { id: ChargerId }) {
   const f = ficha(id)
@@ -71,7 +55,19 @@ export function Escolhido({ id }: { id: ChargerId }) {
       <div className={styles.escolhidoCorpo}>
         <div className={styles.escolhidoTopo}>
           <FancyIcon src={ICONE[id]} bg="var(--bg-primary)" size={40} iconSize={20} />
-          <h3 className={styles.escolhidoNome}>{f.nome}</h3>
+          <div className={styles.escolhidoInfo}>
+            <h3 className={styles.escolhidoNome}>{f.nome}</h3>
+            <p className={styles.escolhidoDados}>
+              <span>
+                <Icon src={ICONS.lightning} size={13} color="var(--fg-primary)" />
+                {f.kw} kW
+              </span>
+              <span>
+                <Icon src={ICONS.fuel} size={13} color="var(--fg-primary)" />
+                {f.carrosDia} carros/dia
+              </span>
+            </p>
+          </div>
           <p className={styles.escolhidoValor}>
             <b>{money(p.total)}</b>
             <span>valor total</span>
@@ -79,7 +75,8 @@ export function Escolhido({ id }: { id: ChargerId }) {
         </div>
 
         <div className={styles.hero} style={{ backgroundImage: `url(${IMAGES.greenCard})` }}>
-          <p className={styles.overline}>ENTRADA PARA GARANTIR HOJE</p>
+          <p className={styles.overline}>ENTRADA HOJE</p>
+          <span className={styles.chip}>{f.selo}</span>
           <p className={styles.amount} aria-label={moneyCents(p.entrada)}>
             R$ {entrada.int}
             <span className={styles.cents}>,{entrada.cents}</span>
@@ -87,12 +84,6 @@ export function Escolhido({ id }: { id: ChargerId }) {
           <p className={styles.heroNota}>
             {p.parcelas ? `+ ${p.parcelas} parcelas de ${moneyCents(p.parcela)}` : 'Pagamento único, sem parcelas'}
           </p>
-          <span className={styles.chip}>{f.selo}</span>
-        </div>
-
-        <div className={styles.dados}>
-          <Dado icon={ICONS.lightning} rotulo="POTÊNCIA" valor={f.kw} unidade="kW" />
-          <Dado icon={ICONS.fuel} rotulo="CAPACIDADE" valor={String(f.carrosDia)} unidade="carros/dia" />
         </div>
       </div>
 
