@@ -129,11 +129,11 @@ Modelo novo da página que o investidor recebe depois que a proposta é gerada (
 Mesmas informações e regras (`data.ts`), com o visual da proposta final do fluxo: `http://localhost:5173/#proposta-v3/9E89C902` (`src/proposta/v3/`).
 
 - **Topo institucional acima do carro**, como na proposta final: título em duas linhas cujo destaque acompanha a etapa (`chamada` em `data.ts`: "Proposta gerada com / Sucesso!", "Contrato assinado / com sucesso!", "Seu eletroposto / está a caminho!"…) e o texto institucional. O vídeo do carro é o mesmo da proposta final; em telas mais largas que o vídeo, as laterais somem no fundo.
-- **Card da proposta sobre o carro:** número (com botão de copiar), produto, local, selos de status e prazo ou etapa, o próximo passo e as ações. Aceitar e Recusar ficam visíveis.
+- **Card da proposta sobre o carro:** número (com botão de copiar), produto, local, selos de status e prazo ou etapa, o próximo passo (com o ícone da etapa como ilustração) e as ações. Aceitar e Recusar ficam visíveis.
 - **Andamento num card só:** o trilho é a barra de abas do card (etapa escolhida com fundo de aba) e a folha da etapa vem logo abaixo. Há respiro para o aro da etapa atual não ser cortado.
 - **O que é clicável tem borda e indicador** (chevron em círculo, "Abrir" com seta, botão "Copiar"). Informação fica em texto ou em fundo tingido, sem caixa dentro de caixa.
 - **Recusar** pede o CPF do investidor (precisa bater com o da proposta, `cpfConfere`) e o motivo por escrito, com sugestões para preencher.
-- **Detalhes** do investidor e da licenciada em cards recolhíveis, como na proposta final. Compartilhar (WhatsApp, e-mail, link) fica no fim da página.
+- **Detalhes:** investidor e licenciada em cards recolhíveis, como na proposta final, e logo abaixo o card de compartilhar (WhatsApp, e-mail e link em botões redondos), no mesmo formato e altura.
 
 ## Tema escuro (`lib/theme.ts`)
 

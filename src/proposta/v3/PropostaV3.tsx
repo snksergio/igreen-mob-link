@@ -43,7 +43,7 @@ import styles from './Proposta.module.css'
 /*
  * Proposta gerada, versão 2 do modelo novo (só local, dados de exemplo). Endereço: #proposta-v3/<número>?cenario=<etapa>.
  * Segue o visual da proposta final do fluxo: topo institucional acima do carro, card da proposta sobre o carro,
- * andamento, detalhes em cards recolhíveis e compartilhar no fim. As informações são as mesmas do primeiro modelo (#proposta-v2).
+ * andamento e detalhes em cards (investidor, licenciada e compartilhar). As informações são as mesmas do primeiro modelo (#proposta-v2).
  */
 
 const lerCenario = (): Cenario => {
@@ -299,8 +299,13 @@ export function PropostaV3() {
             )}
           </div>
           <div className={styles.passoLinha}>
-            <span className={styles.passoRotulo}>{concluida ? 'Tudo pronto' : 'Próximo passo'}</span>
-            <span className={styles.passoTitulo}>{passo.titulo}</span>
+            <span className={styles.passoIlustracao} aria-hidden>
+              <Icon src={recusada ? ICONS.whatsapp : concluida ? ICONS.checkBold : ICONE_ETAPA[passo.etapa]} size={22} color="#fff" />
+            </span>
+            <span className={styles.passoTextos}>
+              <span className={styles.passoRotulo}>{concluida ? 'Tudo pronto' : 'Próximo passo'}</span>
+              <span className={styles.passoTitulo}>{passo.titulo}</span>
+            </span>
           </div>
           {aguardando ? (
             <div className={styles.principalAcoes}>
@@ -363,7 +368,7 @@ export function PropostaV3() {
             onToggle={() => setDetalhe(detalhe === 'licenciado' ? null : 'licenciado')}
             icone={<FancyIcon src={ICONS.userWhite} bg="var(--bg-primary)" multicolor />}
             titulo={p.licenciado.nome}
-            meta={['Sua licenciada', p.licenciado.telefone]}
+            meta={['Licenciada', p.licenciado.telefone]}
           >
             <p className={styles.recolhivelTexto}>Tira dúvidas e acompanha cada etapa da sua proposta.</p>
             <div className={styles.contato}>
@@ -377,21 +382,22 @@ export function PropostaV3() {
               </a>
             </div>
           </Recolhivel>
-        </section>
-
-        <section className={styles.grupo} aria-labelledby={`${id}-compartilhar`}>
-          <h2 id={`${id}-compartilhar`} className={styles.grupoTitulo}>
-            Compartilhar proposta
-          </h2>
-          <div className={styles.compartilhar}>
-            <Compartilhar icon={ICONS.whatsapp} label="WhatsApp" href={`https://wa.me/?text=${encodeURIComponent(`Proposta iGreen Mob nº ${p.numero}: ${link}`)}`} />
-            <Compartilhar
-              icon={ICONS.mailShare}
-              label="E-mail"
-              href={`mailto:?subject=${encodeURIComponent(`Proposta iGreen Mob nº ${p.numero}`)}&body=${encodeURIComponent(link)}`}
-            />
-            <Compartilhar icon={ICONS.link} label="Copiar link" onClick={() => copiar(link, 'Link da proposta copiado')} />
-          </div>
+          <section className={styles.compartilhar} aria-label="Compartilhar proposta">
+            <FancyIcon src={ICONS.link} bg="var(--bg-primary)" />
+            <span className={styles.recolhivelTextos}>
+              <span className={styles.recolhivelTitulo}>Compartilhar</span>
+              <span className={styles.recolhivelMeta}>Envie o link</span>
+            </span>
+            <span className={styles.compartilharAcoes}>
+              <Compartilhar icon={ICONS.whatsapp} label="Compartilhar no WhatsApp" href={`https://wa.me/?text=${encodeURIComponent(`Proposta iGreen Mob nº ${p.numero}: ${link}`)}`} />
+              <Compartilhar
+                icon={ICONS.mailShare}
+                label="Compartilhar por e-mail"
+                href={`mailto:?subject=${encodeURIComponent(`Proposta iGreen Mob nº ${p.numero}`)}&body=${encodeURIComponent(link)}`}
+              />
+              <Compartilhar icon={ICONS.link} label="Copiar link da proposta" onClick={() => copiar(link, 'Link da proposta copiado')} />
+            </span>
+          </section>
         </section>
       </div>
 
@@ -436,24 +442,28 @@ export function PropostaV3() {
   )
 }
 
+/** Botão redondo de compartilhar (só ícone; o nome vai no aria-label e no title) */
 function Compartilhar({ icon, label, href, onClick }: { icon: string; label: string; href?: string; onClick?: () => void }) {
-  const conteudo = (
-    <>
-      <span className={styles.compartilharIcone}>
-        <Icon src={icon} size={20} className={styles.compartilharGlifo} />
-      </span>
-      <span className={styles.compartilharRotulo}>{label}</span>
-    </>
-  )
+  const glifo = <Icon src={icon} size={18} className={styles.compartilharGlifo} />
   return href ? (
-    <a className={styles.compartilharItem} href={href} target="_blank" rel="noreferrer">
-      {conteudo}
+    <a className={styles.btnRedondo} href={href} target="_blank" rel="noreferrer" aria-label={label} title={label}>
+      {glifo}
     </a>
   ) : (
-    <button type="button" className={styles.compartilharItem} onClick={onClick}>
-      {conteudo}
+    <button type="button" className={styles.btnRedondo} onClick={onClick} aria-label={label} title={label}>
+      {glifo}
     </button>
   )
+}
+
+/** Ilustração do próximo passo: o ícone da etapa */
+const ICONE_ETAPA: Record<EtapaId, string> = {
+  proposta: ICONS.fileDollar,
+  contrato: ICONS.lineEdit,
+  pagamento: ICONS.moneyBag,
+  vistoria: ICONS.search,
+  instalacao: ICONS.lightning,
+  entrega: ICONS.checkBold,
 }
 
 function Recolhivel({
@@ -480,7 +490,7 @@ function Recolhivel({
           <span className={styles.recolhivelMeta}>
             {meta.map((m, i) => (
               <span key={m} className={styles.recolhivelMetaItem}>
-                {i > 0 ? <Img src={ICONS.dotSeparator} size={4} /> : null}
+                {i > 0 ? <Img src={ICONS.dotSeparator} size={4} className={styles.metaPonto} /> : null}
                 {m}
               </span>
             ))}

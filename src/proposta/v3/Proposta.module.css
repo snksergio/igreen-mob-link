@@ -275,20 +275,42 @@
 /* Próximo passo: informação (fundo tingido, sem borda); a ação vem nos botões logo abaixo */
 .passoLinha {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 12px;
   width: 100%;
   margin-top: 4px;
   padding: 12px 14px;
   border-radius: var(--radius-base);
-  background: var(--pv-sunken);
+  background: var(--p-badge);
+  text-align: left;
+}
+
+/* Ilustração do passo: o ícone da etapa num ladrilho verde com brilho suave */
+.passoIlustracao {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--bg-primary) 75%, #fff), var(--bg-primary) 55%);
+  box-shadow:
+    0 6px 14px -6px color-mix(in srgb, var(--bg-primary) 70%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.passoTextos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .passoRotulo {
-  font-weight: 500;
+  font-weight: 600;
   font-size: 11px;
   line-height: 14px;
-  color: var(--p-caption);
+  color: var(--fg-primary);
 }
 
 .passoTitulo {
@@ -312,59 +334,54 @@
 }
 
 
-/* ---------- Compartilhar ---------- */
+/* ---------- Compartilhar: card na mesma altura dos detalhes ---------- */
 .compartilhar {
   display: flex;
-  padding: 20px;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
   border-radius: var(--radius-lg);
   background: var(--p-card);
   box-shadow: var(--shadow-card);
 }
 
-.compartilharItem {
+.compartilharAcoes {
   display: flex;
-  flex: 1 0 0;
-  flex-direction: column;
-  align-items: center;
+  flex-shrink: 0;
   gap: 8px;
-  min-width: 1px;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  text-decoration: none;
-  cursor: pointer;
 }
 
-.compartilharIcone {
+.btnRedondo {
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
-  border: 1px solid var(--border);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--pv-line);
   border-radius: 50%;
-  background: var(--bg-muted);
+  background: var(--pv-sunken);
+  cursor: pointer;
   transition:
-    background-color 0.15s ease,
+    border-color 0.15s ease,
     transform 0.15s ease;
 }
 
-:global([data-theme='dark']) .compartilharIcone {
-  background: var(--bg-secondary);
+.btnRedondo:hover {
+  border-color: var(--border-primary);
+  transform: translateY(-1px);
+}
+
+.btnRedondo:focus-visible {
+  outline: 2px solid var(--fg-primary);
+  outline-offset: 2px;
 }
 
 .compartilharGlifo {
   background-color: var(--share-icon);
 }
 
-.compartilharItem:hover .compartilharIcone {
-  transform: translateY(-1px);
-}
-
-.compartilharRotulo {
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--p-text);
+.btnRedondo:hover .compartilharGlifo {
+  background-color: var(--fg-primary);
 }
 
 /* ---------- Grupos ---------- */
@@ -1273,11 +1290,12 @@
   color: var(--p-value);
 }
 
+/* Linha curta em uma linha só (com reticências se faltar espaço): todos os cards do grupo ficam da mesma altura */
 .recolhivelMeta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0 8px;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-weight: 500;
   font-size: 12px;
   line-height: 18px;
@@ -1285,10 +1303,14 @@
 }
 
 .recolhivelMetaItem {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
+  display: inline;
+}
+
+/* o reset deixa <img> como bloco; aqui o ponto fica na linha do texto */
+.metaPonto {
+  display: inline-block;
+  margin: 0 8px;
+  vertical-align: middle;
 }
 
 .recolhivelCorpo {
@@ -1548,7 +1570,7 @@
   .chevronCirculo,
   .parcela,
   .linhaDoc,
-  .compartilharIcone {
+  .btnRedondo {
     transition: none;
   }
 }
