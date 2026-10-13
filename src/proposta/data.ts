@@ -426,3 +426,20 @@ export function cpfConfere(digitado: string, mascarado: string) {
   if (dv(9) !== Number(d[9]) || dv(10) !== Number(d[10])) return false
   return [...m].every((c, i) => c === '*' || c === d[i])
 }
+
+/* ---------------- Chamada do topo ---------------- */
+
+const TEXTO_INSTITUCIONAL = 'O seu acesso oficial ao nosso mundo de soluções e tecnologia está muito mais próximo.'
+
+/** Título institucional do topo: a estrutura é fixa e o destaque acompanha a etapa da proposta */
+export function chamada(p: Proposta): { linha: string; destaque: string; texto: string; tom: 'ok' | 'erro' } {
+  if (p.resposta.status === 'recusada')
+    return { linha: 'Proposta', destaque: 'recusada', texto: 'Quando quiser retomar, sua licenciada pode preparar uma nova proposta.', tom: 'erro' }
+  if (p.entrega.status === 'aceita') return { linha: 'Seu eletroposto', destaque: 'está ativo!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
+  if (p.entrega.status === 'pronta') return { linha: 'Seu eletroposto', destaque: 'está pronto!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
+  if (p.vistoria.status !== 'aguardando' || p.obra.status !== 'aguardando')
+    return { linha: 'Seu eletroposto', destaque: 'está a caminho!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
+  if (p.contrato.status === 'assinado') return { linha: 'Contrato assinado', destaque: 'com sucesso!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
+  if (p.resposta.status === 'aceita') return { linha: 'Proposta aceita', destaque: 'com sucesso!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
+  return { linha: 'Proposta gerada com', destaque: 'Sucesso!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
+}

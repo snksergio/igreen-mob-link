@@ -96,58 +96,12 @@
   right: 0;
 }
 
-.numero {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 26px;
-  padding: 5px 5px 5px 14px;
-  border: 1px solid var(--pv-line);
-  border-radius: var(--radius-full);
-  background: var(--p-card);
-  box-shadow: var(--shadow-sm);
-}
-
-.numeroRotulo {
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--p-text);
-}
-
-.numeroValor {
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.03em;
-  font-variant-numeric: tabular-nums;
-  color: var(--p-value);
-}
-
-.numeroCopiar {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--pv-sunken);
-  color: var(--fg-main);
-  cursor: pointer;
-}
-
-.numeroCopiar:hover {
-  color: var(--fg-primary);
-}
-
-.numeroCopiar:focus-visible {
-  outline: 2px solid var(--fg-primary);
-  outline-offset: 2px;
-}
-
 .titulo {
-  margin-top: 18px;
+  margin-top: 34px;
   font-weight: 600;
-  font-size: 38px;
-  line-height: 42px;
+  /* cabe em duas linhas no celular ("Proposta gerada com" / "Sucesso!") */
+  font-size: clamp(30px, 8.6vw, 38px);
+  line-height: 1.12;
   letter-spacing: -0.06em;
   color: var(--p-title);
 }
@@ -156,47 +110,17 @@
   color: var(--fg-primary);
 }
 
+.destaqueErro {
+  color: var(--fg-critical);
+}
+
 .subtitulo {
-  margin-top: 12px;
+  max-width: 340px;
+  margin-top: 20px;
   font-size: 16px;
   line-height: 22px;
   letter-spacing: -0.02em;
   color: var(--p-text);
-}
-
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 34px;
-  margin-top: 16px;
-  padding: 0 14px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.statusPonto {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);
-}
-
-.status_acao {
-  background: var(--bg-warning-subtle);
-  color: var(--fg-warning);
-}
-
-.status_ok {
-  background: var(--p-badge);
-  color: var(--fg-primary-strong);
-}
-
-.status_erro {
-  background: color-mix(in srgb, var(--fg-critical) 12%, transparent);
-  color: var(--fg-critical);
 }
 
 /* ---------- Carro ---------- */
@@ -246,18 +170,58 @@
 }
 
 .principalRotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-weight: 500;
   font-size: 12px;
   line-height: 16px;
   color: var(--p-caption);
 }
 
-.principalTitulo {
+.principalRotulo b {
   font-weight: 700;
-  font-size: 24px;
-  line-height: 28px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--p-text);
+}
+
+.copiarNumero {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-left: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pv-sunken);
+  color: var(--fg-main);
+  cursor: pointer;
+}
+
+.copiarNumero:hover {
+  color: var(--fg-primary);
+}
+
+.copiarNumero:focus-visible {
+  outline: 2px solid var(--fg-primary);
+  outline-offset: 2px;
+}
+
+.principalTitulo {
+  margin-top: -4px;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 32px;
   letter-spacing: -0.03em;
   color: var(--p-value);
+}
+
+.principalLocal {
+  margin-top: -6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--p-text);
 }
 
 .badges {
@@ -280,26 +244,58 @@
   white-space: nowrap;
 }
 
-.badgeVerde {
+.badgePonto {
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge_ok {
   background: var(--p-badge);
   color: var(--fg-primary);
 }
 
-.badgeLaranja {
+.badge_acao {
   background: var(--bg-warning-subtle);
   color: var(--bg-warning);
 }
 
-.badgeVermelho {
+.badge_erro {
   background: color-mix(in srgb, var(--fg-critical) 12%, transparent);
   color: var(--fg-critical);
 }
 
-.principalTexto {
-  max-width: 380px;
-  font-size: 14px;
-  line-height: 20px;
+.badgeNeutro {
+  background: var(--pv-sunken);
   color: var(--p-text);
+}
+
+/* Próximo passo: informação (fundo tingido, sem borda); a ação vem nos botões logo abaixo */
+.passoLinha {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-base);
+  background: var(--pv-sunken);
+}
+
+.passoRotulo {
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--p-caption);
+}
+
+.passoTitulo {
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--p-value);
 }
 
 .principalAcoes {
@@ -307,7 +303,6 @@
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  margin-top: 6px;
 }
 
 /* O Button do DS cresce com flex: 1 0 0; numa coluna isso achata a altura */
@@ -316,10 +311,6 @@
   width: 100%;
 }
 
-.validade {
-  font-size: 12px;
-  color: var(--p-caption);
-}
 
 /* ---------- Compartilhar ---------- */
 .compartilhar {
@@ -1559,6 +1550,15 @@
   .linhaDoc,
   .compartilharIcone {
     transition: none;
+  }
+}
+
+@media (min-width: 1181px) {
+  .heroImg {
+    -webkit-mask-image: var(--fade-y), linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: var(--fade-y), linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%);
+    mask-composite: intersect;
   }
 }
 

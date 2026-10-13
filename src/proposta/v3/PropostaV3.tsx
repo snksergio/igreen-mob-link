@@ -19,9 +19,9 @@ import {
   aceitarEntrega,
   assinarAditivo,
   assinarContrato,
+  chamada,
   cpfConfere,
   dataCurta,
-  dataLonga,
   diasEntre,
   etapaEmFoco,
   etapas,
@@ -42,8 +42,8 @@ import styles from './Proposta.module.css'
 
 /*
  * Proposta gerada, versão 2 do modelo novo (só local, dados de exemplo). Endereço: #proposta-v3/<número>?cenario=<etapa>.
- * Segue o visual da proposta final do fluxo: cabeçalho centralizado acima do carro, card principal sobre o carro,
- * compartilhar e detalhes em cards recolhíveis. As informações são as mesmas do primeiro modelo (#proposta-v2).
+ * Segue o visual da proposta final do fluxo: topo institucional acima do carro, card da proposta sobre o carro,
+ * andamento, detalhes em cards recolhíveis e compartilhar no fim. As informações são as mesmas do primeiro modelo (#proposta-v2).
  */
 
 const lerCenario = (): Cenario => {
@@ -226,6 +226,7 @@ export function PropostaV3() {
       : concluida
         ? { texto: 'Concluída', tom: 'ok' }
         : { texto: 'Em andamento', tom: 'ok' }
+  const topo = chamada(p)
   const faltam = Math.max(0, diasEntre(new Date(), p.validaAte))
   const etapaNum = ETAPAS.indexOf(passo.etapa) + 1
   const link = `${window.location.origin}${window.location.pathname}#proposta-v3/${p.numero}`
@@ -244,28 +245,16 @@ export function PropostaV3() {
       </div>
 
       {/* ---------- Cabeçalho centralizado ---------- */}
+      {/* Topo institucional, como na proposta final: só o destaque do título muda com a etapa */}
       <header className={styles.header}>
         <ThemeToggle className={styles.themeToggle} />
         <img src={ICONS.logoEnergy} width={88} height={28} alt="iGreen Energy" />
-        <div className={styles.numero}>
-          <span className={styles.numeroRotulo}>Proposta nº</span>
-          <span className={styles.numeroValor}>{p.numero}</span>
-          <button type="button" className={styles.numeroCopiar} onClick={() => copiar(p.numero, 'Número da proposta copiado')} aria-label="Copiar número da proposta">
-            <Icon src={ICONS.link} size={14} />
-          </button>
-        </div>
         <h1 className={styles.titulo}>
-          Sua proposta de
+          {topo.linha}
           <br />
-          <span className={styles.destaque}>{p.produto.nome.toLowerCase()}</span>
+          <span className={cn(styles.destaque, topo.tom === 'erro' && styles.destaqueErro)}>{topo.destaque}</span>
         </h1>
-        <p className={styles.subtitulo}>
-          {p.carregadores[0].quantidade} eletroposto de {p.produto.potencia} em {p.local.cidade}/{p.local.uf}
-        </p>
-        <span className={cn(styles.status, styles[`status_${situacao.tom}`])}>
-          <span className={styles.statusPonto} aria-hidden />
-          {situacao.texto}
-        </span>
+        <p className={styles.subtitulo}>{topo.texto}</p>
       </header>
 
       <div className={styles.hero} aria-hidden>
@@ -280,24 +269,39 @@ export function PropostaV3() {
 
       <div className={styles.content}>
         {/* ---------- Card principal (sobre o carro) ---------- */}
-        <section ref={principalRef} className={styles.principal} aria-labelledby={`${id}-passo`}>
-          <p className={styles.principalRotulo}>{concluida ? 'Tudo pronto' : 'Próximo passo'}</p>
-          <h2 id={`${id}-passo`} className={styles.principalTitulo}>
-            {passo.titulo}
+        {/* ---------- Card da proposta (sobre o carro): número, produto, local, status e a ação do momento ---------- */}
+        <section ref={principalRef} className={styles.principal} aria-labelledby={`${id}-produto`}>
+          <p className={styles.principalRotulo}>
+            Proposta nº <b>{p.numero}</b>
+            <button type="button" className={styles.copiarNumero} onClick={() => copiar(p.numero, 'Número da proposta copiado')} aria-label="Copiar número da proposta">
+              <Icon src={ICONS.link} size={12} />
+            </button>
+          </p>
+          <h2 id={`${id}-produto`} className={styles.principalTitulo}>
+            {p.produto.nome}
           </h2>
+          <p className={styles.principalLocal}>
+            {p.carregadores[0].quantidade} eletroposto de {p.produto.potencia} em {p.local.cidade}/{p.local.uf}
+          </p>
           <div className={styles.badges}>
-            <span className={cn(styles.badge, styles.badgeVerde)}>{p.produto.nome}</span>
+            <span className={cn(styles.badge, styles[`badge_${situacao.tom}`])}>
+              <span className={styles.badgePonto} aria-hidden />
+              {situacao.texto}
+            </span>
             {aguardando ? (
-              <span className={cn(styles.badge, styles.badgeLaranja)}>{faltam === 1 ? 'Falta 1 dia' : `Faltam ${faltam} dias`}</span>
+              <span className={cn(styles.badge, styles.badgeNeutro)}>{faltam === 1 ? 'Falta 1 dia' : `Faltam ${faltam} dias`}</span>
             ) : recusada ? (
-              <span className={cn(styles.badge, styles.badgeVermelho)}>Recusada em {dataCurta(p.resposta.em!)}</span>
+              <span className={cn(styles.badge, styles.badgeNeutro)}>Em {dataCurta(p.resposta.em!)}</span>
             ) : (
-              <span className={cn(styles.badge, styles.badgeLaranja)}>
+              <span className={cn(styles.badge, styles.badgeNeutro)}>
                 Etapa {etapaNum} de {ETAPAS.length}
               </span>
             )}
           </div>
-          <p className={styles.principalTexto}>{passo.texto}</p>
+          <div className={styles.passoLinha}>
+            <span className={styles.passoRotulo}>{concluida ? 'Tudo pronto' : 'Próximo passo'}</span>
+            <span className={styles.passoTitulo}>{passo.titulo}</span>
+          </div>
           {aguardando ? (
             <div className={styles.principalAcoes}>
               <Button className={styles.btnCheio} onClick={onAceitar}>
@@ -306,7 +310,6 @@ export function PropostaV3() {
               <Button variant="secondary" className={styles.btnCheio} onClick={() => setRecusando(true)}>
                 Recusar proposta
               </Button>
-              <p className={styles.validade}>Válida até {dataLonga(p.validaAte)}</p>
             </div>
           ) : passo.acao ? (
             <div className={styles.principalAcoes}>
@@ -315,16 +318,6 @@ export function PropostaV3() {
               </Button>
             </div>
           ) : null}
-        </section>
-
-        <section className={styles.compartilhar} aria-label="Compartilhar proposta">
-          <Compartilhar icon={ICONS.whatsapp} label="WhatsApp" href={`https://wa.me/?text=${encodeURIComponent(`Proposta iGreen Mob nº ${p.numero}: ${link}`)}`} />
-          <Compartilhar
-            icon={ICONS.mailShare}
-            label="E-mail"
-            href={`mailto:?subject=${encodeURIComponent(`Proposta iGreen Mob nº ${p.numero}`)}&body=${encodeURIComponent(link)}`}
-          />
-          <Compartilhar icon={ICONS.link} label="Copiar link" onClick={() => copiar(link, 'Link da proposta copiado')} />
         </section>
 
         {/* ---------- Andamento: trilho e folha no mesmo card ---------- */}
@@ -370,7 +363,7 @@ export function PropostaV3() {
             onToggle={() => setDetalhe(detalhe === 'licenciado' ? null : 'licenciado')}
             icone={<FancyIcon src={ICONS.userWhite} bg="var(--bg-primary)" multicolor />}
             titulo={p.licenciado.nome}
-            meta={['Sua licenciada iGreen', p.licenciado.telefone]}
+            meta={['Sua licenciada', p.licenciado.telefone]}
           >
             <p className={styles.recolhivelTexto}>Tira dúvidas e acompanha cada etapa da sua proposta.</p>
             <div className={styles.contato}>
@@ -384,6 +377,21 @@ export function PropostaV3() {
               </a>
             </div>
           </Recolhivel>
+        </section>
+
+        <section className={styles.grupo} aria-labelledby={`${id}-compartilhar`}>
+          <h2 id={`${id}-compartilhar`} className={styles.grupoTitulo}>
+            Compartilhar proposta
+          </h2>
+          <div className={styles.compartilhar}>
+            <Compartilhar icon={ICONS.whatsapp} label="WhatsApp" href={`https://wa.me/?text=${encodeURIComponent(`Proposta iGreen Mob nº ${p.numero}: ${link}`)}`} />
+            <Compartilhar
+              icon={ICONS.mailShare}
+              label="E-mail"
+              href={`mailto:?subject=${encodeURIComponent(`Proposta iGreen Mob nº ${p.numero}`)}&body=${encodeURIComponent(link)}`}
+            />
+            <Compartilhar icon={ICONS.link} label="Copiar link" onClick={() => copiar(link, 'Link da proposta copiado')} />
+          </div>
         </section>
       </div>
 

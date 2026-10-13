@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CENARIOS, aceitar, aceitarEntrega, assinarAditivo, assinarContrato, cpfConfere, diasEntre, etapaEmFoco, etapas, montarProposta, pagar, proximoPasso, recusar } from './data'
+import { CENARIOS, aceitar, aceitarEntrega, assinarAditivo, assinarContrato, chamada, cpfConfere, diasEntre, etapaEmFoco, etapas, montarProposta, pagar, proximoPasso, recusar } from './data'
 
 const hoje = new Date(2026, 9, 13)
 const status = (c: Parameters<typeof montarProposta>[0]) => etapas(montarProposta(c, hoje), hoje).map((e) => e.status)
@@ -93,5 +93,22 @@ describe('recusa', () => {
     expect(cpfConfere('529.982.247-25', '123.***.***-09')).toBe(false)
     expect(cpfConfere('123.456.789-00', '123.***.***-09')).toBe(false)
     expect(cpfConfere('123.456', '123.***.***-09')).toBe(false)
+  })
+})
+
+describe('chamada do topo', () => {
+  it('acompanha a etapa sem repetir os dados do card', () => {
+    const destaque = (c: Parameters<typeof montarProposta>[0]) => {
+      const x = chamada(montarProposta(c, hoje))
+      return `${x.linha} ${x.destaque}`
+    }
+    expect(destaque('nova')).toBe('Proposta gerada com Sucesso!')
+    expect(destaque('contrato')).toBe('Proposta aceita com sucesso!')
+    expect(destaque('pagamento')).toBe('Contrato assinado com sucesso!')
+    expect(destaque('vistoria')).toBe('Seu eletroposto está a caminho!')
+    expect(destaque('instalacao')).toBe('Seu eletroposto está a caminho!')
+    expect(destaque('entrega')).toBe('Seu eletroposto está pronto!')
+    expect(chamada(montarProposta('recusada', hoje))).toMatchObject({ destaque: 'recusada', tom: 'erro' })
+    expect(destaque('nova')).not.toContain('9E89C902')
   })
 })
