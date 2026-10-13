@@ -83,8 +83,8 @@ export function emDias(ate: Date, hoje: Date) {
 
 /* ---------------- Montagem do exemplo ---------------- */
 
-const PIX = '00020126580014BR.GOV.BCB.PIX0136a1f4c2e8-igreen-mob-9e89c902520400005303986540538970.005802BR5913IGREEN MOB SA6009UBERLANDIA62070503***6304A1B2'
-const BOLETO = '34191.79001 01043.510047 91020.150008 1 10450003897000'
+const PIX = '00020126580014BR.GOV.BCB.PIX0136a1f4c2e8-igreen-mob-9e89c90252040000530398654079997.005802BR5913IGREEN MOB SA6009UBERLANDIA62070503***6304A1B2'
+const BOLETO = '34191.79001 01043.510047 91020.150008 1 10450000999700'
 
 /** Vencimentos a partir da assinatura: entrada em 3 dias e as parcelas a cada 30 dias; cobrança gerada 10 dias antes */
 function agendar(parcelas: Parcela[], assinatura: Date) {
@@ -103,13 +103,13 @@ function gerarCobrancas(parcelas: Parcela[], hoje: Date) {
 }
 
 /**
- * Exemplo de proposta em cada cenário. Entrada de 30% na assinatura e mais 4 parcelas mensais;
+ * Exemplo de proposta em cada cenário. Entrada fixa de R$ 9.997 na assinatura e o restante em 4 parcelas mensais;
  * cada cobrança é gerada 10 dias antes do vencimento.
  */
 export function montarProposta(cenario: Cenario, hoje = new Date()): Proposta {
   const d = (n: number) => somaDias(hoje, n)
   const total = 129_900
-  const entrada = 38_970
+  const entrada = 9_997
   const parcela = (total - entrada) / 4
 
   // dia da assinatura em cada cenário (undefined = ainda não assinado)
