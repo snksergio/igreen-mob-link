@@ -406,3 +406,23 @@ export function documentosEntrega(p: Proposta): DocEntrega[] {
     { id: 'termo', nome: 'Termo de entrega', detalhe: 'Para o seu aceite' },
   ]
 }
+
+/* ---------------- Recusa: confirmação do investidor ---------------- */
+
+/**
+ * O CPF digitado é válido e bate com o da proposta (que vem mascarado: "123.***.***-09").
+ * Na versão final, quem confere é o sistema; aqui comparamos os dígitos visíveis.
+ */
+export function cpfConfere(digitado: string, mascarado: string) {
+  const d = digitado.replace(/\D/g, '')
+  const m = mascarado.replace(/[^\d*]/g, '')
+  if (d.length !== 11 || m.length !== 11 || /^(\d)\1{10}$/.test(d)) return false
+  const dv = (len: number) => {
+    let soma = 0
+    for (let i = 0; i < len; i++) soma += Number(d[i]) * (len + 1 - i)
+    const resto = (soma * 10) % 11
+    return resto === 10 ? 0 : resto
+  }
+  if (dv(9) !== Number(d[9]) || dv(10) !== Number(d[10])) return false
+  return [...m].every((c, i) => c === '*' || c === d[i])
+}

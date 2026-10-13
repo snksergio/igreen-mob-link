@@ -124,6 +124,17 @@ Modelo novo da página que o investidor recebe depois que a proposta é gerada (
   - Instalação e Entrega: data, preparo, etapas do dia e o envelope final (contrato, aditivo, laudos e termo) para o aceite.
 - **Regras e exemplo** (`data.ts`, testado em `data.test.ts`): cenários, status de cada etapa, próximo passo e as ações da página (aceitar, recusar, assinar, pagar, assinar aditivo, aceite). As datas são relativas a hoje.
 
+### Versão 2 do modelo (`#proposta-v3`)
+
+Mesmas informações e regras (`data.ts`), com o visual da proposta final do fluxo: `http://localhost:5173/#proposta-v3/9E89C902` (`src/proposta/v3/`).
+
+- **Cabeçalho centralizado acima do carro:** número da proposta em destaque (com botão de copiar), título em duas linhas com o produto em verde, local e o status em um selo grande com ponto colorido. O vídeo do carro é o mesmo da proposta final.
+- **Card principal sobre o carro:** próximo passo, selos (produto e prazo ou etapa), texto e as ações. Aceitar e Recusar ficam visíveis lado a lado com a validade.
+- **Andamento num card só:** o trilho é a barra de abas do card (etapa escolhida com fundo de aba) e a folha da etapa vem logo abaixo. Há respiro para o aro da etapa atual não ser cortado.
+- **O que é clicável tem borda e indicador** (chevron em círculo, "Abrir" com seta, botão "Copiar"). Informação fica em texto ou em fundo tingido, sem caixa dentro de caixa.
+- **Recusar** pede o CPF do investidor (precisa bater com o da proposta, `cpfConfere`) e o motivo por escrito, com sugestões para preencher.
+- **Detalhes** do investidor e da licenciada em cards recolhíveis, como na proposta final.
+
 ## Tema escuro (`lib/theme.ts`)
 
 - **Escolha do tema:** segue o sistema por padrão. O botão de sol/lua no header (e no canto da proposta) troca o tema, e a escolha fica salva no aparelho (`localStorage`).

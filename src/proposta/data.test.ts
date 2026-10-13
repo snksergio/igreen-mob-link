@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CENARIOS, aceitar, aceitarEntrega, assinarAditivo, assinarContrato, diasEntre, etapaEmFoco, etapas, montarProposta, pagar, proximoPasso, recusar } from './data'
+import { CENARIOS, aceitar, aceitarEntrega, assinarAditivo, assinarContrato, cpfConfere, diasEntre, etapaEmFoco, etapas, montarProposta, pagar, proximoPasso, recusar } from './data'
 
 const hoje = new Date(2026, 9, 13)
 const status = (c: Parameters<typeof montarProposta>[0]) => etapas(montarProposta(c, hoje), hoje).map((e) => e.status)
@@ -83,5 +83,15 @@ describe('ações da página', () => {
     const p = recusar(original, 'Prefiro outro modelo', hoje)
     expect(p.resposta).toMatchObject({ status: 'recusada', motivo: 'Prefiro outro modelo' })
     expect(original.resposta.status).toBe('aguardando')
+  })
+})
+
+describe('recusa', () => {
+  it('CPF precisa ser válido e bater com o da proposta', () => {
+    expect(cpfConfere('123.456.789-09', '123.***.***-09')).toBe(true)
+    expect(cpfConfere('12345678909', '123.***.***-09')).toBe(true)
+    expect(cpfConfere('529.982.247-25', '123.***.***-09')).toBe(false)
+    expect(cpfConfere('123.456.789-00', '123.***.***-09')).toBe(false)
+    expect(cpfConfere('123.456', '123.***.***-09')).toBe(false)
   })
 })
