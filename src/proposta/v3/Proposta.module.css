@@ -285,18 +285,15 @@
   text-align: left;
 }
 
-/* Ilustração do passo: o ícone da etapa num ladrilho verde com brilho suave */
+/* Ilustração do passo: o ícone da etapa num ladrilho verde liso, igual ao ícone do produto (sem sombra nem brilho) */
 .passoIlustracao {
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--bg-primary) 75%, #fff), var(--bg-primary) 55%);
-  box-shadow:
-    0 6px 14px -6px color-mix(in srgb, var(--bg-primary) 70%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: var(--bg-primary);
 }
 
 .passoTextos {
