@@ -411,13 +411,13 @@
 
 /*
  * Ritmo das folhas:
- * - segmentos separados por divisória de borda a borda do card (como a linha entre o trilho e a folha), com 32px acima e abaixo;
+ * - segmentos separados por divisória de borda a borda do card (como a linha entre o trilho e a folha), com 34px acima e abaixo;
  * - 20px entre os outros blocos e 16px entre um título e o conteúdo dele.
  * Os títulos internos (h4 a h6) não recebem margem do reset global, então zeramos aqui.
  */
 .folha {
   --folha-x: 18px;
-  --segmento: 32px;
+  --segmento: 34px;
   --ritmo: 20px;
   --ritmo-interno: 16px;
   padding: 22px var(--folha-x) 24px;
