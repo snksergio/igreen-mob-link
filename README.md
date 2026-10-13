@@ -110,6 +110,20 @@ Link para avaliação: **https://igreen-mob-link.vercel.app/#investir**
   - Como o arquivo pode ser editado, só entram os campos editáveis no simulador, com o tipo e as opções válidas e dentro dos limites do modelo. Campos técnicos, como potência útil, perdas e tempo entre carros, seguem as regras atuais.
   - Todo o cálculo é refeito com o modelo atual. Se o resultado não bater com o registrado no documento (documento alterado ou regra atualizada), aparece um aviso.
 
+## Proposta gerada, modelo novo (`#proposta-v2`, prévia local)
+
+Modelo novo da página que o investidor recebe depois que a proposta é gerada (`src/proposta/`). Abre direto, sem passar pelo cadastro, com dados de exemplo: `http://localhost:5173/#proposta-v2/9E89C902`. O seletor tracejado no topo (ou `?cenario=` no endereço) mostra a proposta em cada etapa: `nova`, `contrato`, `pagamento`, `vistoria`, `instalacao`, `entrega` e `recusada`.
+
+- **Capa e próximo passo:** número, produto, local, prazo de validade e quem emitiu. Logo abaixo, um card diz o que a pessoa precisa fazer agora (aceitar, assinar, pagar, assinar aditivo, dar aceite). No celular ele vira uma barra fixa quando sai da tela.
+- **Andamento em trilho** (`Timeline.tsx`): Proposta → Contrato → Pagamento → Vistoria → Instalação → Entrega. Tocar numa etapa abre a folha dela logo abaixo, ligada por um ponteiro. Parcelas pagas aparecem como anel de progresso; parcela vencida deixa a etapa em vermelho.
+- **Folhas** (`Sheets.tsx`):
+  - Proposta: produto com itens por carregador, instalação, forma de pagamento e condições. Aceitar ou recusar (com motivo).
+  - Contrato: documento embutido com a proposta como Anexo I, assinado na própria página. Na versão final, o quadro mostra o documento do serviço de assinatura.
+  - Pagamento: liberado só depois do contrato. Entrada e parcelas 2 a 5, cada uma com status, Pix, boleto e cartão. As não geradas mostram quando a cobrança é gerada (10 dias antes do vencimento).
+  - Vistoria: o que é conferido e, se mudar o escopo (ex.: cabeamento de 10 m para 20 m), o aditivo para assinar.
+  - Instalação e Entrega: data, preparo, etapas do dia e o envelope final (contrato, aditivo, laudos e termo) para o aceite.
+- **Regras e exemplo** (`data.ts`, testado em `data.test.ts`): cenários, status de cada etapa, próximo passo e as ações da página (aceitar, recusar, assinar, pagar, assinar aditivo, aceite). As datas são relativas a hoje.
+
 ## Tema escuro (`lib/theme.ts`)
 
 - **Escolha do tema:** segue o sistema por padrão. O botão de sol/lua no header (e no canto da proposta) troca o tema, e a escolha fica salva no aparelho (`localStorage`).

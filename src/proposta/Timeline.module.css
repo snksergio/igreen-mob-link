@@ -1,0 +1,203 @@
+/* Trilho do andamento (cores da página vêm de --pv-*, definidas em PropostaV2.module.css) */
+.track {
+  display: flex;
+  margin: 0 -4px;
+  padding: 6px 0 4px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Quando não cabe, as bordas somem aos poucos para indicar que dá para rolar */
+.trackRolavel {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  flex: 1 0 82px;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-family: var(--font-sans);
+  text-align: center;
+  color: inherit;
+  cursor: pointer;
+  scroll-snap-align: center;
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--fg-primary);
+  outline-offset: 2px;
+}
+
+/* Linha que liga ao passo anterior: do centro dele ao centro deste */
+.item:not(:first-child)::before {
+  position: absolute;
+  top: 17px;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--pv-line);
+  content: '';
+}
+
+.item.lineDone::before {
+  background: var(--bg-primary);
+}
+
+.node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--pv-line);
+  border-radius: 50%;
+  background: var(--pv-page);
+  font-weight: 700;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.feito .node {
+  border-color: var(--bg-primary);
+  background: var(--bg-primary);
+  color: #fff;
+}
+
+.atual .node {
+  border-color: var(--bg-primary);
+  color: var(--fg-primary);
+  animation: chamar 2.4s ease-in-out infinite;
+}
+
+.andamento .node {
+  border-color: transparent;
+  color: var(--fg-primary);
+}
+
+.recusado .node {
+  border-color: var(--fg-critical);
+  background: var(--fg-critical);
+  color: #fff;
+}
+
+.selected .node {
+  transform: scale(1.08);
+}
+
+/* A etapa escolhida ganha um aro na cor do texto (separado do verde de status) */
+.selected.feito .node,
+.selected.recusado .node,
+.selected.pendente .node {
+  box-shadow:
+    0 0 0 3px var(--pv-page),
+    0 0 0 5px var(--fg-strong);
+}
+
+.ring {
+  position: absolute;
+  inset: -2px;
+  width: 36px;
+  height: 36px;
+  transform: rotate(-90deg);
+}
+
+.ringTrack,
+.ringFill {
+  fill: none;
+  stroke-width: 2;
+}
+
+.ringTrack {
+  stroke: var(--pv-line);
+}
+
+.ringFill {
+  stroke: var(--bg-primary);
+  stroke-linecap: round;
+}
+
+.label {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 16px;
+  letter-spacing: -0.01em;
+  color: var(--fg-main);
+}
+
+.selected .label,
+.atual .label {
+  color: var(--fg-strong);
+}
+
+.resumo {
+  max-width: 88px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--fg-muted);
+}
+
+.atual .resumo,
+.andamento .resumo {
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+
+/* Algo atrasado na etapa (parcela vencida): vermelho no lugar do verde */
+.alerta .node {
+  border-color: transparent;
+  color: var(--fg-critical);
+  animation: none;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--fg-critical) 16%, transparent);
+}
+
+.alerta .ringFill {
+  stroke: var(--fg-critical);
+}
+
+.item.alerta .resumo {
+  color: var(--fg-critical);
+}
+
+.recusado .resumo {
+  font-weight: 600;
+  color: var(--fg-critical);
+}
+
+@keyframes chamar {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--ring-primary);
+  }
+  50% {
+    box-shadow: 0 0 0 6px var(--ring-primary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atual:not(.alerta) .node {
+    animation: none;
+    box-shadow: 0 0 0 5px var(--ring-primary);
+  }
+
+  .node {
+    transition: none;
+  }
+}
