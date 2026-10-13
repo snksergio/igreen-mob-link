@@ -27,10 +27,14 @@ function Cabecalho({ titulo, status, tom, children }: { titulo: string; status: 
   )
 }
 
-function Secao({ titulo, children, nota }: { titulo: string; children: ReactNode; nota?: ReactNode }) {
+/** `icone`: só o ícone, à esquerda do título (sem ladrilho) */
+function Secao({ titulo, icone, children, nota }: { titulo: string; icone?: string; children: ReactNode; nota?: ReactNode }) {
   return (
     <section className={styles.secao}>
-      <h4 className={styles.secaoTitulo}>{titulo}</h4>
+      <h4 className={styles.secaoTitulo}>
+        {icone ? <Icon src={icone} size={16} className={styles.secaoIcone} /> : null}
+        {titulo}
+      </h4>
       {children}
       {nota ? <p className={styles.nota}>{nota}</p> : null}
     </section>
@@ -123,7 +127,7 @@ export function FolhaProposta({ p, onAceitar, onRecusar }: { p: Proposta; onAcei
         O que você contrata, onde fica e como paga. Ela entra no contrato como Anexo I.
       </Cabecalho>
 
-      <Secao titulo="Produto">
+      <Secao titulo="Produto" icone={ICONS.energyLink}>
         {p.carregadores.map((c, i) => (
           <div key={i} className={styles.produto}>
             <div className={styles.produtoTopo}>
@@ -165,7 +169,7 @@ export function FolhaProposta({ p, onAceitar, onRecusar }: { p: Proposta; onAcei
         ))}
       </Secao>
 
-      <Secao titulo="Instalação" nota="Se a vistoria encontrar outra distância ou outro padrão, o ajuste vem como aditivo para você assinar aqui.">
+      <Secao titulo="Instalação" icone={ICONS.addressPin} nota="Se a vistoria encontrar outra distância ou outro padrão, o ajuste vem como aditivo para você assinar aqui.">
         <Linhas
           itens={[
             ['Endereço', p.local.endereco],
@@ -176,7 +180,7 @@ export function FolhaProposta({ p, onAceitar, onRecusar }: { p: Proposta; onAcei
         />
       </Secao>
 
-      <Secao titulo="Forma de pagamento">
+      <Secao titulo="Forma de pagamento" icone={ICONS.dollarCircle}>
         <div className={styles.plano} aria-hidden>
           {p.pagamento.parcelas.map((x) => (
             <span key={x.id} className={cn(styles.planoSeg, x.id === 'entrada' && styles.planoEntrada)} style={{ flexGrow: x.valor }} />
@@ -191,7 +195,7 @@ export function FolhaProposta({ p, onAceitar, onRecusar }: { p: Proposta; onAcei
         />
       </Secao>
 
-      <Secao titulo="Condições">
+      <Secao titulo="Condições" icone={ICONS.fileDollar}>
         <Linhas
           itens={[
             ['Participação', p.condicoes.participacao],
@@ -572,7 +576,7 @@ export function FolhaVistoria({ p, onAditivo, onAssinarAditivo }: { p: Proposta;
         Vistoria feita em {dataLonga(v.data!)}. O laudo fica no envelope de entrega.
       </Cabecalho>
       {ad ? (
-        <Secao titulo={`Aditivo nº ${ad.numero}: ${ad.titulo}`}>
+        <Secao titulo={`Aditivo nº ${ad.numero}: ${ad.titulo}`} icone={ICONS.lineEdit}>
           <p className={styles.parcelaTexto}>{ad.motivo}</p>
           <Linhas
             itens={[
@@ -601,7 +605,7 @@ export function FolhaVistoria({ p, onAditivo, onAssinarAditivo }: { p: Proposta;
 
 function OQueConfere() {
   return (
-    <Secao titulo="O que a vistoria confere">
+    <Secao titulo="O que a vistoria confere" icone={ICONS.search}>
       <ul className={styles.marcadores}>
         {['Padrão de entrada e disjuntor', 'Distância do padrão até a vaga', 'Piso, cobertura e sinalização da vaga'].map((t) => (
           <li key={t}>{t}</li>
@@ -632,7 +636,7 @@ export function FolhaInstalacao({ p }: { p: Proposta }) {
         <Cabecalho titulo="Instalação" status={`Em ${dataCurta(o.data!)}`} tom="ok">
           A equipe iGreen vai até o local em {dataLonga(o.data!)}, pela manhã.
         </Cabecalho>
-        <Secao titulo="Antes do dia">
+        <Secao titulo="Antes do dia" icone={ICONS.calendar}>
           <ul className={styles.marcadores}>
             <li>Deixe o acesso ao padrão de entrada livre</li>
             <li>Mantenha a vaga desocupada</li>
@@ -654,7 +658,7 @@ export function FolhaInstalacao({ p }: { p: Proposta }) {
 
 function NoDia({ feito = false }: { feito?: boolean }) {
   return (
-    <Secao titulo="No dia da instalação">
+    <Secao titulo="No dia da instalação" icone={ICONS.lightning}>
       <ol className={cn(styles.passos, feito && styles.passosFeitos)}>
         <li>Preparação elétrica e cabeamento</li>
         <li>Instalação do carregador e sinalização da vaga</li>
@@ -682,7 +686,7 @@ export function FolhaEntrega({ p, onDoc, onAceite }: { p: Proposta; onDoc: (d: D
       <Cabecalho titulo="Entrega" status={st.texto} tom={st.tom}>
         No fim, tudo o que foi feito vem em um envelope só, para você conferir e dar o aceite.
       </Cabecalho>
-      <Secao titulo={e.status === 'aguardando' ? 'O que vem no envelope' : 'Envelope de entrega'}>
+      <Secao titulo={e.status === 'aguardando' ? 'O que vem no envelope' : 'Envelope de entrega'} icone={ICONS.mailShare}>
         <div className={styles.docs}>
           {docs.map((d) => (
             <LinhaDoc key={d.id} titulo={d.nome} detalhe={d.detalhe} onClick={() => onDoc(d)} desabilitado={e.status === 'aguardando'} />

@@ -517,10 +517,18 @@
 }
 
 .secaoTitulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
   font-size: 14px;
   line-height: 18px;
   color: var(--p-value);
+}
+
+/* Ícone da categoria: só o desenho, na cor da marca */
+.secaoIcone {
+  background-color: var(--fg-primary);
 }
 
 .nota {
