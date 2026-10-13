@@ -48,7 +48,7 @@ export function ficha(id: ChargerId): Ficha {
     ...TECNICO[id],
     carrosDia: capacityFor({ ...defaultsFor('v2'), charger: id }).maxCars,
     sociedade: c.investorShare === 1 ? '100% do resultado é seu' : `Você ${c.investorShare * 100}%, iGreen ${c.igreenShare * 100}%`,
-    selo: c.investorShare === 1 ? '100% seu' : `Sociedade ${c.investorShare * 100}/${c.igreenShare * 100}`,
+    selo: c.investorShare === 1 ? '100% do faturamento' : `Sociedade ${c.investorShare * 100}/${c.igreenShare * 100}`,
     taxa: `${FIXOS_V2.adminRate}% do faturamento`,
   }
 }

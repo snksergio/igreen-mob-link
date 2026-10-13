@@ -14,7 +14,7 @@ describe('plano de pagamento', () => {
 
 describe('ficha do modelo', () => {
   it('usa os nomes e a capacidade do simulador', () => {
-    expect(ficha('lento')).toMatchObject({ nome: 'Carga lenta', carrosDia: 5, sociedade: '100% do resultado é seu' })
+    expect(ficha('lento')).toMatchObject({ nome: 'Carga lenta', carrosDia: 5, sociedade: '100% do resultado é seu', selo: '100% do faturamento' })
     expect(ficha('duo')).toMatchObject({ nome: 'Carga rápida', kw: '7 + 40', carrosDia: 30, simultaneos: 2, sociedade: 'Você 80%, iGreen 20%', selo: 'Sociedade 80/20' })
     expect(ficha('ultra')).toMatchObject({ nome: 'Carga ultra rápida', carrosDia: 43, taxa: '14% do faturamento' })
   })
