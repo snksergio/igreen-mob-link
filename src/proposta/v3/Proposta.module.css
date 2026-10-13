@@ -409,9 +409,23 @@
   scroll-margin-top: 16px;
 }
 
+/*
+ * Ritmo das folhas: 20px entre blocos (e acima e abaixo de cada divisória), 12px entre um título e o conteúdo dele.
+ * Os títulos internos (h4 a h6) não recebem margem do reset global, então zeramos aqui.
+ */
 .folha {
+  --ritmo: 20px;
+  --ritmo-interno: 12px;
   padding: 20px 18px 22px;
   border-top: 1px solid var(--pv-line);
+}
+
+.folha h4,
+.folha h5,
+.folha h6,
+.docModal h5,
+.docModal h6 {
+  margin: 0;
 }
 
 .folhaConteudo {
@@ -485,9 +499,9 @@
 .secao {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 20px;
-  padding-top: 18px;
+  gap: var(--ritmo-interno);
+  margin-top: var(--ritmo);
+  padding-top: var(--ritmo);
   border-top: 1px solid var(--pv-line);
 }
 
@@ -520,6 +534,14 @@
 
 .linha + .linha {
   border-top: 1px solid var(--pv-line);
+}
+
+.linha:first-child {
+  padding-top: 0;
+}
+
+.linha:last-child {
+  padding-bottom: 0;
 }
 
 .linha dt {
@@ -648,7 +670,7 @@
 .acoes {
   display: grid;
   gap: 10px;
-  margin-top: 22px;
+  margin-top: var(--ritmo);
 }
 
 /* Aviso informativo: tingido, sem borda */
@@ -657,7 +679,7 @@
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: var(--ritmo);
   padding: 14px 16px;
   border-radius: var(--radius-base);
   background: var(--pv-sunken);
@@ -696,13 +718,19 @@
   flex-basis: 100%;
 }
 
+.secao > .aviso,
+.secao > .assinar,
+.secao > .doc {
+  margin-top: 0;
+}
+
 .avisoAcao > button {
   width: 100%;
 }
 
 /* Contrato embutido */
 .doc {
-  margin-top: 16px;
+  margin-top: var(--ritmo);
   border: 1px solid var(--pv-line);
   border-radius: var(--radius-base);
   overflow: hidden;
@@ -766,8 +794,12 @@
   color: var(--p-value);
 }
 
+.texto h5 {
+  margin: 0;
+}
+
 .texto h6 {
-  margin-top: 14px;
+  margin: 14px 0 0;
   font-weight: 600;
   font-size: 13px;
   color: var(--p-value);
@@ -800,7 +832,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: var(--ritmo);
   padding: 12px 14px;
   border-radius: var(--radius-base);
   background: var(--p-badge);
@@ -821,13 +853,13 @@
 
 .assinar {
   display: grid;
-  gap: 14px;
-  margin-top: 18px;
+  gap: var(--ritmo-interno);
+  margin-top: var(--ritmo);
 }
 
 /* Pagamento */
 .progresso {
-  margin-top: 16px;
+  margin-top: var(--ritmo);
 }
 
 .progressoTopo {
@@ -877,7 +909,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: var(--ritmo);
 }
 
 /* Parcela: linha clicável (borda, chevron em círculo e realce ao passar o mouse) */
@@ -1011,7 +1043,7 @@
 
 .pagar {
   display: grid;
-  gap: 14px;
+  gap: var(--ritmo-interno);
 }
 
 .alerta {

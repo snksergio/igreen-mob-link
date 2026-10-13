@@ -388,6 +388,7 @@
 }
 
 .blocoTitle {
+  margin: 0;
   font-weight: 600;
   font-size: 14px;
   color: var(--fg-strong);
@@ -607,6 +608,7 @@
 }
 
 .contrato h5 {
+  margin: 0;
   font-weight: 600;
   font-size: 16px;
   line-height: 22px;
@@ -614,7 +616,7 @@
 }
 
 .contrato h6 {
-  margin-top: 14px;
+  margin: 14px 0 0;
   font-weight: 600;
   font-size: 13px;
 }
