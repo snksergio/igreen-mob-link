@@ -410,13 +410,17 @@
 }
 
 /*
- * Ritmo das folhas: 20px entre blocos (e acima e abaixo de cada divisória), 12px entre um título e o conteúdo dele.
+ * Ritmo das folhas:
+ * - segmentos separados por divisória de borda a borda do card (como a linha entre o trilho e a folha), com 28px acima e abaixo;
+ * - 20px entre os outros blocos e 16px entre um título e o conteúdo dele.
  * Os títulos internos (h4 a h6) não recebem margem do reset global, então zeramos aqui.
  */
 .folha {
+  --folha-x: 18px;
+  --segmento: 28px;
   --ritmo: 20px;
-  --ritmo-interno: 12px;
-  padding: 20px 18px 22px;
+  --ritmo-interno: 16px;
+  padding: 22px var(--folha-x) 24px;
   border-top: 1px solid var(--pv-line);
 }
 
@@ -500,9 +504,16 @@
   display: flex;
   flex-direction: column;
   gap: var(--ritmo-interno);
-  margin-top: var(--ritmo);
-  padding-top: var(--ritmo);
+  margin: var(--segmento) calc(var(--folha-x) * -1) 0;
+  padding: var(--segmento) var(--folha-x) 0;
   border-top: 1px solid var(--pv-line);
+}
+
+/* depois do último segmento, os botões guardam a mesma distância de um segmento */
+.secao + .acoes,
+.secao + .assinar,
+.secao + .feito {
+  margin-top: var(--segmento);
 }
 
 .secaoTitulo {
@@ -1629,6 +1640,7 @@
   }
 
   .folha {
-    padding: 24px;
+    --folha-x: 24px;
+    padding: 26px var(--folha-x) 28px;
   }
 }
