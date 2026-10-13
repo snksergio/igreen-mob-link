@@ -1,9 +1,10 @@
 import { useMemo, type ReactNode } from 'react'
-import { ICONS } from '../assets'
+import { ICONS, IMAGES } from '../assets'
 import { Highlight } from '../components/layout/PageShell'
+import { FancyIcon } from '../components/ui/Controls'
 import { Icon } from '../components/ui/Icon'
 import { cn } from '../lib/cn'
-import { money, moneyCents } from '../lib/format'
+import { money, moneyCents, moneyParts } from '../lib/format'
 import type { ChargerId } from '../gerador/model'
 import { ficha, INCLUSO, plano } from './oferta'
 import styles from './CadastroSimplificado.module.css'
@@ -39,32 +40,64 @@ function Linhas({ itens }: { itens: [string, ReactNode][] }) {
   )
 }
 
-/** Modelo escolhido: valor, entrada de hoje e, se a pessoa quiser, especificações e formas de pagamento */
+const ICONE: Record<ChargerId, string> = { lento: ICONS.energyCircle, duo: ICONS.eletric, ultra: ICONS.energyLink }
+
+function Dado({ icon, rotulo, valor, unidade }: { icon: string; rotulo: string; valor: string; unidade: string }) {
+  return (
+    <div className={styles.dado}>
+      <span className={styles.dadoIcone} aria-hidden>
+        <Icon src={icon} size={20} color="var(--fg-primary)" />
+      </span>
+      <div className={styles.dadoTexto}>
+        <p className={styles.dadoRotulo}>{rotulo}</p>
+        <p className={styles.dadoValor}>
+          {valor} <small>{unidade}</small>
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Modelo escolhido, no padrão do painel do simulador: nome e valor no topo, card verde com a entrada de hoje
+ * (e as parcelas como informação secundária), potência e capacidade em destaque e o detalhamento no "+".
+ */
 export function Escolhido({ id }: { id: ChargerId }) {
   const f = ficha(id)
   const p = plano(id)
+  const entrada = moneyParts(p.entrada)
   return (
     <div className={styles.escolhido} key={id}>
-      <div className={styles.escolhidoTopo}>
-        <div className={styles.escolhidoNome}>
-          <h3>{f.nome}</h3>
-          <p>
-            {f.potencia}, até {f.carrosDia} carros por dia
+      <div className={styles.escolhidoCorpo}>
+        <div className={styles.escolhidoTopo}>
+          <FancyIcon src={ICONE[id]} bg="var(--bg-primary)" size={40} iconSize={20} />
+          <h3 className={styles.escolhidoNome}>{f.nome}</h3>
+          <p className={styles.escolhidoValor}>
+            <b>{money(p.total)}</b>
+            <span>valor total</span>
           </p>
         </div>
-        <div className={styles.escolhidoValor}>
-          <span>Valor</span>
-          <b>{money(p.total)}</b>
-        </div>
-      </div>
 
-      <div className={styles.hoje}>
-        <span>Para garantir hoje</span>
-        <b>{moneyCents(p.entrada)}</b>
+        <div className={styles.hero} style={{ backgroundImage: `url(${IMAGES.greenCard})` }}>
+          <p className={styles.overline}>ENTRADA PARA GARANTIR HOJE</p>
+          <p className={styles.amount} aria-label={moneyCents(p.entrada)}>
+            R$ {entrada.int}
+            <span className={styles.cents}>,{entrada.cents}</span>
+          </p>
+          <p className={styles.heroNota}>
+            {p.parcelas ? `+ ${p.parcelas} parcelas de ${moneyCents(p.parcela)}` : 'Pagamento único, sem parcelas'}
+          </p>
+          <span className={styles.chip}>{f.selo}</span>
+        </div>
+
+        <div className={styles.dados}>
+          <Dado icon={ICONS.lightning} rotulo="POTÊNCIA" valor={f.kw} unidade="kW" />
+          <Dado icon={ICONS.fuel} rotulo="CAPACIDADE" valor={String(f.carrosDia)} unidade="carros/dia" />
+        </div>
       </div>
 
       <div className={styles.expansiveis}>
-        <Expansivel titulo="Especificações" resumo="Potência, capacidade, sociedade e o que vem incluso">
+        <Expansivel titulo="Especificações" resumo="Recarga, taxa do sistema e itens inclusos">
           <Linhas
             itens={[
               ['Potência', f.potencia],

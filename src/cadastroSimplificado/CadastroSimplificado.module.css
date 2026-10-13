@@ -120,10 +120,11 @@
   min-width: 0;
 }
 
-/* ---------- Modelo escolhido ---------- */
+/* ---------- Modelo escolhido (no padrão do painel do simulador) ---------- */
 .escolhido {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--bg-background);
@@ -131,22 +132,23 @@
   animation: entrar 0.3s ease-out;
 }
 
+.escolhidoCorpo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+}
+
+/* Ícone, nome e valor total na mesma linha, centralizados na altura */
 .escolhidoTopo {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 20px 14px;
+  align-items: center;
+  gap: 12px;
 }
 
 .escolhidoNome {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex: 1 1 auto;
   min-width: 0;
-}
-
-.escolhidoNome h3 {
   margin: 0;
   font-family: var(--font-sans);
   font-weight: 700;
@@ -156,66 +158,161 @@
   color: var(--fg-strong);
 }
 
-.escolhidoNome p,
-.escolhidoValor span {
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--fg-muted);
-}
-
 .escolhidoValor {
   display: flex;
   flex: none;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  font-family: var(--font-sans);
 }
 
 .escolhidoValor b {
-  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 18px;
-  line-height: 24px;
+  line-height: 22px;
   letter-spacing: -0.03em;
   color: var(--fg-strong);
   font-variant-numeric: tabular-nums;
 }
 
-/* O valor de hoje: a única coisa que pesa na decisão da live */
-.hoje {
+.escolhidoValor span {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-muted);
+}
+
+/* Card verde: a entrada de hoje em destaque; as parcelas como informação secundária */
+.hero {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 12px;
-  padding: 12px 14px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background-color: #0a8a3c;
+  background-size: cover;
+  background-position: center;
+}
+
+.overline {
+  font-family: var(--font-inter);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: -0.01em;
+  color: var(--fg-highlight);
+}
+
+.amount {
+  font-family: var(--font-inter);
+  font-weight: 800;
+  font-size: 32px;
+  line-height: normal;
+  color: var(--fg-on-primary);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cents {
+  font-weight: 700;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.heroNota {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  font-variant-numeric: tabular-nums;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-xl-flag);
+  background: #fff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11.5px;
+  line-height: 18px;
+  letter-spacing: -0.01em;
+  /* selo sempre branco: verde escuro fixo (o token clareia no tema escuro) */
+  color: #008949;
+  white-space: nowrap;
+}
+
+/* Potência e capacidade em quadros com ícone, como Recargas e Energia no simulador */
+.dados {
+  display: flex;
+  gap: 10px;
+}
+
+.dado {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 1px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
   border-radius: var(--radius-base);
-  background: var(--bg-primary-subtle);
+  background: var(--bg-muted);
+}
+
+.dadoIcone {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-background);
+  box-shadow: var(--shadow-icon);
+}
+
+.dadoTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
   font-family: var(--font-sans);
 }
 
-.hoje span {
+.dadoRotulo {
+  overflow: hidden;
   font-weight: 600;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--fg-main);
+  font-size: 10.5px;
+  letter-spacing: 0.01em;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.hoje b {
+.dadoValor {
+  overflow: hidden;
   font-weight: 700;
-  font-size: 24px;
-  line-height: 30px;
-  letter-spacing: -0.04em;
-  color: var(--fg-primary);
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: 0.01em;
+  color: var(--fg-stat);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dadoValor small {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--fg-muted);
 }
 
 .expansiveis {
   display: flex;
   flex-direction: column;
-  margin-top: 12px;
 }
 
 .expansivel {
@@ -860,12 +957,12 @@
     gap: 16px;
   }
 
-  .escolhidoTopo {
-    padding: 16px 16px 12px;
+  .escolhidoCorpo {
+    padding: 14px;
   }
 
-  .hoje {
-    margin: 0 10px;
+  .hero {
+    padding: 18px;
   }
 
   .expansivel summary {

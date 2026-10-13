@@ -23,17 +23,21 @@ export function plano(id: ChargerId): Plano {
 export type Ficha = {
   nome: string
   potencia: string
+  /** potência curta para o destaque, sem a unidade (ex.: "7 + 40") */
+  kw: string
   recarga: string
   simultaneos: number
   carrosDia: number
   sociedade: string
+  /** selo curto da sociedade, como no card verde do simulador */
+  selo: string
   taxa: string
 }
 
-const TECNICO: Record<ChargerId, { potencia: string; recarga: string; simultaneos: number }> = {
-  lento: { potencia: '7 kW', recarga: 'Lenta (AC), 1 conector de 7 kW', simultaneos: 1 },
-  duo: { potencia: '7 kW + 40 kW', recarga: 'Lenta (AC) e rápida (DC), 2 conectores', simultaneos: 2 },
-  ultra: { potencia: '80 kW', recarga: 'Ultra rápida (DC)', simultaneos: 1 },
+const TECNICO: Record<ChargerId, { potencia: string; kw: string; recarga: string; simultaneos: number }> = {
+  lento: { potencia: '7 kW', kw: '7', recarga: 'Lenta (AC), 1 conector de 7 kW', simultaneos: 1 },
+  duo: { potencia: '7 kW + 40 kW', kw: '7 + 40', recarga: 'Lenta (AC) e rápida (DC), 2 conectores', simultaneos: 2 },
+  ultra: { potencia: '80 kW', kw: '80', recarga: 'Ultra rápida (DC)', simultaneos: 1 },
 }
 
 /** Especificações detalhadas de cada modelo (capacidade calculada com as premissas padrão do simulador) */
@@ -44,6 +48,7 @@ export function ficha(id: ChargerId): Ficha {
     ...TECNICO[id],
     carrosDia: capacityFor({ ...defaultsFor('v2'), charger: id }).maxCars,
     sociedade: c.investorShare === 1 ? '100% do resultado é seu' : `Você ${c.investorShare * 100}%, iGreen ${c.igreenShare * 100}%`,
+    selo: c.investorShare === 1 ? '100% seu' : `Sociedade ${c.investorShare * 100}/${c.igreenShare * 100}`,
     taxa: `${FIXOS_V2.adminRate}% do faturamento`,
   }
 }
