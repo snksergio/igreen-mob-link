@@ -135,6 +135,18 @@ Mesmas informações e regras (`data.ts`), com o visual da proposta final do flu
 - **Recusar** pede o CPF do investidor (precisa bater com o da proposta, `cpfConfere`) e o motivo por escrito, com sugestões para preencher.
 - **Detalhes:** investidor e licenciada em cards recolhíveis, como na proposta final, e logo abaixo o card de compartilhar (WhatsApp, e-mail e link em botões redondos), no mesmo formato e altura.
 
+## Oferta da live (`#cadastro-simplificado`)
+
+O link que a licenciada manda durante a live: escolher o eletroposto e pagar a entrada numa tela só, com o visual do simulador v2 (`src/cadastroSimplificado/`). Abre em `http://localhost:5173/?responsavel=Juliana%20Martins#cadastro-simplificado`. O nome da licenciada vem do `?responsavel=` do link, como no cadastro.
+
+- **Faixa da live** no topo ("Ao vivo", com o nome da licenciada) e o título "Garanta seu eletroposto".
+- **Escolha do eletroposto:** os 3 cards do simulador com especificações básicas e o valor (`ChargerCarousel` com `showPrice`). Ao escolher, aparecem o valor, a entrada de hoje e dois blocos fechados no "+": **Especificações** (potência, recarga, capacidade, sociedade, taxa do sistema e o que vem incluso) e **Formas de pagamento** (entrada, parcelas e total).
+- **Seus dados:** nome completo, CPF, WhatsApp e e-mail.
+- **Pagamento da entrada:** cartão de crédito (bandeira reconhecida, número conferido pelo dígito, validade e CVV) ou Pix (QR Code e código copia e cola). Marcar o aceite basta; o contrato abre numa janela só se a pessoa tocar no link, e dá para aceitar por lá.
+- **Confirmação:** número do pedido, modelo, como pagou e os próximos passos (a licenciada agenda a vistoria, instalação em até 30 dias, parcelas a cada 30 dias).
+- No celular, uma barra fixa mostra a entrada e o botão "Pagar", que leva ao primeiro campo que falta.
+- **Regras** (`oferta.ts`, testado em `oferta.test.ts`): entrada fixa de R$ 9.997 em todos os modelos e o restante em 4 parcelas mensais (a Carga lenta sai quitada na entrada); ficha de cada modelo; validação do cartão.
+
 ## Tema escuro (`lib/theme.ts`)
 
 - **Escolha do tema:** segue o sistema por padrão. O botão de sol/lua no header (e no canto da proposta) troca o tema, e a escolha fica salva no aparelho (`localStorage`).
@@ -190,6 +202,7 @@ public/assets/             ícones (SVG), imagens (WebP) e vídeo
 | `gerador/proposal.ts` → `createGeradorProposal` | Gera um ID aleatório para a proposta do fluxo Gerador. Trocar pelo POST que cria a proposta. |
 | `services/responsavel.ts` | Nome do responsável: vem do parâmetro `?responsavel=` do link. Sem ele, mostra um nome de exemplo. |
 | `screens/Inicio.tsx` → `STATS` | "+R$ 1,2 mi" e "68%" fixos. |
+| `cadastroSimplificado/` | Pagamento simulado: o cartão não é cobrado, o Pix é de exemplo (QR Code só ilustrativo) e o contrato é um texto de exemplo. Trocar pelo gateway de pagamento, pelo serviço de assinatura e pelo POST que cria o pedido. |
 | Links "Memorando de Entendimento" e "Termos de Uso" | Ainda sem destino. |
 
 As integrações reais que já funcionam:

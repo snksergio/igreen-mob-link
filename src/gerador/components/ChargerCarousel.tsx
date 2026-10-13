@@ -21,18 +21,21 @@ const INFO: Record<ChargerId, { icon: string; power: string; connectors: string 
  * os pontos (cards visíveis) e as setas. Cada card é um radio: escolher troca o modelo da simulação.
  * `selected={null}`: nenhum escolhido ainda (formulário v2); sem a prop, vale o modelo das entradas.
  * `hideCapital`: o rodapé do card mostra só a sociedade, sem o valor do investimento (v2).
+ * `showPrice`: o rodapé mostra o valor do eletroposto e a sociedade (oferta da live).
  */
 export function ChargerCarousel({
   inputs,
   onSelect,
   selected: selectedProp,
   hideCapital = false,
+  showPrice = false,
   names,
 }: {
   inputs: SimInputs
   onSelect: (id: ChargerId) => void
   selected?: ChargerId | null
   hideCapital?: boolean
+  showPrice?: boolean
   /** nomes próprios da versão (v2: Carga lenta, rápida e ultra rápida) */
   names?: Record<ChargerId, string>
 }) {
@@ -146,10 +149,12 @@ export function ChargerCarousel({
                 Até {maxCars} carros por dia
               </span>
 
-              {hideCapital ? (
+              {hideCapital || showPrice ? (
                 <span className={styles.invest}>
-                  <span className={styles.investLabel}>Sociedade</span>
-                  <span className={styles.investValue}>{solo ? '100% seu' : `${c.investorShare * 100}/${c.igreenShare * 100}`}</span>
+                  <span className={styles.investLabel}>{showPrice ? 'Valor' : 'Sociedade'}</span>
+                  <span className={styles.investValue}>
+                    {showPrice ? money(c.price) : solo ? '100% seu' : `${c.investorShare * 100}/${c.igreenShare * 100}`}
+                  </span>
                   {solo ? (
                     <span className={cn(styles.society, styles.societySolo)}>100% do resultado para você</span>
                   ) : (
