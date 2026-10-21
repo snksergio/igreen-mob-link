@@ -141,10 +141,11 @@ function gerarCobrancas(parcelas: Parcela[], hoje: Date) {
 }
 
 /** Compra de exemplo da versão com pontos: um carregador de cada modelo */
+/** Do maior para o menor: o Ultra Fast vem primeiro em todas as listas */
 export const UNIDADES_EXEMPLO: Unidade[] = [
-  { id: 'u1', modelo: 'mob', nome: 'Mob', potencia: '7 kW', corrente: 'AC', valor: 9_997 },
-  { id: 'u2', modelo: 'fast', nome: 'Mob Fast', potencia: '7 + 40 kW', corrente: 'AC + DC', valor: 59_997 },
   { id: 'u3', modelo: 'ultra', nome: 'Mob Ultra Fast', potencia: '80 kW', corrente: 'DC', valor: 129_900 },
+  { id: 'u2', modelo: 'fast', nome: 'Mob Fast', potencia: '7 + 40 kW', corrente: 'AC + DC', valor: 59_997 },
+  { id: 'u1', modelo: 'mob', nome: 'Mob', potencia: '7 kW', corrente: 'AC', valor: 9_997 },
 ]
 
 const enderecoVazio = (): Address => ({ cep: '', logradouro: '', bairro: '', cidade: '', uf: '', numero: '', complemento: '' })
@@ -269,9 +270,9 @@ export function montarProposta(cenario: Cenario, hoje = new Date(), versao: 'v2'
     produto: unidades ? { nome: `${unidades.length} eletropostos iGreen Mob`, potencia: unidades.map((u) => u.potencia).join(', ') } : { nome: 'Carga ultra rápida', potencia: '80 kW' },
     carregadores: unidades
       ? [
-          { modelo: 'Mob', potencia: '7 kW (AC)', quantidade: 1, conectores: 1, vagas: 1 },
-          { modelo: 'Mob Fast', potencia: '7 + 40 kW (AC + DC)', quantidade: 1, conectores: 2, vagas: 2 },
           { modelo: 'Mob Ultra Fast', potencia: '80 kW (DC)', quantidade: 1, conectores: 2, vagas: 1 },
+          { modelo: 'Mob Fast', potencia: '7 + 40 kW (AC + DC)', quantidade: 1, conectores: 2, vagas: 2 },
+          { modelo: 'Mob', potencia: '7 kW (AC)', quantidade: 1, conectores: 1, vagas: 1 },
         ]
       : [{ modelo: 'Carga ultra rápida', potencia: '80 kW', quantidade: 1, conectores: 2, vagas: 1 }],
     local: {
@@ -283,7 +284,7 @@ export function montarProposta(cenario: Cenario, hoje = new Date(), versao: 'v2'
     },
     inclusos: ['Equipamento', 'Instalação elétrica', 'Pintura e sinalização da vaga', 'Licença iGreen e plataforma'],
     condicoes: {
-      participacao: v3 ? '100% seu no Mob; 80% seu e 20% iGreen no Fast e no Ultra Fast' : '100% do resultado é seu',
+      participacao: v3 ? '80% seu e 20% iGreen no Ultra Fast e no Fast; 100% seu no Mob' : '100% do resultado é seu',
       taxa: '14% do faturamento bruto',
     },
     pagamento: { total, parcelas },

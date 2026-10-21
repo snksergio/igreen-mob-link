@@ -63,6 +63,7 @@
   place-items: center;
   border-radius: var(--radius-sm);
   background: var(--bg-primary);
+  color: #fff;
 }
 
 .modeloTexto {
@@ -234,8 +235,13 @@
   padding: 16px;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-base);
-  background: var(--p-card);
+  background: var(--pv-sunken);
   animation: abrir 0.2s ease-out;
+}
+
+.editor .num {
+  background: var(--bg-primary);
+  color: #fff;
 }
 
 .editorTopo {
@@ -358,26 +364,72 @@
   background: var(--bg-primary);
 }
 
+/* Onde o carregador está agora (quando é de outro ponto): pino e nome, curto para caber no celular */
 .unidadeOnde {
-  flex: none;
-  padding: 2px 8px;
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 3px;
+  max-width: 42%;
+  min-width: 0;
+  overflow: hidden;
+  padding: 2px 8px 2px 6px;
   border-radius: var(--radius-full);
   background: var(--pv-sunken);
   font-weight: 600;
   font-size: 11px;
   line-height: 16px;
   color: var(--p-text);
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.unidadeOnde > :first-child {
+  flex: none;
+  background-color: currentColor;
+}
+
+/* Usar o contato da proposta: caixa com fundo de card, toda clicável */
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--pv-line);
+  border-radius: var(--radius-base);
+  background: var(--p-card);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.opcao:hover {
+  border-color: color-mix(in srgb, var(--border-primary) 50%, var(--pv-line));
+}
+
+.opcaoOn,
+.opcaoOn:hover {
+  border-color: var(--border-primary);
+}
+
+/* o ✓ fica por cima do campo invisível: sem pointer-events, o toque nele também desmarca */
+.opcaoCaixa > [aria-hidden='true'] {
+  pointer-events: none;
 }
 
 .contatoTexto {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--p-text);
 }
 
 .contatoTexto b {
   font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
   color: var(--p-value);
 }
 
@@ -543,6 +595,18 @@
   color: var(--p-value);
 }
 
+.chipIcone {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  color: #fff;
+}
+
 .infoLinha {
   display: flex;
   align-items: flex-start;
@@ -588,6 +652,32 @@
   }
 }
 
+@media (max-width: 480px) {
+  .editor {
+    gap: 16px;
+    padding: 14px 12px;
+  }
+
+  .unidade {
+    gap: 10px;
+    min-height: 52px;
+    padding: 8px 10px;
+  }
+
+  .fechado,
+  .info {
+    padding: 12px;
+  }
+
+  .opcao {
+    padding: 10px 12px;
+  }
+
+  .chipsFrota {
+    gap: 6px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .editor,
   .contatoCampos {
@@ -603,6 +693,19 @@
   font-variant-numeric: tabular-nums;
 }
 
-.contatoCheck [aria-hidden='true'] {
-  pointer-events: none;
+
+/* No quadro, a potência fica numa linha só; quem cede espaço é o selo do ponto (com reticências) */
+.unidade .modeloTexto {
+  flex: 1 0 auto;
+}
+
+.unidade .modeloTexto small {
+  white-space: nowrap;
+}
+
+/* Telas bem estreitas: nos quadros de marcar fica só a caixa (o ícone do modelo sai) para o nome, a potência e o ponto caberem */
+@media (max-width: 380px) {
+  .unidade .modeloIcone {
+    display: none;
+  }
 }

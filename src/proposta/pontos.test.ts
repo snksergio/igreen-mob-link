@@ -31,7 +31,7 @@ const completo = (pt: Ponto): Ponto => ({
 describe('compra com vários carregadores (#proposta-v3)', () => {
   it('um de cada modelo: total somado, entrada fixa e 4 parcelas', () => {
     const p = v3('nova')
-    expect(p.unidades?.map((u) => u.nome)).toEqual(['Mob', 'Mob Fast', 'Mob Ultra Fast'])
+    expect(p.unidades?.map((u) => u.nome)).toEqual(['Mob Ultra Fast', 'Mob Fast', 'Mob'])
     expect(p.pagamento.total).toBe(199_894)
     expect(p.pagamento.parcelas.map((x) => x.valor)).toEqual([9_997, 47_474.25, 47_474.25, 47_474.25, 47_474.25])
   })
@@ -48,7 +48,7 @@ describe('compra com vários carregadores (#proposta-v3)', () => {
   it('entrada paga: todos os carregadores no Ponto 1 e o próximo passo é distribuir', () => {
     const p = v3('distribuir')
     expect(p.pontos).toHaveLength(1)
-    expect(p.pontos![0].unidades).toEqual(['u1', 'u2', 'u3'])
+    expect(p.pontos![0].unidades).toEqual(['u3', 'u2', 'u1'])
     expect(vistoriaDe('distribuir')).toMatchObject({ status: 'atual', resumo: 'Indicar os pontos' })
     expect(proximoPasso(p, hoje)).toMatchObject({ etapa: 'vistoria', titulo: 'Distribua seus 3 carregadores', acao: { tipo: 'distribuir' } })
     expect(`${chamada(p).linha} ${chamada(p).destaque}`).toBe('Entrada paga com sucesso!')
@@ -67,7 +67,7 @@ describe('montar os pontos', () => {
     let pontos = [pontoInicial(unidades)]
     pontos = [...pontos, novoPonto(pontos)]
     pontos = alternarUnidade(pontos, 'pt2', 'u3')
-    expect(pontos.map((pt) => pt.unidades)).toEqual([['u1', 'u2'], ['u3']])
+    expect(pontos.map((pt) => pt.unidades)).toEqual([['u2', 'u1'], ['u3']])
     pontos = alternarUnidade(pontos, 'pt2', 'u3')
     expect(semPonto(unidades, pontos).map((u) => u.id)).toEqual(['u3'])
   })
@@ -90,7 +90,7 @@ describe('montar os pontos', () => {
     const p = v3('distribuir')
     const pontos = [completo(pontoInicial(unidades)), novoPonto([pontoInicial(unidades)])]
     expect(pendencias(unidades, pontos)).toEqual(['um carregador no Ponto 2', 'o endereço do Ponto 2'])
-    expect(pendencias(unidades, [{ ...completo(pontoInicial(unidades)), unidades: ['u1'] }])).toEqual(['um ponto para os carregadores Mob Fast e Mob Ultra Fast'])
+    expect(pendencias(unidades, [{ ...completo(pontoInicial(unidades)), unidades: ['u1'] }])).toEqual(['um ponto para os carregadores Mob Ultra Fast e Mob Fast'])
     expect(enviarPontos(p, pontos)).toBe(p)
     const ok = enviarPontos(p, [completo(pontoInicial(unidades))])
     expect(ok.vistoria.status).toBe('agendando')

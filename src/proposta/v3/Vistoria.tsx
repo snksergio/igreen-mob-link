@@ -27,6 +27,8 @@ import {
   type Unidade,
 } from '../data'
 import { Aviso, Cabecalho, LinhaDoc, Linhas, Secao, type Tom } from './Blocos'
+import { IconePotencia } from './IconePotencia'
+import ctl from '../../components/ui/Controls.module.css'
 import styles from './Proposta.module.css'
 import v from './Vistoria.module.css'
 
@@ -35,11 +37,8 @@ import v from './Vistoria.module.css'
  * em cada ponto, os carregadores que vão ali, o endereço e o contato no local. A vistoria é feita por ponto.
  */
 
-const ICONE_MODELO: Record<Unidade['modelo'], string> = {
-  mob: ICONS.energyCircle,
-  fast: ICONS.eletric,
-  ultra: ICONS.energyLink,
-}
+/** nível do medidor de potência de cada modelo */
+const NIVEL: Record<Unidade['modelo'], 1 | 2 | 3> = { mob: 1, fast: 2, ultra: 3 }
 
 const temEndereco = (pt: Ponto) => Boolean(pt.endereco.logradouro || pt.endereco.cidade)
 const completo = (pt: Ponto) => Object.keys(errosPonto(pt)).length === 0
@@ -172,7 +171,7 @@ function OQueConfere() {
 function IconeModelo({ u, tamanho = 32 }: { u: Unidade; tamanho?: number }) {
   return (
     <span className={v.modeloIcone} style={{ width: tamanho, height: tamanho }} aria-hidden>
-      <Icon src={ICONE_MODELO[u.modelo]} size={Math.round(tamanho / 2)} color="#fff" />
+      <IconePotencia nivel={NIVEL[u.modelo]} size={Math.round(tamanho * 0.7)} />
     </span>
   )
 }
@@ -470,11 +469,15 @@ function PontoEditor({
                   <IconeModelo u={u} tamanho={30} />
                   <span className={v.modeloTexto}>
                     <b>{u.nome}</b>
-                    <small>
-                      {u.potencia} {u.corrente}
-                    </small>
+                    {/* compacto ("7+40 kW AC+DC") para caber ao lado do ponto no celular */}
+                    <small>{`${u.potencia} ${u.corrente}`.replace(/ \+ /g, '+')}</small>
                   </span>
-                  {!marcado && outro >= 0 ? <span className={v.unidadeOnde}>No {nomePonto(pontos[outro], outro)}</span> : null}
+                  {!marcado && outro >= 0 ? (
+                    <span className={v.unidadeOnde} title={`Está no ${nomePonto(pontos[outro], outro)}`}>
+                      <Icon src={ICONS.addressPin} size={11} />
+                      {nomePonto(pontos[outro], outro)}
+                    </span>
+                  ) : null}
                 </button>
               )
             })}
@@ -507,17 +510,25 @@ function PontoEditor({
 
       <div className={v.campo}>
         <p className={v.rotulo}>Contato no local</p>
-        {/* o ✓ da caixa fica por cima do campo: sem pointer-events, o toque nele também desmarca */}
-        <div className={v.contatoCheck}>
-          <Checkbox id={`${id}-contato`} checked={c == null} onChange={(mesmo) => onChange({ contato: mesmo ? null : CONTATO_VAZIO })}>
-            <span className={v.contatoTexto}>
-              <b>Usar o mesmo contato da proposta</b>
-              <span>
-                {p.investidor.nome}, {p.investidor.telefone}, {p.investidor.email}
-              </span>
+        {/* caixa própria: fundo de card sobre o ponto tingido, e o ✓ não bloqueia o toque */}
+        <label className={cn(v.opcao, c == null && v.opcaoOn)} htmlFor={`${id}-contato`}>
+          <span className={cn(ctl.checkbox, c == null && ctl.checkboxOn, v.opcaoCaixa)}>
+            <input
+              id={`${id}-contato`}
+              type="checkbox"
+              className={ctl.checkInput}
+              checked={c == null}
+              onChange={(e) => onChange({ contato: e.target.checked ? null : CONTATO_VAZIO })}
+            />
+            {c == null ? <Icon src={ICONS.checkSmall} size={14} color="var(--fg-on-primary)" /> : null}
+          </span>
+          <span className={v.contatoTexto}>
+            <b>Usar o mesmo contato da proposta</b>
+            <span>
+              {p.investidor.nome}, {p.investidor.telefone}, {p.investidor.email}
             </span>
-          </Checkbox>
-        </div>
+          </span>
+        </label>
         {c ? (
           <div className={v.contatoCampos}>
             <Field
@@ -648,7 +659,9 @@ function PontosEnviados({
                     .filter((u) => pt.unidades.includes(u.id))
                     .map((u) => (
                       <li key={u.id}>
-                        <Icon src={ICONE_MODELO[u.modelo]} size={12} color="var(--fg-primary)" />
+                        <span className={v.chipIcone}>
+                          <IconePotencia nivel={NIVEL[u.modelo]} size={14} />
+                        </span>
                         <b>{u.nome}</b> {u.potencia}
                       </li>
                     ))}
