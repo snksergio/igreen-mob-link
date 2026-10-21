@@ -31,6 +31,7 @@ import {
   type Unidade,
 } from '../data'
 import { Aviso, Cabecalho, LinhaDoc, Linhas, Secao, type Tom } from './Blocos'
+import { IconeLixeira, SeloPonto } from './IconeEletroposto'
 import { IconePotencia } from './IconePotencia'
 import ctl from '../../components/ui/Controls.module.css'
 import styles from './Proposta.module.css'
@@ -191,28 +192,9 @@ export function Frota({ unidades, pontos, comValor = false }: { unidades: Unidad
     const resto = ordem.slice(visiveis.length).reduce((n, g) => n + g.qtd, 0)
     return (
       <ul className={v.chipsFrota}>
-        {visiveis.map((g) => {
-          const i = g.ponto
-          return (
-            <li key={`${g.modelo}-${i}`} className={cn(v.chipFrota, i < 0 && v.chipFrotaSolto)}>
-              <IconeModelo u={g} tamanho={22} />
-              <b>
-                {g.qtd > 1 ? `${g.qtd}× ` : ''}
-                {g.nome}
-              </b>
-              <span className={v.chipFrotaOnde}>
-                {i >= 0 ? (
-                  <>
-                    <Icon src={ICONS.addressPin} size={11} />
-                    {nomePonto(pontos[i], i)}
-                  </>
-                ) : (
-                  'Sem ponto'
-                )}
-              </span>
-            </li>
-          )
-        })}
+        {visiveis.map((g) => (
+          <ChipGrupo key={`${g.modelo}-${g.ponto}`} g={g} pontos={pontos} />
+        ))}
         {resto > 0 || (todos && ordem.length > LIMITE_CHIPS) ? (
           <li>
             <button type="button" className={v.chipMais} onClick={() => setTodos(!todos)} aria-expanded={todos}>
@@ -252,6 +234,30 @@ export function Frota({ unidades, pontos, comValor = false }: { unidades: Unidad
 
 const LIMITE_CHIPS = 6
 
+/** Chip de um grupo (modelo e ponto): "2× Mob Ultra Fast  Ponto 1" */
+function ChipGrupo({ g, pontos }: { g: ReturnType<typeof gruposPorPonto>[number]; pontos: Ponto[] }) {
+  const i = g.ponto
+  return (
+    <li className={cn(v.chipFrota, i < 0 && v.chipFrotaSolto)}>
+      <IconeModelo u={g} tamanho={22} />
+      <b>
+        {g.qtd > 1 ? `${g.qtd}× ` : ''}
+        {g.nome}
+      </b>
+      <span className={v.chipFrotaOnde}>
+        {i >= 0 ? (
+          <>
+            <Icon src={ICONS.addressPin} size={11} />
+            {nomePonto(pontos[i], i)}
+          </>
+        ) : (
+          'Sem ponto'
+        )}
+      </span>
+    </li>
+  )
+}
+
 /* ================= Distribuir os carregadores em pontos ================= */
 
 function Distribuir({
@@ -270,7 +276,9 @@ function Distribuir({
   const [pontos, setPontos] = useState<Ponto[]>(() => structuredClone(p.pontos?.length ? p.pontos : [pontoInicial(unidades)]))
   const [aberto, setAberto] = useState<string | null>(() => pontos.find((pt) => !completo(pt))?.id ?? (pontos.length === 1 ? pontos[0].id : null))
   const [conferir, setConferir] = useState<Record<string, boolean>>({})
+  const [removendo, setRemovendo] = useState<string | null>(null)
   const um = unidades.length === 1
+  const livres = semPonto(unidades, pontos)
   const pend = pendencias(unidades, pontos)
   const distribuidos = unidades.length - semPonto(unidades, pontos).length
 
@@ -286,9 +294,11 @@ function Distribuir({
     setAberto(n.id)
   }
 
+  // Os carregadores do ponto removido voltam para "sem ponto"
   const remover = (id: string) => {
     setPontos((pts) => pts.filter((pt) => pt.id !== id))
-    setAberto(null)
+    setRemovendo(null)
+    if (aberto === id) setAberto(null)
   }
 
   const revisar = (pt: Ponto) => {
@@ -336,7 +346,22 @@ function Distribuir({
         {um ? null : <Frota unidades={unidades} pontos={pontos} />}
         <div className={v.pontos}>
           {pontos.map((pt, i) =>
-            aberto === pt.id ? (
+            removendo === pt.id ? (
+              <div key={pt.id} className={v.confirmar} role="alertdialog" aria-label={`Remover ${nomePonto(pt, i)}`}>
+                <p>
+                  Remover <b>{nomePonto(pt, i)}</b>?{' '}
+                  {pt.unidades.length ? `${pt.unidades.length === 1 ? 'O carregador volta' : 'Os carregadores voltam'} para "sem ponto".` : null}
+                </p>
+                <div className={v.confirmarAcoes}>
+                  <button type="button" className={v.btnLeve} onClick={() => setRemovendo(null)}>
+                    Cancelar
+                  </button>
+                  <button type="button" className={v.btnRemover} onClick={() => remover(pt.id)}>
+                    Remover
+                  </button>
+                </div>
+              </div>
+            ) : aberto === pt.id ? (
               <PontoEditor
                 key={pt.id}
                 p={p}
@@ -349,18 +374,33 @@ function Distribuir({
                 onChange={(patch) => atualizar(pt.id, patch)}
                 onAlternar={(u) => setPontos((pts) => alternarUnidade(pts, pt.id, u))}
                 onQuantidade={(modelo, n) => setPontos((pts) => definirQuantidade(pts, unidades, pt.id, modelo, n))}
-                onRemover={pontos.length > 1 ? () => remover(pt.id) : undefined}
+                onRemover={pontos.length > 1 ? () => setRemovendo(pt.id) : undefined}
+                onRecolher={() => setAberto(null)}
                 onConcluir={() => concluir(pt)}
               />
             ) : (
-              <PontoFechado key={pt.id} pt={pt} i={i} unidades={unidades} um={um} onAbrir={() => setAberto(pt.id)} />
+              <PontoFechado
+                key={pt.id}
+                pt={pt}
+                i={i}
+                unidades={unidades}
+                um={um}
+                onAbrir={() => setAberto(pt.id)}
+                onRemover={pontos.length > 1 ? () => setRemovendo(pt.id) : undefined}
+              />
             ),
           )}
-          {!um && pontos.length < unidades.length ? (
+          {/* um ponto novo nasce com os carregadores livres; sem nenhum livre, a dica diz como separar */}
+          {um ? null : livres.length ? (
             <button type="button" className={v.adicionar} onClick={adicionar}>
               <span className={v.mais} aria-hidden />
               Adicionar ponto
+              <span className={v.adicionarQtd}>
+                com {livres.length === 1 ? '1 carregador livre' : `${livres.length} carregadores livres`}
+              </span>
             </button>
+          ) : pontos.length === 1 ? (
+            <p className={v.dicaSeparar}>Para separar em outro ponto, desmarque no ponto atual o carregador que vai para lá. Ele fica livre para um ponto novo.</p>
           ) : null}
         </div>
       </Secao>
@@ -392,14 +432,27 @@ function Distribuir({
 }
 
 /** Ponto fechado: um resumo que abre ao tocar */
-function PontoFechado({ pt, i, unidades, um, onAbrir }: { pt: Ponto; i: number; unidades: Unidade[]; um: boolean; onAbrir: () => void }) {
+function PontoFechado({
+  pt,
+  i,
+  unidades,
+  um,
+  onAbrir,
+  onRemover,
+}: {
+  pt: Ponto
+  i: number
+  unidades: Unidade[]
+  um: boolean
+  onAbrir: () => void
+  onRemover?: () => void
+}) {
   const ok = completo(pt)
   const doPonto = unidades.filter((u) => pt.unidades.includes(u.id))
   return (
-    <button type="button" className={cn(v.fechado, ok && v.fechadoOk)} onClick={onAbrir} aria-expanded={false}>
-      <span className={cn(v.num, ok && v.numOk)} aria-hidden>
-        {ok ? <Icon src={ICONS.checkBold} size={11} color="#fff" /> : i + 1}
-      </span>
+    <div className={cn(v.fechado, ok && v.fechadoOk)}>
+      <button type="button" className={v.fechadoAbrir} onClick={onAbrir} aria-expanded={false}>
+      <SeloPonto ok={ok} />
       <span className={v.fechadoTextos}>
         <span className={v.fechadoTopo}>
           <span className={v.fechadoTitulo}>{nomePonto(pt, i)}</span>
@@ -410,10 +463,16 @@ function PontoFechado({ pt, i, unidades, um, onAbrir }: { pt: Ponto; i: number; 
         )}
         <span className={cn(v.fechadoMeta, !temEndereco(pt) && v.metaPendente)}>{temEndereco(pt) ? enderecoCurto(pt.endereco) : 'Falta o endereço'}</span>
       </span>
-      <span className={styles.chevronCirculo} aria-hidden>
+      </button>
+      {onRemover ? (
+        <button type="button" className={v.btnRedondo} onClick={onRemover} aria-label={`Remover ${nomePonto(pt, i)}`} title="Remover ponto">
+          <IconeLixeira />
+        </button>
+      ) : null}
+      <button type="button" className={v.btnRedondo} onClick={onAbrir} aria-label={`Abrir ${nomePonto(pt, i)}`} tabIndex={-1}>
         <Icon src={ICONS.chevronDown} size={14} />
-      </span>
-    </button>
+      </button>
+    </div>
   )
 }
 
@@ -438,6 +497,7 @@ function PontoEditor({
   onAlternar,
   onQuantidade,
   onRemover,
+  onRecolher,
   onConcluir,
 }: {
   p: Proposta
@@ -451,25 +511,39 @@ function PontoEditor({
   onAlternar: (unidade: string) => void
   onQuantidade: (modelo: Unidade['modelo'], n: number) => void
   onRemover?: () => void
+  onRecolher: () => void
   onConcluir: () => void
 }) {
   const id = useId()
   const c = pt.contato
   const soltos = semPonto(unidades, pontos)
+  // na seleção, só o que está neste ponto ou livre (sem ponto)
+  const disponiveis = porModelo(unidades)
+    .map((g) => {
+      const ids = unidades.filter((u) => u.modelo === g.modelo).map((u) => u.id)
+      return {
+        ...g,
+        aqui: ids.filter((x) => pt.unidades.includes(x)).length,
+        livres: ids.filter((x) => !pontos.some((o) => o.unidades.includes(x))).length,
+      }
+    })
+    .filter((g) => g.aqui + g.livres > 0)
+  const emOutros = gruposPorPonto(unidades, pontos).filter((g) => g.ponto >= 0 && pontos[g.ponto].id !== pt.id)
   const setContato = (patch: Partial<ContatoPonto>) => onChange({ contato: { ...(c ?? CONTATO_VAZIO), ...patch } })
 
   return (
     <div className={v.editor}>
       <div className={v.editorTopo}>
-        <span className={v.num} aria-hidden>
-          {i + 1}
-        </span>
+        <SeloPonto ativo />
         <p className={v.editorTitulo}>{nomePonto(pt, i)}</p>
         {onRemover ? (
-          <button type="button" className={v.remover} onClick={onRemover}>
-            Remover ponto
+          <button type="button" className={v.btnRedondo} onClick={onRemover} aria-label={`Remover ${nomePonto(pt, i)}`} title="Remover ponto">
+            <IconeLixeira />
           </button>
         ) : null}
+        <button type="button" className={cn(v.btnRedondo, v.btnRecolher)} onClick={onRecolher} aria-label="Recolher ponto" aria-expanded title="Recolher">
+          <Icon src={ICONS.chevronDown} size={14} />
+        </button>
       </div>
 
       <Field
@@ -493,12 +567,12 @@ function PontoEditor({
             ) : null}
           </div>
           <div className={v.unidades} role="group" aria-labelledby={`${id}-unidades`} tabIndex={-1} data-invalid={erros?.unidades ? true : undefined}>
-            {porModelo(unidades).map((g) => {
+            {disponiveis.length === 0 ? (
+              <p className={v.vazio}>Nenhum carregador livre. Para trazer um para cá, desmarque-o no ponto onde ele está.</p>
+            ) : null}
+            {disponiveis.map((g) => {
+              const { aqui, livres } = g
               if (g.qtd > 1) {
-                const ids = unidades.filter((u) => u.modelo === g.modelo).map((u) => u.id)
-                const aqui = ids.filter((x) => pt.unidades.includes(x)).length
-                const livres = ids.filter((x) => !pontos.some((o) => o.unidades.includes(x))).length
-                const fora = g.qtd - aqui - livres
                 return (
                   <div key={g.modelo} className={cn(v.unidade, v.unidadeQtd, aqui > 0 && v.unidadeOn)}>
                     <IconeModelo u={g} tamanho={30} />
@@ -506,21 +580,16 @@ function PontoEditor({
                       <b>{g.nome}</b>
                       <small>{`${g.potencia} ${g.corrente}`.replace(/ \+ /g, '+')}</small>
                       <small className={v.qtdLinha}>
-                        {g.qtd} na compra
-                        {livres ? (
-                          <span className={v.qtdSolto}>, {livres} sem ponto</span>
-                        ) : fora ? (
-                          <>, {fora === 1 ? '1 em outro ponto' : `${fora} em outros pontos`}</>
-                        ) : null}
+                        {aqui + livres === 1 ? '1 disponível' : `${aqui + livres} disponíveis`}
+                        {livres ? <span className={v.qtdSolto}>, {livres} sem ponto</span> : null}
                       </small>
                     </span>
-                    <Contador valor={aqui} max={g.qtd} rotulo={`Quantos ${g.nome} neste ponto`} onChange={(n) => onQuantidade(g.modelo, n)} />
+                    <Contador valor={aqui} max={aqui + livres} rotulo={`Quantos ${g.nome} neste ponto`} onChange={(n) => onQuantidade(g.modelo, n)} />
                   </div>
                 )
               }
               const u = unidades.find((x) => x.modelo === g.modelo)!
               const marcado = pt.unidades.includes(u.id)
-              const outro = pontos.findIndex((o) => o.id !== pt.id && o.unidades.includes(u.id))
               return (
                 <button
                   key={u.id}
@@ -539,12 +608,7 @@ function PontoEditor({
                     {/* compacto ("7+40 kW AC+DC") para caber ao lado do ponto no celular */}
                     <small>{`${u.potencia} ${u.corrente}`.replace(/ \+ /g, '+')}</small>
                   </span>
-                  {!marcado && outro >= 0 ? (
-                    <span className={v.unidadeOnde} title={`Está no ${nomePonto(pontos[outro], outro)}`}>
-                      <Icon src={ICONS.addressPin} size={11} />
-                      {nomePonto(pontos[outro], outro)}
-                    </span>
-                  ) : null}
+                  {!marcado ? <span className={v.unidadeLivre}>Livre</span> : null}
                 </button>
               )
             })}
@@ -553,8 +617,17 @@ function PontoEditor({
             <p className={v.erro} role="alert">
               {erros.unidades}
             </p>
-          ) : pontos.length > 1 ? (
-            <p className={v.ajuda}>Ao marcar ou aumentar, o carregador sai do outro ponto e vem para este.</p>
+          ) : null}
+          {/* os que já estão em outros pontos não entram na seleção: aparecem só como informação */}
+          {emOutros.length ? (
+            <div className={v.outros}>
+              <p className={v.outrosTitulo}>Em outros pontos</p>
+              <ul className={v.chipsFrota}>
+                {emOutros.map((g) => (
+                  <ChipGrupo key={`${g.modelo}-${g.ponto}`} g={g} pontos={pontos} />
+                ))}
+              </ul>
+            </div>
           ) : null}
         </div>
       )}
@@ -713,9 +786,7 @@ function PontosEnviados({
             return (
               <article key={pt.id} className={v.info} aria-label={nomePonto(pt, i)}>
                 <div className={v.infoTopo}>
-                  <span className={v.num} aria-hidden>
-                    {i + 1}
-                  </span>
+                  <SeloPonto ativo />
                   <h5 className={v.infoTitulo}>{nomePonto(pt, i)}</h5>
                   <span className={cn(styles.pill, styles.pillMini, styles[`pill_${st.tom}`])}>{st.texto}</span>
                 </div>

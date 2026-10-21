@@ -136,38 +136,38 @@
   gap: 10px;
 }
 
-.num {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--pv-sunken);
-  font-weight: 700;
-  font-size: 12px;
-  color: var(--p-value);
-  font-variant-numeric: tabular-nums;
-}
-
-.numOk {
-  background: var(--bg-primary);
-}
-
 /* Ponto fechado: resumo clicável */
 .fechado {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
-  padding: 14px;
+  padding: 12px 12px 12px 14px;
   border: 1px solid var(--pv-line);
   border-radius: var(--radius-base);
   background: var(--p-card);
+  transition: border-color 0.15s ease;
+}
+
+.fechadoAbrir {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
   font: inherit;
   text-align: left;
+  color: inherit;
   cursor: pointer;
-  transition: border-color 0.15s ease;
+}
+
+.fechadoAbrir:focus-visible {
+  outline: 2px solid var(--fg-primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .fechado:hover {
@@ -227,11 +227,6 @@
   animation: abrir 0.2s ease-out;
 }
 
-.editor .num {
-  background: var(--bg-primary);
-  color: #fff;
-}
-
 .editorTopo {
   display: flex;
   align-items: center;
@@ -248,20 +243,6 @@
   color: var(--p-value);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.remover {
-  flex: none;
-  padding: 4px 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--fg-critical);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
 }
 
 .campo {
@@ -350,31 +331,6 @@
 .caixaOn {
   border-color: var(--border-primary);
   background: var(--bg-primary);
-}
-
-/* Onde o carregador está agora (quando é de outro ponto): pino e nome, curto para caber no celular */
-.unidadeOnde {
-  display: inline-flex;
-  flex: 0 1 auto;
-  align-items: center;
-  gap: 3px;
-  max-width: 42%;
-  min-width: 0;
-  overflow: hidden;
-  padding: 2px 8px 2px 6px;
-  border-radius: var(--radius-full);
-  background: var(--pv-sunken);
-  font-weight: 600;
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--p-text);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.unidadeOnde > :first-child {
-  flex: none;
-  background-color: currentColor;
 }
 
 /* Usar o contato da proposta: caixa com fundo de card, toda clicável */
@@ -535,10 +491,6 @@
   background: var(--pv-sunken);
 }
 
-.info .num {
-  background: var(--p-card);
-}
-
 .infoTopo {
   display: flex;
   align-items: center;
@@ -681,7 +633,6 @@
   color: var(--p-value);
   font-variant-numeric: tabular-nums;
 }
-
 
 /* No quadro, a potência fica numa linha só; quem cede espaço é o selo do ponto (com reticências) */
 .unidade .modeloTexto {
@@ -884,4 +835,177 @@
   font-size: 13px;
   line-height: 18px;
   letter-spacing: -0.005em;
+}
+
+/* ---------- Selo do ponto: o eletroposto num quadrado, como os ícones dos cards de Detalhes ---------- */
+.selo {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--pv-sunken);
+  color: var(--p-text);
+}
+
+.seloAtivo {
+  background: var(--bg-primary);
+  color: #fff;
+}
+
+.seloOk {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--p-card);
+  border-radius: 50%;
+  background: var(--bg-primary);
+  color: #fff;
+}
+
+/* Botões redondos (lixeira, abrir e recolher): borda e fundo próprios para aparecer também no escuro */
+.btnRedondo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--pv-line);
+  border-radius: 50%;
+  background: var(--p-card);
+  color: var(--p-value);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.btnRedondo:hover {
+  border-color: color-mix(in srgb, var(--border-primary) 50%, var(--pv-line));
+}
+
+.btnRedondo[title='Remover ponto']:hover {
+  border-color: color-mix(in srgb, var(--fg-critical) 50%, var(--pv-line));
+  color: var(--fg-critical);
+}
+
+.btnRedondo:focus-visible {
+  outline: 2px solid var(--fg-primary);
+  outline-offset: 2px;
+}
+
+.btnRecolher > :first-child {
+  transform: rotate(180deg);
+}
+
+/* Confirmação de remoção, no lugar do card */
+.confirmar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--fg-critical) 40%, var(--pv-line));
+  border-radius: var(--radius-base);
+  background: color-mix(in srgb, var(--fg-critical) 6%, var(--p-card));
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--p-text);
+}
+
+.confirmar b {
+  font-weight: 700;
+  color: var(--p-value);
+}
+
+.confirmarAcoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btnLeve,
+.btnRemover {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btnLeve {
+  border: 1px solid var(--pv-line);
+  background: var(--p-card);
+  color: var(--p-value);
+}
+
+.btnRemover {
+  border: 0;
+  background: var(--fg-critical);
+  color: #fff;
+}
+
+.adicionarQtd {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--p-text);
+}
+
+.dicaSeparar {
+  padding: 2px 2px 0;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--p-caption);
+}
+
+.vazio {
+  padding: 12px 14px;
+  border: 1px dashed var(--pv-line);
+  border-radius: var(--radius-base);
+  background: var(--p-card);
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--p-text);
+}
+
+/* Em outros pontos: só informação, abaixo da seleção */
+.outros {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.outrosTitulo {
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--p-caption);
+}
+
+.outros .chipsFrota {
+  margin-top: 0;
+}
+
+.outros .chipFrota {
+  background: var(--p-card);
+}
+
+.unidadeLivre {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-warning-subtle);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--fg-warning);
 }
