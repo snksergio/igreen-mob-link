@@ -10,6 +10,8 @@ import { maskCnpj, maskCpf, maskPhone, money, moneyCents, onlyDigits } from '../
 import { focusFirstError } from '../../lib/focusFirstError'
 import {
   alternarUnidade,
+  definirQuantidade,
+  gruposPorPonto,
   dataCurta,
   dataLonga,
   enderecoCurto,
@@ -19,6 +21,8 @@ import {
   novoPonto,
   pendencias,
   pontoInicial,
+  porModelo,
+  resumoCompra,
   semPonto,
   type ContatoPonto,
   type ErrosPonto,
@@ -168,7 +172,7 @@ function OQueConfere() {
 
 /* ================= Carregadores comprados ================= */
 
-function IconeModelo({ u, tamanho = 32 }: { u: Unidade; tamanho?: number }) {
+function IconeModelo({ u, tamanho = 32 }: { u: Pick<Unidade, 'modelo'>; tamanho?: number }) {
   return (
     <span className={v.modeloIcone} style={{ width: tamanho, height: tamanho }} aria-hidden>
       <IconePotencia nivel={NIVEL[u.modelo]} size={Math.round(tamanho * 0.7)} />
@@ -178,16 +182,24 @@ function IconeModelo({ u, tamanho = 32 }: { u: Unidade; tamanho?: number }) {
 
 /** Lista dos carregadores da compra; com `pontos`, mostra onde cada um está; com `comValor`, o valor de cada um */
 export function Frota({ unidades, pontos, comValor = false }: { unidades: Unidade[]; pontos?: Ponto[]; comValor?: boolean }) {
-  // Na distribuição, a lista fica compacta: só o nome e o ponto de cada carregador (os detalhes estão nos quadros do ponto)
+  const [todos, setTodos] = useState(false)
+  // Na distribuição, a lista fica compacta: só o nome e o ponto de cada carregador (os detalhes estão nos quadros do ponto).
+  // Com muitos carregadores, mostra os primeiros e um botão para ver o resto (os sem ponto vêm antes)
   if (pontos) {
+    const ordem = gruposPorPonto(unidades, pontos)
+    const visiveis = todos || ordem.length <= LIMITE_CHIPS ? ordem : ordem.slice(0, LIMITE_CHIPS - 1)
+    const resto = ordem.slice(visiveis.length).reduce((n, g) => n + g.qtd, 0)
     return (
       <ul className={v.chipsFrota}>
-        {unidades.map((u) => {
-          const i = pontos.findIndex((pt) => pt.unidades.includes(u.id))
+        {visiveis.map((g) => {
+          const i = g.ponto
           return (
-            <li key={u.id} className={cn(v.chipFrota, i < 0 && v.chipFrotaSolto)}>
-              <IconeModelo u={u} tamanho={22} />
-              <b>{u.nome}</b>
+            <li key={`${g.modelo}-${i}`} className={cn(v.chipFrota, i < 0 && v.chipFrotaSolto)}>
+              <IconeModelo u={g} tamanho={22} />
+              <b>
+                {g.qtd > 1 ? `${g.qtd}× ` : ''}
+                {g.nome}
+              </b>
               <span className={v.chipFrotaOnde}>
                 {i >= 0 ? (
                   <>
@@ -201,26 +213,44 @@ export function Frota({ unidades, pontos, comValor = false }: { unidades: Unidad
             </li>
           )
         })}
+        {resto > 0 || (todos && ordem.length > LIMITE_CHIPS) ? (
+          <li>
+            <button type="button" className={v.chipMais} onClick={() => setTodos(!todos)} aria-expanded={todos}>
+              {todos ? 'Mostrar menos' : `+${resto} carregadores`}
+            </button>
+          </li>
+        ) : null}
       </ul>
     )
   }
+  // Lista da proposta: um item por modelo (com a quantidade), para não crescer com a compra
   return (
     <ul className={v.frota}>
-      {unidades.map((u) => (
-        <li key={u.id} className={v.frotaItem}>
-          <IconeModelo u={u} />
+      {porModelo(unidades).map((g) => (
+        <li key={g.modelo} className={v.frotaItem}>
+          <IconeModelo u={g} />
           <span className={v.modeloTexto}>
-            <b>{u.nome}</b>
+            <b>
+              {g.qtd > 1 ? `${g.qtd}× ` : ''}
+              {g.nome}
+            </b>
             <small>
-              {u.potencia} {u.corrente}
+              {g.potencia} {g.corrente}
             </small>
           </span>
-          {comValor ? <b className={v.valor}>{money(u.valor)}</b> : null}
+          {comValor ? (
+            <span className={v.valorBloco}>
+              <b className={v.valor}>{money(g.valor * g.qtd)}</b>
+              {g.qtd > 1 ? <small>{g.qtd} × {money(g.valor)}</small> : null}
+            </span>
+          ) : null}
         </li>
       ))}
     </ul>
   )
 }
+
+const LIMITE_CHIPS = 6
 
 /* ================= Distribuir os carregadores em pontos ================= */
 
@@ -298,9 +328,7 @@ function Distribuir({
               em um ponto
             </span>
             <span className={v.contadorBarra} aria-hidden>
-              {unidades.map((u) => (
-                <span key={u.id} className={cn(pontos.some((pt) => pt.unidades.includes(u.id)) && v.contadorOk)} />
-              ))}
+              <span style={{ width: `${(distribuidos / unidades.length) * 100}%` }} />
             </span>
           </div>
           <Frota unidades={unidades} pontos={pontos} />
@@ -322,6 +350,7 @@ function Distribuir({
                 erros={conferir[pt.id] ? errosPonto(pt) : undefined}
                 onChange={(patch) => atualizar(pt.id, patch)}
                 onAlternar={(u) => setPontos((pts) => alternarUnidade(pts, pt.id, u))}
+                onQuantidade={(modelo, n) => setPontos((pts) => definirQuantidade(pts, unidades, pt.id, modelo, n))}
                 onRemover={pontos.length > 1 ? () => remover(pt.id) : undefined}
                 onConcluir={() => concluir(pt)}
               />
@@ -342,11 +371,11 @@ function Distribuir({
         {pend.length ? (
           <p className={v.pendencias}>Para enviar, falta {juntarNomes(pend)}.</p>
         ) : (
-          <p className={v.pronto}>
+          <p className={cn(styles.feito, v.pronto)}>
             <span className={styles.feitoIcone} aria-hidden>
               <Icon src={ICONS.checkBold} size={10} color="#fff" />
             </span>
-            Tudo pronto para enviar.
+            {pontos.length === 1 ? 'Ponto completo. Tudo pronto para enviar.' : `Os ${pontos.length} pontos estão completos. Tudo pronto para enviar.`}
           </p>
         )}
         <div className={cn(v.enviarAcoes, onCancelar && v.enviarAcoesDupla)}>
@@ -367,15 +396,20 @@ function Distribuir({
 /** Ponto fechado: um resumo que abre ao tocar */
 function PontoFechado({ pt, i, unidades, um, onAbrir }: { pt: Ponto; i: number; unidades: Unidade[]; um: boolean; onAbrir: () => void }) {
   const ok = completo(pt)
-  const nomes = unidades.filter((u) => pt.unidades.includes(u.id)).map((u) => u.nome)
+  const doPonto = unidades.filter((u) => pt.unidades.includes(u.id))
   return (
-    <button type="button" className={v.fechado} onClick={onAbrir} aria-expanded={false}>
+    <button type="button" className={cn(v.fechado, ok && v.fechadoOk)} onClick={onAbrir} aria-expanded={false}>
       <span className={cn(v.num, ok && v.numOk)} aria-hidden>
         {ok ? <Icon src={ICONS.checkBold} size={11} color="#fff" /> : i + 1}
       </span>
       <span className={v.fechadoTextos}>
-        <span className={v.fechadoTitulo}>{nomePonto(pt, i)}</span>
-        {um ? null : <span className={cn(v.fechadoMeta, !nomes.length && v.metaPendente)}>{nomes.length ? juntarNomes(nomes) : 'Nenhum carregador'}</span>}
+        <span className={v.fechadoTopo}>
+          <span className={v.fechadoTitulo}>{nomePonto(pt, i)}</span>
+          {ok ? <span className={cn(styles.pill, styles.pillMini, styles.pill_ok)}>Completo</span> : null}
+        </span>
+        {um ? null : (
+          <span className={cn(v.fechadoMeta, !doPonto.length && v.metaPendente)}>{doPonto.length ? resumoCompra(doPonto) : 'Nenhum carregador'}</span>
+        )}
         <span className={cn(v.fechadoMeta, !temEndereco(pt) && v.metaPendente)}>{temEndereco(pt) ? enderecoCurto(pt.endereco) : 'Falta o endereço'}</span>
       </span>
       <span className={styles.chevronCirculo} aria-hidden>
@@ -404,6 +438,7 @@ function PontoEditor({
   erros,
   onChange,
   onAlternar,
+  onQuantidade,
   onRemover,
   onConcluir,
 }: {
@@ -416,11 +451,13 @@ function PontoEditor({
   erros?: ErrosPonto
   onChange: (patch: Partial<Ponto>) => void
   onAlternar: (unidade: string) => void
+  onQuantidade: (modelo: Unidade['modelo'], n: number) => void
   onRemover?: () => void
   onConcluir: () => void
 }) {
   const id = useId()
   const c = pt.contato
+  const soltos = semPonto(unidades, pontos)
   const setContato = (patch: Partial<ContatoPonto>) => onChange({ contato: { ...(c ?? CONTATO_VAZIO), ...patch } })
 
   return (
@@ -447,11 +484,43 @@ function PontoEditor({
 
       {um ? null : (
         <div className={v.campo}>
-          <p className={v.rotulo} id={`${id}-unidades`}>
-            Carregadores deste ponto
-          </p>
+          <div className={v.rotuloLinha}>
+            <p className={v.rotulo} id={`${id}-unidades`}>
+              Carregadores deste ponto
+            </p>
+            {soltos.length > 1 ? (
+              <button type="button" className={v.atalho} onClick={() => soltos.forEach((u) => onAlternar(u.id))}>
+                Marcar os {soltos.length} sem ponto
+              </button>
+            ) : null}
+          </div>
           <div className={v.unidades} role="group" aria-labelledby={`${id}-unidades`} tabIndex={-1} data-invalid={erros?.unidades ? true : undefined}>
-            {unidades.map((u) => {
+            {porModelo(unidades).map((g) => {
+              if (g.qtd > 1) {
+                const ids = unidades.filter((u) => u.modelo === g.modelo).map((u) => u.id)
+                const aqui = ids.filter((x) => pt.unidades.includes(x)).length
+                const livres = ids.filter((x) => !pontos.some((o) => o.unidades.includes(x))).length
+                const fora = g.qtd - aqui - livres
+                return (
+                  <div key={g.modelo} className={cn(v.unidade, v.unidadeQtd, aqui > 0 && v.unidadeOn)}>
+                    <IconeModelo u={g} tamanho={30} />
+                    <span className={v.modeloTexto}>
+                      <b>{g.nome}</b>
+                      <small>{`${g.potencia} ${g.corrente}`.replace(/ \+ /g, '+')}</small>
+                      <small className={v.qtdLinha}>
+                        {g.qtd} na compra
+                        {livres ? (
+                          <span className={v.qtdSolto}>, {livres} sem ponto</span>
+                        ) : fora ? (
+                          <>, {fora === 1 ? '1 em outro ponto' : `${fora} em outros pontos`}</>
+                        ) : null}
+                      </small>
+                    </span>
+                    <Contador valor={aqui} max={g.qtd} rotulo={`Quantos ${g.nome} neste ponto`} onChange={(n) => onQuantidade(g.modelo, n)} />
+                  </div>
+                )
+              }
+              const u = unidades.find((x) => x.modelo === g.modelo)!
               const marcado = pt.unidades.includes(u.id)
               const outro = pontos.findIndex((o) => o.id !== pt.id && o.unidades.includes(u.id))
               return (
@@ -468,7 +537,7 @@ function PontoEditor({
                   </span>
                   <IconeModelo u={u} tamanho={30} />
                   <span className={v.modeloTexto}>
-                    <b>{u.nome}</b>
+                    <b>{g.nome}</b>
                     {/* compacto ("7+40 kW AC+DC") para caber ao lado do ponto no celular */}
                     <small>{`${u.potencia} ${u.corrente}`.replace(/ \+ /g, '+')}</small>
                   </span>
@@ -487,7 +556,7 @@ function PontoEditor({
               {erros.unidades}
             </p>
           ) : pontos.length > 1 ? (
-            <p className={v.ajuda}>Marcar um carregador que está em outro ponto traz ele para cá.</p>
+            <p className={v.ajuda}>Ao marcar ou aumentar, o carregador sai do outro ponto e vem para este.</p>
           ) : null}
         </div>
       )}
@@ -573,9 +642,7 @@ function PontoEditor({
       </div>
 
       <div className={v.editorAcoes}>
-        <Button variant="secondary" onClick={onConcluir}>
-          Concluir ponto
-        </Button>
+        <Button onClick={onConcluir}>Concluir ponto</Button>
       </div>
     </div>
   )
@@ -655,16 +722,18 @@ function PontosEnviados({
                   <span className={cn(styles.pill, styles.pillMini, styles[`pill_${st.tom}`])}>{st.texto}</span>
                 </div>
                 <ul className={v.chips} aria-label="Carregadores">
-                  {unidades
-                    .filter((u) => pt.unidades.includes(u.id))
-                    .map((u) => (
-                      <li key={u.id}>
-                        <span className={v.chipIcone}>
-                          <IconePotencia nivel={NIVEL[u.modelo]} size={14} />
-                        </span>
-                        <b>{u.nome}</b> {u.potencia}
-                      </li>
-                    ))}
+                  {porModelo(unidades.filter((u) => pt.unidades.includes(u.id))).map((g) => (
+                    <li key={g.modelo}>
+                      <span className={v.chipIcone}>
+                        <IconePotencia nivel={NIVEL[g.modelo]} size={14} />
+                      </span>
+                      <b>
+                        {g.qtd > 1 ? `${g.qtd}× ` : ''}
+                        {g.nome}
+                      </b>{' '}
+                      {g.potencia}
+                    </li>
+                  ))}
                 </ul>
                 <p className={v.infoLinha}>
                   <Icon src={ICONS.addressPin} size={14} />
@@ -705,4 +774,19 @@ function statusPonto(pt: Ponto, aditivoPendente: boolean): { texto: string; tom:
   if (s?.status === 'concluida') return { texto: `Feita em ${dataCurta(s.data!)}`, tom: 'ok' }
   if (s?.status === 'agendada') return { texto: `Vistoria em ${dataCurta(s.data!)}`, tom: 'ok' }
   return { texto: 'Em agendamento', tom: 'espera' }
+}
+
+/** − 2 + : quantos carregadores daquele modelo ficam no ponto */
+function Contador({ valor, max, rotulo, onChange }: { valor: number; max: number; rotulo: string; onChange: (n: number) => void }) {
+  return (
+    <div className={v.contador2} role="group" aria-label={rotulo}>
+      <button type="button" onClick={() => onChange(valor - 1)} disabled={valor <= 0} aria-label="Diminuir">
+        −
+      </button>
+      <output aria-live="polite">{valor}</output>
+      <button type="button" onClick={() => onChange(valor + 1)} disabled={valor >= max} aria-label="Aumentar">
+        +
+      </button>
+    </div>
+  )
 }

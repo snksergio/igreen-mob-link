@@ -5,7 +5,7 @@ import { Checkbox } from '../../components/ui/Controls'
 import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { moneyCents } from '../../lib/format'
-import { dataCurta, dataLonga, diasEntre, documentosEntrega, emDias, juntarNomes, type DocEntrega, type Parcela, type Proposta, type Unidade } from '../data'
+import { dataCurta, dataLonga, diasEntre, documentosEntrega, emDias, juntarNomes, porModelo, resumoCompra, type DocEntrega, type Parcela, type Proposta, type Unidade } from '../data'
 import { Aviso, Cabecalho, LinhaDoc, Linhas, Relogio, Secao, type Tom } from './Blocos'
 import { Frota } from './Vistoria'
 import styles from './Proposta.module.css'
@@ -244,8 +244,9 @@ function Expandir() {
   )
 }
 
-/** "Mob 7 kW AC, Mob Fast 7 + 40 kW AC + DC e Mob Ultra Fast 80 kW DC" */
-const descreverUnidades = (us: Unidade[]) => juntarNomes(us.map((u) => `${u.nome} ${u.potencia} ${u.corrente}`))
+/** "3 Mob Ultra Fast (80 kW DC), 3 Mob Fast (7 + 40 kW AC + DC) e 4 Mob (7 kW AC)" */
+const descreverUnidades = (us: Unidade[]) =>
+  juntarNomes(porModelo(us).map((g) => `${g.qtd > 1 ? `${g.qtd} ` : ''}${g.nome} (${g.potencia} ${g.corrente})`))
 
 export function ContratoTexto({ p }: { p: Proposta }) {
   const [entrada, ...demais] = p.pagamento.parcelas
@@ -293,7 +294,7 @@ export function ContratoTexto({ p }: { p: Proposta }) {
       <p>
         {us ? (
           <>
-            {us.length} eletropostos: {juntarNomes(us.map((u) => u.nome))}. Cidade: {p.local.cidade}/{p.local.uf}. Cabeamento {p.local.distancia}.
+            {us.length} eletropostos: {resumoCompra(us)}. Cidade: {p.local.cidade}/{p.local.uf}. Cabeamento {p.local.distancia}.
           </>
         ) : (
           <>

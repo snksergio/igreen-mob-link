@@ -1,19 +1,28 @@
 /**
- * Ícone dos modelos Mob: um medidor de potência com o ponteiro no nível do carregador
- * (1 = Mob, carga lenta; 2 = Mob Fast; 3 = Mob Ultra Fast). As faixas até o nível ficam acesas.
+ * Ícone dos modelos Mob: um velocímetro. As três marcas dividem o mostrador em lento, médio e rápido;
+ * o arco acende até o ponteiro (1 = Mob, carga lenta; 2 = Mob Fast; 3 = Mob Ultra Fast, quase no fim).
+ * Geometria: centro (12, 14.5), raio 8, mostrador de 210° a -30°.
  */
-const FAIXAS = ['M5.07 18A8 8 0 0 1 6.34 8.34', 'M7.41 7.45A8 8 0 0 1 16.59 7.45', 'M17.66 8.34A8 8 0 0 1 18.93 18']
-const PONTEIRO: Record<1 | 2 | 3, [number, number]> = { 1: [6.69, 12.58], 2: [12, 8.5], 3: [17.31, 12.58] }
+const MOSTRADOR = 'M5.07 18.5A8 8 0 1 1 18.93 18.5'
+const NIVEIS = {
+  1: { arco: 'M5.07 18.5A8 8 0 0 1 5.07 10.5', ponteiro: 'M12 14.5L7.5 11.9' },
+  2: { arco: 'M5.07 18.5A8 8 0 0 1 12 6.5', ponteiro: 'M12 14.5L12 9.3' },
+  3: { arco: 'M5.07 18.5A8 8 0 1 1 19.88 13.11', ponteiro: 'M12 14.5L17.12 13.6' },
+} as const
+/** marcas de lento | médio | rápido, por fora do mostrador */
+const MARCAS = ['M3.51 9.6L2.21 8.85', 'M12 4.7L12 3.2', 'M20.49 9.6L21.79 8.85']
 
 export function IconePotencia({ nivel, size = 18 }: { nivel: 1 | 2 | 3; size?: number }) {
-  const [x, y] = PONTEIRO[nivel]
+  const n = NIVEIS[nivel]
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
-      {FAIXAS.map((d, i) => (
-        <path key={d} d={d} opacity={i < nivel ? 1 : 0.35} />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" aria-hidden>
+      <path d={MOSTRADOR} strokeWidth="2.2" opacity={0.3} />
+      <path d={n.arco} strokeWidth="2.2" />
+      {MARCAS.map((d) => (
+        <path key={d} d={d} strokeWidth="1.6" opacity={0.75} />
       ))}
-      <path d={`M12 14L${x} ${y}`} />
-      <circle cx="12" cy="14" r="1.6" fill="currentColor" stroke="none" />
+      <path d={n.ponteiro} strokeWidth="2" />
+      <circle cx="12" cy="14.5" r="1.7" fill="currentColor" stroke="none" />
     </svg>
   )
 }

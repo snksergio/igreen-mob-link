@@ -29,8 +29,8 @@ import {
   etapaEmFoco,
   etapas,
   isCenario,
-  juntarNomes,
   montarProposta,
+  resumoCompra,
   nomePonto,
   pagar,
   proximoPasso,
@@ -309,7 +309,7 @@ export function PropostaV3() {
           </h2>
           <p className={styles.principalLocal}>
             {p.unidades
-              ? `${juntarNomes(p.unidades.map((u) => u.nome))} em ${p.local.cidade}/${p.local.uf}`
+              ? `${resumoCompra(p.unidades)} em ${p.local.cidade}/${p.local.uf}`
               : `${p.carregadores[0].quantidade} eletroposto de ${p.produto.potencia} em ${p.local.cidade}/${p.local.uf}`}
           </p>
           <div className={styles.badges}>
@@ -647,7 +647,7 @@ function DocExemplo({ nome, p }: { nome: string; p: Proposta }) {
       <h5>{nome}</h5>
       {p.unidades && p.pontos?.length ? (
         <p>
-          {p.produto.nome} ({juntarNomes(p.unidades.map((u) => u.nome))}) em {p.pontos.length} pontos:{' '}
+          {p.produto.nome} ({resumoCompra(p.unidades)}) em {p.pontos.length} pontos:{' '}
           {p.pontos.map((pt, i) => `${nomePonto(pt, i)} (${enderecoCurto(pt.endereco)})`).join('; ')}. Proposta nº {p.numero}.
         </p>
       ) : (

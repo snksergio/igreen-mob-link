@@ -8,7 +8,7 @@ import type { Address } from '../services/address'
 import { onlyDigits } from '../lib/format'
 import { isValidCep, isValidCnpj, isValidCpf, isValidEmail, isValidPhone } from '../lib/validators'
 
-export type Cenario = 'nova' | 'contrato' | 'pagamento' | 'distribuir' | 'pontos' | 'vistoria' | 'instalacao' | 'entrega' | 'recusada'
+export type Cenario = 'nova' | 'contrato' | 'pagamento' | 'distribuir' | 'muitos' | 'pontos' | 'vistoria' | 'instalacao' | 'entrega' | 'recusada'
 
 /** Cenários da prévia (seletor de demonstração e `?cenario=` no endereço) do primeiro modelo (#proposta-v2) */
 export const CENARIOS: { value: Cenario; label: string }[] = [
@@ -25,6 +25,7 @@ export const CENARIOS: { value: Cenario; label: string }[] = [
 export const CENARIOS_V3: { value: Cenario; label: string }[] = [
   ...CENARIOS.slice(0, 3),
   { value: 'distribuir', label: 'Entrada paga, distribuir carregadores' },
+  { value: 'muitos', label: 'Entrada paga, 10 carregadores para distribuir' },
   { value: 'pontos', label: 'Pontos enviados, vistoria em agendamento' },
   ...CENARIOS.slice(3),
 ]
@@ -141,12 +142,27 @@ function gerarCobrancas(parcelas: Parcela[], hoje: Date) {
 }
 
 /** Compra de exemplo da versão com pontos: um carregador de cada modelo */
+export const NOME_MODELO: Record<Unidade['modelo'], string> = { ultra: 'Mob Ultra Fast', fast: 'Mob Fast', mob: 'Mob' }
+
 /** Do maior para o menor: o Ultra Fast vem primeiro em todas as listas */
 export const UNIDADES_EXEMPLO: Unidade[] = [
   { id: 'u3', modelo: 'ultra', nome: 'Mob Ultra Fast', potencia: '80 kW', corrente: 'DC', valor: 129_900 },
   { id: 'u2', modelo: 'fast', nome: 'Mob Fast', potencia: '7 + 40 kW', corrente: 'AC + DC', valor: 59_997 },
   { id: 'u1', modelo: 'mob', nome: 'Mob', potencia: '7 kW', corrente: 'AC', valor: 9_997 },
 ]
+
+/** Compra grande (cenário "muitos"): 3 Ultra Fast, 3 Fast e 4 Mob, numerados */
+const compraGrande = (): Unidade[] =>
+  (
+    [
+      ['ultra', 3],
+      ['fast', 3],
+      ['mob', 4],
+    ] as const
+  ).flatMap(([modelo, qtd]) => {
+    const base = UNIDADES_EXEMPLO.find((u) => u.modelo === modelo)!
+    return Array.from({ length: qtd }, (_, i) => ({ ...base, id: `${base.id}-${i + 1}`, nome: `${base.nome} ${i + 1}` }))
+  })
 
 const enderecoVazio = (): Address => ({ cep: '', logradouro: '', bairro: '', cidade: '', uf: '', numero: '', complemento: '' })
 
@@ -179,15 +195,15 @@ const pontosExemplo = (): Ponto[] => [
 export function montarProposta(cenario: Cenario, hoje = new Date(), versao: 'v2' | 'v3' = 'v2'): Proposta {
   const v3 = versao === 'v3'
   // o primeiro modelo não tem a etapa de distribuição: os cenários dela viram "entrada em aberto"
-  if (!v3 && (cenario === 'distribuir' || cenario === 'pontos')) cenario = 'pagamento'
+  if (!v3 && (cenario === 'distribuir' || cenario === 'muitos' || cenario === 'pontos')) cenario = 'pagamento'
   const d = (n: number) => somaDias(hoje, n)
-  const unidades = v3 ? UNIDADES_EXEMPLO : undefined
+  const unidades = !v3 ? undefined : cenario === 'muitos' ? compraGrande() : UNIDADES_EXEMPLO
   const total = unidades ? unidades.reduce((s, u) => s + u.valor, 0) : 129_900
   const entrada = 9_997
   const parcela = (total - entrada) / 4
 
   // dia da assinatura em cada cenário (undefined = ainda não assinado)
-  const assinatura: Partial<Record<Cenario, number>> = { pagamento: -1, distribuir: -4, pontos: -6, vistoria: -12, instalacao: -70, entrega: -118 }
+  const assinatura: Partial<Record<Cenario, number>> = { pagamento: -1, distribuir: -4, muitos: -4, pontos: -6, vistoria: -12, instalacao: -70, entrega: -118 }
   const assinou = assinatura[cenario]
 
   const parcelas: Parcela[] = [
@@ -205,7 +221,7 @@ export function montarProposta(cenario: Cenario, hoje = new Date(), versao: 'v2'
     const paga = (i: number, dia: number, com: Parcela['pagaCom'] = 'Pix') => Object.assign(parcelas[i], { status: 'paga', pagaEm: d(dia), pagaCom: com })
     const emAberto = (i: number) => Object.assign(parcelas[i], { status: 'aberta', pix: PIX, boleto: BOLETO })
     if (cenario === 'pagamento') emAberto(0)
-    if (cenario === 'distribuir') paga(0, -2)
+    if (cenario === 'distribuir' || cenario === 'muitos') paga(0, -2)
     if (cenario === 'pontos') paga(0, -4)
     if (cenario === 'vistoria') paga(0, -10)
     if (cenario === 'instalacao') {
@@ -245,7 +261,7 @@ export function montarProposta(cenario: Cenario, hoje = new Date(), versao: 'v2'
   const vistoria: Proposta['vistoria'] =
     cenario === 'vistoria' || cenario === 'instalacao' || cenario === 'entrega'
       ? { status: 'concluida', data: d(vistoriaFeitaEm), aditivo }
-      : cenario === 'distribuir'
+      : cenario === 'distribuir' || cenario === 'muitos'
         ? { status: 'distribuir' }
         : cenario === 'pontos'
           ? { status: 'agendando' }
@@ -254,7 +270,7 @@ export function montarProposta(cenario: Cenario, hoje = new Date(), versao: 'v2'
   // pontos da versão v3: o Ponto 1 com tudo para distribuir, depois os dois pontos enviados com a vistoria de cada um
   const pontos = !unidades
     ? undefined
-    : cenario === 'distribuir'
+    : cenario === 'distribuir' || cenario === 'muitos'
       ? [pontoInicial(unidades)]
       : cenario === 'pontos'
         ? pontosExemplo().map((pt) => ({ ...pt, vistoria: { status: 'agendando' as const } }))
@@ -303,6 +319,20 @@ export function montarProposta(cenario: Cenario, hoje = new Date(), versao: 'v2'
 
 export const unidadesDoPonto = (p: Proposta, pt: Ponto) => (p.unidades ?? []).filter((u) => pt.unidades.includes(u.id))
 
+/** Carregadores agrupados por modelo, na ordem da compra (para listas que não podem crescer com a quantidade) */
+export function porModelo(unidades: Unidade[]) {
+  const grupos: (Omit<Unidade, 'id'> & { qtd: number })[] = []
+  for (const u of unidades) {
+    const g = grupos.find((x) => x.modelo === u.modelo)
+    if (g) g.qtd++
+    else grupos.push({ ...u, nome: NOME_MODELO[u.modelo], qtd: 1 })
+  }
+  return grupos
+}
+
+/** "Mob Ultra Fast, Mob Fast e Mob" ou, com repetidos, "3 Mob Ultra Fast, 3 Mob Fast e 4 Mob" */
+export const resumoCompra = (unidades: Unidade[]) => juntarNomes(porModelo(unidades).map((g) => (g.qtd > 1 ? `${g.qtd} ${g.nome}` : g.nome)))
+
 /** "Mob, Mob Fast e Mob Ultra Fast" */
 export const juntarNomes = (nomes: string[]) => (nomes.length <= 1 ? (nomes[0] ?? '') : `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`)
 
@@ -334,7 +364,54 @@ export function alternarUnidade(pontos: Ponto[], pontoId: string, unidadeId: str
   )
 }
 
-export type ErrosPonto = Partial<Record<'unidades' | 'cep' | 'numero' | 'contatoNome' | 'contatoTelefone' | 'contatoEmail' | 'contatoDocumento', string>>
+/**
+ * Quantos carregadores de um modelo ficam no ponto (carregadores do mesmo modelo são iguais).
+ * Aumentar usa primeiro os que estão sem ponto e depois traz dos outros pontos (do último para o primeiro);
+ * diminuir devolve os últimos para "sem ponto".
+ */
+export function definirQuantidade(pontos: Ponto[], unidades: Unidade[], pontoId: string, modelo: Unidade['modelo'], n: number): Ponto[] {
+  const doModelo = new Set(unidades.filter((u) => u.modelo === modelo).map((u) => u.id))
+  const novos = pontos.map((pt) => ({ ...pt, unidades: [...pt.unidades] }))
+  const alvo = novos.find((pt) => pt.id === pontoId)
+  if (!alvo) return pontos
+  const aqui = alvo.unidades.filter((id) => doModelo.has(id))
+  if (n < aqui.length) {
+    const sair = new Set(aqui.slice(n))
+    alvo.unidades = alvo.unidades.filter((id) => !sair.has(id))
+    return novos
+  }
+  let falta = n - aqui.length
+  for (const id of doModelo) {
+    if (!falta) break
+    if (novos.some((pt) => pt.unidades.includes(id))) continue
+    alvo.unidades.push(id)
+    falta--
+  }
+  for (const outro of [...novos].reverse()) {
+    if (outro.id === pontoId) continue
+    while (falta) {
+      const i = outro.unidades.findLastIndex((id) => doModelo.has(id))
+      if (i < 0) break
+      alvo.unidades.push(...outro.unidades.splice(i, 1))
+      falta--
+    }
+  }
+  return novos
+}
+
+/** Resumo de onde estão os carregadores: um grupo por modelo e ponto (os sem ponto primeiro), para a lista não crescer com a compra */
+export function gruposPorPonto(unidades: Unidade[], pontos: Ponto[]) {
+  const grupos: { modelo: Unidade['modelo']; nome: string; qtd: number; ponto: number }[] = []
+  for (const u of unidades) {
+    const ponto = pontos.findIndex((pt) => pt.unidades.includes(u.id))
+    const g = grupos.find((x) => x.modelo === u.modelo && x.ponto === ponto)
+    if (g) g.qtd++
+    else grupos.push({ modelo: u.modelo, nome: NOME_MODELO[u.modelo], qtd: 1, ponto })
+  }
+  return grupos.sort((a, b) => Number(a.ponto >= 0) - Number(b.ponto >= 0))
+}
+
+export type ErrosPonto =Partial<Record<'unidades' | 'cep' | 'numero' | 'contatoNome' | 'contatoTelefone' | 'contatoEmail' | 'contatoDocumento', string>>
 
 /** O que falta em um ponto para enviar (nome é opcional; e-mail e documento do contato também, mas precisam ser válidos) */
 export function errosPonto(pt: Ponto): ErrosPonto {
@@ -358,7 +435,8 @@ export function errosPonto(pt: Ponto): ErrosPonto {
 export function pendencias(unidades: Unidade[], pontos: Ponto[]): string[] {
   const lista: string[] = []
   const soltos = semPonto(unidades, pontos)
-  if (soltos.length) lista.push(`um ponto para ${soltos.length > 1 ? 'os carregadores' : 'o'} ${juntarNomes(soltos.map((u) => u.nome))}`)
+  if (soltos.length > 3) lista.push(`um ponto para ${soltos.length} carregadores`)
+  else if (soltos.length) lista.push(`um ponto para ${soltos.length > 1 ? 'os carregadores' : 'o'} ${juntarNomes(soltos.map((u) => u.nome))}`)
   pontos.forEach((pt, i) => {
     const e = errosPonto(pt)
     const nome = nomePonto(pt, i)

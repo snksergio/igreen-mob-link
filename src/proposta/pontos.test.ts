@@ -4,6 +4,8 @@ import {
   CENARIOS_V3,
   agendarVistorias,
   alternarUnidade,
+  definirQuantidade,
+  gruposPorPonto,
   chamada,
   enviarPontos,
   errosPonto,
@@ -15,6 +17,7 @@ import {
   pendencias,
   pontoInicial,
   proximoPasso,
+  resumoCompra,
   semPonto,
   type Ponto,
 } from './data'
@@ -42,7 +45,7 @@ describe('compra com vários carregadores (#proposta-v3)', () => {
     expect(p.pagamento.total).toBe(129_900)
     expect(isCenario('distribuir')).toBe(false)
     expect(isCenario('distribuir', CENARIOS_V3)).toBe(true)
-    expect(CENARIOS_V3).toHaveLength(CENARIOS.length + 2)
+    expect(CENARIOS_V3).toHaveLength(CENARIOS.length + 3)
   })
 
   it('entrada paga: todos os carregadores no Ponto 1 e o próximo passo é distribuir', () => {
@@ -57,6 +60,37 @@ describe('compra com vários carregadores (#proposta-v3)', () => {
   it('pagar a entrada leva à distribuição (no primeiro modelo, direto à vistoria agendada)', () => {
     expect(pagar(v3('pagamento'), 'entrada', hoje).vistoria.status).toBe('distribuir')
     expect(pagar(montarProposta('pagamento', hoje), 'entrada', hoje).vistoria.status).toBe('agendada')
+  })
+})
+
+describe('compra grande (10 carregadores)', () => {
+  it('soma os valores, resume por modelo e não lista 10 nomes no que falta', () => {
+    const p = v3('muitos')
+    expect(p.unidades).toHaveLength(10)
+    expect(p.pagamento.total).toBe(609_679)
+    expect(resumoCompra(p.unidades!)).toBe('3 Mob Ultra Fast, 3 Mob Fast e 4 Mob')
+    expect(resumoCompra(v3('distribuir').unidades!)).toBe('Mob Ultra Fast, Mob Fast e Mob')
+    expect(pendencias(p.unidades!, [])).toEqual(['um ponto para 10 carregadores'])
+    expect(proximoPasso(p, hoje).titulo).toBe('Distribua seus 10 carregadores')
+  })
+
+  it('escolhe quantos de cada modelo vão no ponto: primeiro os sem ponto, depois traz dos outros pontos', () => {
+    const us = v3('muitos').unidades!
+    const conta = (pts: Ponto[], id: string, modelo: string) => pts.find((pt) => pt.id === id)!.unidades.filter((u) => us.find((x) => x.id === u)!.modelo === modelo).length
+    let pontos = [pontoInicial(us)]
+    pontos = [...pontos, novoPonto(pontos)]
+    pontos = definirQuantidade(pontos, us, 'pt2', 'ultra', 2)
+    expect([conta(pontos, 'pt1', 'ultra'), conta(pontos, 'pt2', 'ultra')]).toEqual([1, 2])
+    pontos = definirQuantidade(pontos, us, 'pt1', 'mob', 1)
+    expect(semPonto(us, pontos)).toHaveLength(3)
+    pontos = definirQuantidade(pontos, us, 'pt2', 'mob', 4)
+    expect([conta(pontos, 'pt1', 'mob'), conta(pontos, 'pt2', 'mob'), semPonto(us, pontos).length]).toEqual([0, 4, 0])
+    expect(gruposPorPonto(us, pontos).map((g) => `${g.qtd} ${g.nome} em ${g.ponto + 1}`)).toEqual([
+      '1 Mob Ultra Fast em 1',
+      '2 Mob Ultra Fast em 2',
+      '3 Mob Fast em 1',
+      '4 Mob em 2',
+    ])
   })
 })
 

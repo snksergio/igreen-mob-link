@@ -21,22 +21,21 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Barra contínua: a parte verde é a proporção já distribuída (serve para 3 ou para 30 carregadores) */
 .contadorBarra {
-  display: flex;
-  flex: 0 1 120px;
-  gap: 3px;
+  flex: 0 1 140px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--pv-line);
 }
 
 .contadorBarra span {
-  flex: 1;
-  height: 6px;
+  display: block;
+  height: 100%;
   border-radius: 3px;
-  background: var(--pv-line);
-  transition: background-color 0.2s ease;
-}
-
-.contadorBarra .contadorOk {
   background: var(--bg-primary);
+  transition: width 0.3s ease;
 }
 
 .frota {
@@ -189,6 +188,11 @@
 
 .fechado:hover {
   border-color: color-mix(in srgb, var(--border-primary) 50%, var(--pv-line));
+}
+
+.fechadoOk {
+  border-color: color-mix(in srgb, var(--border-primary) 40%, var(--pv-line));
+  background: color-mix(in srgb, var(--bg-primary) 7%, var(--p-card));
 }
 
 .fechado:focus-visible,
@@ -523,6 +527,7 @@
 
 .pronto {
   align-items: center;
+  margin-top: 0;
   font-weight: 600;
   color: var(--p-value);
 }
@@ -708,4 +713,144 @@
   .unidade .modeloIcone {
     display: none;
   }
+}
+
+/* "+5 carregadores": abre o resto dos chips */
+.chipMais {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px dashed color-mix(in srgb, var(--border-primary) 60%, var(--pv-line));
+  border-radius: var(--radius-full);
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--fg-primary);
+  cursor: pointer;
+}
+
+.rotuloLinha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Atalho "Marcar os N sem ponto" */
+.atalho {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--fg-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.valorBloco {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.valorBloco small {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--p-caption);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Quadro com quantidade (mais de um do mesmo modelo): não é um botão, o clique fica no − e no + */
+.unidadeQtd {
+  cursor: default;
+}
+
+/* aqui o texto pode quebrar: quem não pode sair do quadro é o − 2 + */
+.unidade.unidadeQtd .modeloTexto {
+  flex: 1 1 auto;
+}
+
+.qtdLinha {
+  font-weight: 600;
+  white-space: normal !important;
+}
+
+.qtdSolto {
+  color: var(--fg-warning);
+}
+
+.contador2 {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--pv-line);
+  border-radius: var(--radius-base);
+  background: var(--p-card);
+}
+
+.contador2 button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--pv-sunken);
+  font: inherit;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--p-value);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.contador2 button:hover:not(:disabled) {
+  background: var(--bg-primary);
+  color: #fff;
+}
+
+.contador2 button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.contador2 button:focus-visible {
+  outline: 2px solid var(--fg-primary);
+  outline-offset: 1px;
+}
+
+.contador2 output {
+  min-width: 26px;
+  font-weight: 700;
+  font-size: 15px;
+  text-align: center;
+  color: var(--p-value);
+  font-variant-numeric: tabular-nums;
+}
+
+/* nome do ponto e o selo "Completo" na mesma linha; o resumo embaixo usa a largura toda */
+.fechadoTopo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.fechadoTopo .fechadoTitulo {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
