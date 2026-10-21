@@ -1639,6 +1639,11 @@
     line-height: 48px;
   }
 
+  /* no desktop o conteúdo (card da proposta, andamento e detalhes) vai até 620px; no celular segue com 480px */
+  .content {
+    max-width: 620px;
+  }
+
   .folha {
     --folha-x: 24px;
     padding: 26px var(--folha-x) 28px;
