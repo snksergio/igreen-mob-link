@@ -1644,3 +1644,11 @@
     padding: 26px var(--folha-x) 28px;
   }
 }
+
+/* Título da seção com um acessório à direita (progresso) */
+.secaoTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}

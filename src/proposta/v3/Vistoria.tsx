@@ -318,24 +318,22 @@ function Distribuir({
           : 'Diga onde fica cada carregador. Com o envio, agendamos a vistoria técnica de cada ponto.'}
       </Cabecalho>
 
-      {um ? null : (
-        <Secao titulo="Seus carregadores">
-          <div className={v.contador}>
-            <span>
+      <Secao
+        titulo={um ? 'Local de instalação' : 'Pontos de instalação'}
+        acessorio={
+          um ? undefined : (
+            <span className={v.progresso} role="img" aria-label={`${distribuidos} de ${unidades.length} carregadores em um ponto`}>
               <b>
                 {distribuidos} de {unidades.length}
-              </b>{' '}
-              em um ponto
+              </b>
+              <span className={v.contadorBarra}>
+                <span style={{ width: `${(distribuidos / unidades.length) * 100}%` }} />
+              </span>
             </span>
-            <span className={v.contadorBarra} aria-hidden>
-              <span style={{ width: `${(distribuidos / unidades.length) * 100}%` }} />
-            </span>
-          </div>
-          <Frota unidades={unidades} pontos={pontos} />
-        </Secao>
-      )}
-
-      <Secao titulo={um ? 'Local de instalação' : 'Pontos de instalação'}>
+          )
+        }
+      >
+        {um ? null : <Frota unidades={unidades} pontos={pontos} />}
         <div className={v.pontos}>
           {pontos.map((pt, i) =>
             aberto === pt.id ? (
@@ -475,7 +473,7 @@ function PontoEditor({
       </div>
 
       <Field
-        label="APELIDO DO LOCAL (OPCIONAL)"
+        label="Apelido do local (opcional)"
         value={pt.nome}
         onChange={(nome) => onChange({ nome })}
         placeholder="Ex.: Casa, Loja do centro"
@@ -562,8 +560,8 @@ function PontoEditor({
       )}
 
       <div className={v.campo}>
-        <p className={v.rotulo}>Endereço do ponto</p>
         <AddressSection
+          labels={{ cep: 'Endereço do ponto (CEP)', numero: 'Número', complemento: 'Complemento' }}
           value={pt.endereco}
           onChange={(endereco) => onChange({ endereco })}
           withMap
@@ -601,7 +599,7 @@ function PontoEditor({
         {c ? (
           <div className={v.contatoCampos}>
             <Field
-              label="NOME DO CONTATO"
+              label="Nome do contato"
               value={c.nome}
               onChange={(nome) => setContato({ nome })}
               autoComplete="name"
@@ -610,7 +608,7 @@ function PontoEditor({
             />
             <FieldRow stackOnMobile>
               <Field
-                label="TELEFONE"
+                label="Telefone"
                 value={c.telefone}
                 onChange={(telefone) => setContato({ telefone })}
                 mask={maskPhone}
@@ -619,7 +617,7 @@ function PontoEditor({
                 error={erros?.contatoTelefone}
               />
               <Field
-                label="E-MAIL (OPCIONAL)"
+                label="E-mail (opcional)"
                 type="email"
                 value={c.email}
                 onChange={(email) => setContato({ email })}
@@ -629,7 +627,7 @@ function PontoEditor({
               />
             </FieldRow>
             <Field
-              label="CPF OU CNPJ (OPCIONAL)"
+              label="CPF ou CNPJ (opcional)"
               value={c.documento}
               onChange={(documento) => setContato({ documento })}
               mask={maskDocumento}

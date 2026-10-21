@@ -23,10 +23,18 @@ export function Cabecalho({ titulo, status, tom, children }: { titulo: string; s
   )
 }
 
-export function Secao({ titulo, children, nota }: { titulo: string; children: ReactNode; nota?: ReactNode }) {
+/** `acessorio`: algo pequeno na mesma linha do título, à direita (ex.: o progresso da etapa) */
+export function Secao({ titulo, children, nota, acessorio }: { titulo: string; children: ReactNode; nota?: ReactNode; acessorio?: ReactNode }) {
   return (
     <section className={styles.secao}>
-      <h4 className={styles.secaoTitulo}>{titulo}</h4>
+      {acessorio ? (
+        <div className={styles.secaoTopo}>
+          <h4 className={styles.secaoTitulo}>{titulo}</h4>
+          {acessorio}
+        </div>
+      ) : (
+        <h4 className={styles.secaoTitulo}>{titulo}</h4>
+      )}
       {children}
       {nota ? <p className={styles.nota}>{nota}</p> : null}
     </section>

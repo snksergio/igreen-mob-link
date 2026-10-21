@@ -24,10 +24,12 @@ type AddressSectionProps = {
   loading?: boolean
   modal: { title: string; subtitle: string; icon: string }
   cepSubtitle: string
+  /** Rótulos dos campos; sem eles, valem os do cadastro (CEP DO ENDEREÇO, NÚMERO, COMPLEMENTO) */
+  labels?: { cep?: string; numero?: string; complemento?: string }
 }
 
 /** CEP + "Não sabe o seu CEP?" + card do endereço (com mapa opcional) + Número/Complemento */
-export function AddressSection({ value, onChange, errors, withMap, loading, modal, cepSubtitle }: AddressSectionProps) {
+export function AddressSection({ value, onChange, errors, withMap, loading, modal, cepSubtitle, labels }: AddressSectionProps) {
   const [cepLoading, setCepLoading] = useState(false)
   const [cepError, setCepError] = useState<string | null>(null)
   // Chave do último endereço cuja geolocalização terminou (com ou sem sucesso)
@@ -93,7 +95,7 @@ export function AddressSection({ value, onChange, errors, withMap, loading, moda
     <div className={styles.section}>
       <div className={styles.cepRow}>
         <Field
-          label="CEP DO ENDEREÇO"
+          label={labels?.cep ?? 'CEP DO ENDEREÇO'}
           value={value.cep}
           onChange={onCepChange}
           mask={maskCep}
@@ -122,7 +124,7 @@ export function AddressSection({ value, onChange, errors, withMap, loading, moda
 
           <FieldRow>
         <Field
-          label="NÚMERO"
+          label={labels?.numero ?? 'NÚMERO'}
           value={value.numero}
           onChange={(numero) => onChange({ ...value, numero })}
           placeholder="000"
@@ -133,7 +135,7 @@ export function AddressSection({ value, onChange, errors, withMap, loading, moda
           autoComplete="address-line2"
         />
         <Field
-          label="COMPLEMENTO"
+          label={labels?.complemento ?? 'COMPLEMENTO'}
           value={value.complemento}
           onChange={(complemento) => onChange({ ...value, complemento })}
           placeholder="AP 250"

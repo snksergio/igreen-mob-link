@@ -5,22 +5,6 @@
  */
 
 /* ---------- Carregadores da compra ---------- */
-.contador {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--p-text);
-}
-
-.contador b {
-  font-weight: 700;
-  color: var(--p-value);
-  font-variant-numeric: tabular-nums;
-}
-
 /* Barra contínua: a parte verde é a proporção já distribuída (serve para 3 ou para 30 carregadores) */
 .contadorBarra {
   flex: 0 1 140px;
@@ -853,4 +837,51 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Progresso na linha do título: "3 de 3" e a barra */
+.progresso {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.progresso b {
+  font-weight: 700;
+  color: var(--p-value);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.progresso .contadorBarra {
+  flex: none;
+  width: 72px;
+}
+
+/* os chips ficam mais perto do título */
+.chipsFrota {
+  margin-top: -4px;
+}
+
+/*
+ * No ponto aberto, os rótulos dos campos ficam no mesmo estilo de "Carregadores deste ponto":
+ * claros, sem caixa alta. :where() mantém as cores de foco e de erro do campo.
+ */
+.editor :global(:where(.t-label)) {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: -0.005em;
+  color: var(--p-value);
+}
+
+/* tipografia do rótulo com especificidade maior que a classe global .t-label (a cor continua no :where acima) */
+.editor label:global(.t-label) {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: -0.005em;
 }
