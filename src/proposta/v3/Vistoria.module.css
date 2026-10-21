@@ -1,0 +1,608 @@
+/*
+ * Vistoria com pontos (versão 2). Cores da página vêm de --p-* e --pv-* (Proposta.module.css).
+ * Mesma regra das outras folhas: o que é clicável tem borda (ponto fechado, carregador para marcar, adicionar ponto);
+ * informação fica em fundo tingido. O ponto aberto segue o acordeão das parcelas: borda verde.
+ */
+
+/* ---------- Carregadores da compra ---------- */
+.contador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--p-text);
+}
+
+.contador b {
+  font-weight: 700;
+  color: var(--p-value);
+  font-variant-numeric: tabular-nums;
+}
+
+.contadorBarra {
+  display: flex;
+  flex: 0 1 120px;
+  gap: 3px;
+}
+
+.contadorBarra span {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--pv-line);
+  transition: background-color 0.2s ease;
+}
+
+.contadorBarra .contadorOk {
+  background: var(--bg-primary);
+}
+
+.frota {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.frotaItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-base);
+  background: var(--pv-sunken);
+}
+
+.modeloIcone {
+  display: grid;
+  flex: none;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+}
+
+.modeloTexto {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+}
+
+.modeloTexto b {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--p-value);
+}
+
+.modeloTexto small {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--p-caption);
+}
+
+/* Na distribuição: chips com o nome e o ponto de cada carregador */
+.chipsFrota {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chipFrota {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 4px 10px 4px 4px;
+  border-radius: var(--radius-full);
+  background: var(--pv-sunken);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.chipFrota .modeloIcone {
+  border-radius: 50%;
+}
+
+.chipFrota b {
+  font-weight: 700;
+  color: var(--p-value);
+  white-space: nowrap;
+}
+
+.chipFrotaOnde {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  color: var(--fg-primary-strong);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chipFrotaOnde > :first-child {
+  flex: none;
+  background-color: currentColor;
+}
+
+.chipFrotaSolto {
+  background: var(--bg-warning-subtle);
+}
+
+.chipFrotaSolto .chipFrotaOnde {
+  color: var(--fg-warning);
+}
+
+/* ---------- Pontos ---------- */
+.pontos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.num {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--pv-sunken);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--p-value);
+  font-variant-numeric: tabular-nums;
+}
+
+.numOk {
+  background: var(--bg-primary);
+}
+
+/* Ponto fechado: resumo clicável */
+.fechado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--pv-line);
+  border-radius: var(--radius-base);
+  background: var(--p-card);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.fechado:hover {
+  border-color: color-mix(in srgb, var(--border-primary) 50%, var(--pv-line));
+}
+
+.fechado:focus-visible,
+.unidade:focus-visible,
+.adicionar:focus-visible {
+  outline: 2px solid var(--fg-primary);
+  outline-offset: 2px;
+}
+
+.fechadoTextos {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fechadoTitulo {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--p-value);
+}
+
+.fechadoMeta {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--p-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metaPendente {
+  font-weight: 600;
+  color: var(--fg-warning);
+}
+
+/* Ponto aberto: o formulário do ponto, com a borda verde do item aberto */
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-base);
+  background: var(--p-card);
+  animation: abrir 0.2s ease-out;
+}
+
+.editorTopo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.editorTitulo {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--p-value);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remover {
+  flex: none;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--fg-critical);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rotulo {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--p-value);
+}
+
+.ajuda {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--p-caption);
+}
+
+.erro {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--fg-critical);
+}
+
+/* Carregadores para marcar: quadros grandes de tocar */
+.unidades {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: var(--radius-base);
+}
+
+.unidades:focus {
+  outline: none;
+}
+
+.unidades[data-invalid='true'] .unidade:not(.unidadeOn) {
+  border-color: color-mix(in srgb, var(--fg-critical) 45%, var(--pv-line));
+}
+
+.unidade {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 12px;
+  border: 1px solid var(--pv-line);
+  border-radius: var(--radius-base);
+  background: var(--p-card);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.unidade:hover {
+  border-color: color-mix(in srgb, var(--border-primary) 50%, var(--pv-line));
+}
+
+.unidadeOn,
+.unidadeOn:hover {
+  border-color: var(--border-primary);
+  background: color-mix(in srgb, var(--bg-primary) 7%, var(--p-card));
+}
+
+.caixa {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-background);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.caixaOn {
+  border-color: var(--border-primary);
+  background: var(--bg-primary);
+}
+
+.unidadeOnde {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--pv-sunken);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--p-text);
+  white-space: nowrap;
+}
+
+.contatoTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contatoTexto b {
+  font-weight: 600;
+  color: var(--p-value);
+}
+
+.contatoCampos {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+  animation: abrir 0.2s ease-out;
+}
+
+.editorAcoes {
+  display: grid;
+  padding-top: 2px;
+}
+
+.editorAcoes > button,
+.enviarAcoes > button,
+.enviadoAcoes > button:first-child {
+  flex: none;
+  width: 100%;
+}
+
+/* Adicionar ponto: tracejado, para não parecer um ponto já criado */
+.adicionar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  border: 1px dashed color-mix(in srgb, var(--border-primary) 60%, var(--pv-line));
+  border-radius: var(--radius-base);
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--fg-primary);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.adicionar:hover {
+  background: color-mix(in srgb, var(--bg-primary) 6%, transparent);
+}
+
+.mais {
+  position: relative;
+  width: 12px;
+  height: 12px;
+}
+
+.mais::before,
+.mais::after {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  content: '';
+}
+
+.mais::after {
+  transform: rotate(90deg);
+}
+
+/* ---------- Enviar ---------- */
+.enviar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: var(--segmento);
+}
+
+.pendencias,
+.pronto {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--p-text);
+}
+
+.pendencias b {
+  font-weight: 700;
+  color: var(--fg-warning);
+}
+
+.pronto {
+  align-items: center;
+  font-weight: 600;
+  color: var(--p-value);
+}
+
+.enviarAcoes {
+  display: grid;
+  gap: 10px;
+}
+
+.enviarAcoesDupla {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* ---------- Pontos enviados ---------- */
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--radius-base);
+  background: var(--pv-sunken);
+}
+
+.info .num {
+  background: var(--p-card);
+}
+
+.infoTopo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.infoTitulo {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--p-value);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: var(--p-card);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--p-text);
+}
+
+.chips b {
+  font-weight: 700;
+  color: var(--p-value);
+}
+
+.infoLinha {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--p-text);
+}
+
+.infoLinha > :first-child {
+  flex: none;
+  margin-top: 2px;
+  background-color: var(--p-caption);
+}
+
+.enviadoAcoes {
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.btnIcone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btnIcone > :first-child {
+  background-color: currentColor;
+}
+
+@keyframes abrir {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (min-width: 768px) {
+  .editor {
+    padding: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor,
+  .contatoCampos {
+    animation: none;
+  }
+}
+
+.valor {
+  flex: none;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--p-value);
+  font-variant-numeric: tabular-nums;
+}
+
+.contatoCheck [aria-hidden='true'] {
+  pointer-events: none;
+}

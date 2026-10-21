@@ -134,6 +134,13 @@ Mesmas informações e regras (`data.ts`), com o visual da proposta final do flu
 - **O que é clicável tem borda e indicador** (chevron em círculo, "Abrir" com seta, botão "Copiar"). Informação fica em texto ou em fundo tingido, sem caixa dentro de caixa.
 - **Recusar** pede o CPF do investidor (precisa bater com o da proposta, `cpfConfere`) e o motivo por escrito, com sugestões para preencher.
 - **Detalhes:** investidor e licenciada em cards recolhíveis, como na proposta final, e logo abaixo o card de compartilhar (WhatsApp, e-mail e link em botões redondos), no mesmo formato e altura.
+- **Compra com vários carregadores:** o exemplo traz um de cada modelo (Mob 7 kW AC, Mob Fast 7 + 40 kW AC + DC e Mob Ultra Fast 80 kW DC), total de R$ 199.894, entrada de R$ 9.997 e 4 parcelas. A proposta lista os três com o valor de cada um. Os nomes Mob valem só nesta versão.
+- **Distribuir os carregadores em pontos** (`Vistoria.tsx`), antes da vistoria. Cenários `distribuir` e `pontos` no seletor:
+  - Com a entrada paga, o próximo passo é "Distribua seus 3 carregadores". Todos começam no Ponto 1; os chips no alto mostram onde cada carregador está.
+  - Cada ponto tem apelido (opcional), os carregadores marcados em quadros (marcar um que está em outro ponto traz ele para cá), o endereço pelo CEP (com número, complemento e mapa) e o contato no local (o da proposta ou outro: nome, telefone, e-mail e CPF/CNPJ opcionais).
+  - Só um ponto fica aberto; fechado, vira um resumo. "Adicionar ponto" já leva os carregadores sem ponto. Antes de enviar, a página diz o que falta.
+  - Enviados, os pontos aparecem com os carregadores, o endereço e o contato, e dá para editar até a vistoria ser agendada. Depois, cada ponto tem a sua data e o seu status, e o aditivo diz em qual ponto foi pedido.
+  - Regras em `data.ts` (`errosPonto`, `pendencias`, `alternarUnidade`, `enviarPontos`), testadas em `pontos.test.ts`.
 
 ## Oferta da live (`#cadastro-simplificado`)
 

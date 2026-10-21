@@ -1,109 +1,19 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { ICONS } from '../../assets'
 import { Button } from '../../components/ui/Button'
 import { Checkbox } from '../../components/ui/Controls'
 import { Icon } from '../../components/ui/Icon'
 import { cn } from '../../lib/cn'
 import { moneyCents } from '../../lib/format'
-import { dataCurta, dataLonga, diasEntre, documentosEntrega, emDias, type DocEntrega, type Parcela, type Proposta } from '../data'
+import { dataCurta, dataLonga, diasEntre, documentosEntrega, emDias, juntarNomes, type DocEntrega, type Parcela, type Proposta, type Unidade } from '../data'
+import { Aviso, Cabecalho, LinhaDoc, Linhas, Relogio, Secao, type Tom } from './Blocos'
+import { Frota } from './Vistoria'
 import styles from './Proposta.module.css'
 
 /*
  * Folhas das etapas (versão 2). Regra visual: só o que é clicável tem borda e um indicador
  * (chevron em círculo, "Abrir" com seta, botão "Copiar"). Informação fica em texto ou em fundo tingido, sem caixa dentro de caixa.
  */
-
-type Tom = 'ok' | 'acao' | 'espera' | 'erro'
-
-function Cabecalho({ titulo, status, tom, children }: { titulo: string; status: string; tom: Tom; children?: ReactNode }) {
-  return (
-    <header className={styles.folhaHead}>
-      <div className={styles.folhaHeadRow}>
-        <h3 className={styles.folhaTitulo}>{titulo}</h3>
-        <span className={cn(styles.pill, styles[`pill_${tom}`])}>{status}</span>
-      </div>
-      {children ? <p className={styles.folhaLead}>{children}</p> : null}
-    </header>
-  )
-}
-
-function Secao({ titulo, children, nota }: { titulo: string; children: ReactNode; nota?: ReactNode }) {
-  return (
-    <section className={styles.secao}>
-      <h4 className={styles.secaoTitulo}>{titulo}</h4>
-      {children}
-      {nota ? <p className={styles.nota}>{nota}</p> : null}
-    </section>
-  )
-}
-
-function Linhas({ itens }: { itens: [string, ReactNode][] }) {
-  return (
-    <dl className={styles.linhas}>
-      {itens.map(([k, v]) => (
-        <div key={k} className={styles.linha}>
-          <dt>{k}</dt>
-          <dd>{v}</dd>
-        </div>
-      ))}
-    </dl>
-  )
-}
-
-/** Aviso informativo (não clicável): fundo tingido, ícone e texto */
-function Aviso({ titulo, children, icone = 'cadeado', acao }: { titulo: string; children: ReactNode; icone?: 'cadeado' | 'relogio'; acao?: ReactNode }) {
-  return (
-    <div className={styles.aviso}>
-      <span className={styles.avisoIcone} aria-hidden>
-        {icone === 'cadeado' ? <Cadeado /> : <Relogio />}
-      </span>
-      <div className={styles.avisoTexto}>
-        <p className={styles.avisoTitulo}>{titulo}</p>
-        <p>{children}</p>
-      </div>
-      {acao ? <div className={styles.avisoAcao}>{acao}</div> : null}
-    </div>
-  )
-}
-
-function Cadeado() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="11" width="16" height="10" rx="2.5" />
-      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-    </svg>
-  )
-}
-
-function Relogio() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
-    </svg>
-  )
-}
-
-/** Linha clicável que abre um documento: borda, nome e "Abrir" com seta */
-function LinhaDoc({ titulo, detalhe, onClick, desabilitado }: { titulo: string; detalhe: string; onClick: () => void; desabilitado?: boolean }) {
-  return (
-    <button type="button" className={styles.linhaDoc} onClick={onClick} disabled={desabilitado}>
-      <span className={styles.docIcone} aria-hidden>
-        <Icon src={ICONS.fileDollar} size={16} color={desabilitado ? 'var(--fg-muted)' : 'var(--fg-primary)'} />
-      </span>
-      <span className={styles.linhaDocTexto}>
-        <span className={styles.linhaDocTitulo}>{titulo}</span>
-        <span className={styles.linhaDocDetalhe}>{detalhe}</span>
-      </span>
-      {desabilitado ? null : (
-        <span className={styles.abrir}>
-          Abrir
-          <Icon src={ICONS.arrowRight} size={14} color="var(--fg-primary)" />
-        </span>
-      )}
-    </button>
-  )
-}
 
 /* ================= Proposta ================= */
 
@@ -123,6 +33,22 @@ export function FolhaProposta({ p, onAceitar, onRecusar }: { p: Proposta; onAcei
         O que você contrata, onde fica e como paga. Ela entra no contrato como Anexo I.
       </Cabecalho>
 
+      {p.unidades ? (
+        <Secao titulo={`Seus ${p.unidades.length} eletropostos`}>
+          <Frota unidades={p.unidades} comValor />
+          <p className={styles.nota}>Incluso em cada eletroposto:</p>
+          <ul className={styles.inclusos} aria-label="Incluso em cada eletroposto">
+            {p.inclusos.map((item) => (
+              <li key={item}>
+                <span className={styles.tick} aria-hidden>
+                  <Icon src={ICONS.checkBold} size={8} color="#fff" />
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </Secao>
+      ) : (
       <Secao titulo="Produto">
         {p.carregadores.map((c, i) => (
           <div key={i} className={styles.produto}>
@@ -164,15 +90,24 @@ export function FolhaProposta({ p, onAceitar, onRecusar }: { p: Proposta; onAcei
           </div>
         ))}
       </Secao>
+      )}
 
       <Secao titulo="Instalação" nota="Se a vistoria encontrar outra distância ou outro padrão, o ajuste vem como aditivo para você assinar aqui.">
         <Linhas
-          itens={[
-            ['Endereço', p.local.endereco],
-            ['Cidade', `${p.local.cidade}/${p.local.uf}`],
-            ['Padrão de entrada', p.local.padrao],
-            ['Cabeamento', p.local.distancia],
-          ]}
+          itens={
+            p.unidades
+              ? [
+                  ['Cidade', `${p.local.cidade}/${p.local.uf}`],
+                  ['Locais', 'Você indica os pontos depois da entrada'],
+                  ['Cabeamento', p.local.distancia],
+                ]
+              : [
+                  ['Endereço', p.local.endereco],
+                  ['Cidade', `${p.local.cidade}/${p.local.uf}`],
+                  ['Padrão de entrada', p.local.padrao],
+                  ['Cabeamento', p.local.distancia],
+                ]
+          }
         />
       </Secao>
 
@@ -309,9 +244,14 @@ function Expandir() {
   )
 }
 
+/** "Mob 7 kW AC, Mob Fast 7 + 40 kW AC + DC e Mob Ultra Fast 80 kW DC" */
+const descreverUnidades = (us: Unidade[]) => juntarNomes(us.map((u) => `${u.nome} ${u.potencia} ${u.corrente}`))
+
 export function ContratoTexto({ p }: { p: Proposta }) {
   const [entrada, ...demais] = p.pagamento.parcelas
   const c = p.carregadores[0]
+  const us = p.unidades
+  const pontos = p.pontos?.length ? p.pontos : null
   return (
     <article className={styles.texto}>
       <p className={styles.textoAviso}>Texto de exemplo para a prévia.</p>
@@ -321,10 +261,18 @@ export function ContratoTexto({ p }: { p: Proposta }) {
         eletroposto.
       </p>
       <h6>1. Objeto</h6>
-      <p>
-        Instalação e operação de {c.quantidade} eletroposto {c.modelo} ({c.potencia}, {c.conectores} conectores) em {p.local.endereco},{' '}
-        {p.local.cidade}/{p.local.uf}, conforme a proposta nº {p.numero} (Anexo I).
-      </p>
+      {us ? (
+        <p>
+          Instalação e operação de {us.length} eletropostos ({descreverUnidades(us)}) nos pontos indicados pelo investidor em {p.local.cidade}/{p.local.uf}
+          {pontos ? `: ${pontos.map((pt, i) => `${pt.nome.trim() || `Ponto ${i + 1}`} (${pt.endereco.logradouro}, ${pt.endereco.numero})`).join('; ')}` : ''}, conforme a
+          proposta nº {p.numero} (Anexo I).
+        </p>
+      ) : (
+        <p>
+          Instalação e operação de {c.quantidade} eletroposto {c.modelo} ({c.potencia}, {c.conectores} conectores) em {p.local.endereco},{' '}
+          {p.local.cidade}/{p.local.uf}, conforme a proposta nº {p.numero} (Anexo I).
+        </p>
+      )}
       <h6>2. Preço e pagamento</h6>
       <p>
         Valor total de {moneyCents(p.pagamento.total)}: entrada de {moneyCents(entrada.valor)} em até 3 dias da assinatura e {demais.length} parcelas de{' '}
@@ -332,7 +280,7 @@ export function ContratoTexto({ p }: { p: Proposta }) {
       </p>
       <h6>3. Vistoria e aditivos</h6>
       <p>
-        Com a entrada paga, a iGreen faz a vistoria técnica. Mudanças de escopo, como cabeamento além do previsto, são formalizadas em aditivo, assinado
+        Com a entrada paga{us ? ' e os pontos indicados' : ''}, a iGreen faz a vistoria técnica{us ? ' de cada ponto' : ''}. Mudanças de escopo, como cabeamento além do previsto, são formalizadas em aditivo, assinado
         eletronicamente nesta mesma página.
       </p>
       <h6>4. Instalação e entrega</h6>
@@ -343,7 +291,15 @@ export function ContratoTexto({ p }: { p: Proposta }) {
       </p>
       <h6>Anexo I: proposta nº {p.numero}</h6>
       <p>
-        {c.quantidade}× {c.modelo}, {c.potencia}. Local: {p.local.cidade}/{p.local.uf}. Padrão de entrada {p.local.padrao}, cabeamento {p.local.distancia}.
+        {us ? (
+          <>
+            {us.length} eletropostos: {juntarNomes(us.map((u) => u.nome))}. Cidade: {p.local.cidade}/{p.local.uf}. Cabeamento {p.local.distancia}.
+          </>
+        ) : (
+          <>
+            {c.quantidade}× {c.modelo}, {c.potencia}. Local: {p.local.cidade}/{p.local.uf}. Padrão de entrada {p.local.padrao}, cabeamento {p.local.distancia}.
+          </>
+        )}{' '}
         Emitida em {dataLonga(p.emitidaEm)}, válida até {dataLonga(p.validaAte)}.
       </p>
     </article>
@@ -533,81 +489,6 @@ function Codigo({ rotulo, valor, onCopiar }: { rotulo: string; valor: string; on
         </button>
       </div>
     </div>
-  )
-}
-
-/* ================= Vistoria ================= */
-
-export function FolhaVistoria({ p, onAditivo, onAssinarAditivo }: { p: Proposta; onAditivo: () => void; onAssinarAditivo: () => void }) {
-  const [li, setLi] = useState(false)
-  const v = p.vistoria
-  const ad = v.aditivo
-
-  if (v.status === 'aguardando') {
-    return (
-      <>
-        <Cabecalho titulo="Vistoria técnica" status="Depois da entrada" tom="espera" />
-        <Aviso titulo="Agendada assim que a entrada for paga">Um técnico iGreen confere o local e combina a data com você pelo WhatsApp.</Aviso>
-        <OQueConfere />
-      </>
-    )
-  }
-  if (v.status === 'agendada') {
-    return (
-      <>
-        <Cabecalho titulo="Vistoria técnica" status={`Em ${dataCurta(v.data!)}`} tom="ok">
-          Um técnico iGreen vai até o local em {dataLonga(v.data!)}.
-        </Cabecalho>
-        <OQueConfere />
-      </>
-    )
-  }
-  return (
-    <>
-      <Cabecalho
-        titulo="Vistoria técnica"
-        status={ad?.status === 'aguardando' ? 'Aditivo para assinar' : `Feita em ${dataCurta(v.data!)}`}
-        tom={ad?.status === 'aguardando' ? 'acao' : 'ok'}
-      >
-        Vistoria feita em {dataLonga(v.data!)}. O laudo fica no envelope de entrega.
-      </Cabecalho>
-      {ad ? (
-        <Secao titulo={`Aditivo nº ${ad.numero}: ${ad.titulo}`}>
-          <p className={styles.parcelaTexto}>{ad.motivo}</p>
-          <Linhas
-            itens={[
-              ['Valor', `${moneyCents(ad.valor)}, somado à próxima parcela`],
-              ['Situação', ad.status === 'assinado' ? `Assinado em ${dataLonga(ad.assinadoEm!)}` : 'Aguardando sua assinatura'],
-            ]}
-          />
-          <LinhaDoc titulo={`Aditivo nº ${ad.numero}`} detalhe="Leia antes de assinar" onClick={onAditivo} />
-          {ad.status === 'aguardando' ? (
-            <div className={styles.assinar}>
-              <Checkbox id="v3-li-aditivo" checked={li} onChange={setLi}>
-                Li o aditivo nº {ad.numero} e concordo.
-              </Checkbox>
-              <Button onClick={onAssinarAditivo} disabled={!li}>
-                Assinar aditivo
-              </Button>
-            </div>
-          ) : null}
-        </Secao>
-      ) : (
-        <p className={styles.parcelaTexto}>Tudo conforme a proposta. Nenhum aditivo foi necessário.</p>
-      )}
-    </>
-  )
-}
-
-function OQueConfere() {
-  return (
-    <Secao titulo="O que a vistoria confere">
-      <ul className={styles.marcadores}>
-        {['Padrão de entrada e disjuntor', 'Distância do padrão até a vaga', 'Piso, cobertura e sinalização da vaga'].map((t) => (
-          <li key={t}>{t}</li>
-        ))}
-      </ul>
-    </Secao>
   )
 }
 

@@ -13,9 +13,10 @@ import { maskCpf, moneyCents } from '../../lib/format'
 import { useTheme } from '../../lib/theme'
 import { useMediaQuery } from '../../lib/useMediaQuery'
 import {
-  CENARIOS,
+  CENARIOS_V3,
   ETAPAS,
   aceitar,
+  agendarVistorias,
   aceitarEntrega,
   assinarAditivo,
   assinarContrato,
@@ -23,10 +24,14 @@ import {
   cpfConfere,
   dataCurta,
   diasEntre,
+  enderecoCurto,
+  enviarPontos,
   etapaEmFoco,
   etapas,
   isCenario,
+  juntarNomes,
   montarProposta,
+  nomePonto,
   pagar,
   proximoPasso,
   recusar,
@@ -36,19 +41,21 @@ import {
   type Passo,
   type Proposta,
 } from '../data'
-import { ContratoTexto, FolhaContrato, FolhaEntrega, FolhaInstalacao, FolhaPagamento, FolhaProposta, FolhaVistoria } from './Folhas'
+import { ContratoTexto, FolhaContrato, FolhaEntrega, FolhaInstalacao, FolhaPagamento, FolhaProposta } from './Folhas'
+import { FolhaVistoria } from './Vistoria'
 import { Trilho } from './Trilho'
 import styles from './Proposta.module.css'
 
 /*
  * Proposta gerada, versão 2 do modelo novo (só local, dados de exemplo). Endereço: #proposta-v3/<número>?cenario=<etapa>.
  * Segue o visual da proposta final do fluxo: topo institucional acima do carro, card da proposta sobre o carro,
- * andamento e detalhes em cards (investidor, licenciada e compartilhar). As informações são as mesmas do primeiro modelo (#proposta-v2).
+ * andamento e detalhes em cards (investidor, licenciada e compartilhar). As regras são as do primeiro modelo (#proposta-v2), com a compra
+ * de vários carregadores (Mob, Mob Fast e Mob Ultra Fast) que a pessoa distribui em pontos antes da vistoria.
  */
 
 const lerCenario = (): Cenario => {
   const c = new URLSearchParams(window.location.hash.split('?')[1] ?? '').get('cenario')
-  return isCenario(c) ? c : 'nova'
+  return isCenario(c, CENARIOS_V3) ? c : 'nova'
 }
 
 const parcelaEmFoco = (p: Proposta) => p.pagamento.parcelas.find((x) => x.status === 'vencida' || x.status === 'aberta')?.id ?? null
@@ -62,7 +69,7 @@ type Detalhe = 'investidor' | 'licenciado'
 export function PropostaV3() {
   const id = useId()
   const [cenario, setCenario] = useState<Cenario>(lerCenario)
-  const [p, setP] = useState(() => montarProposta(cenario))
+  const [p, setP] = useState(() => montarProposta(cenario, new Date(), 'v3'))
   const lista = useMemo(() => etapas(p), [p])
   const passo = useMemo(() => proximoPasso(p), [p])
   const [sel, setSel] = useState<EtapaId>(() => etapaEmFoco(etapas(p)))
@@ -74,6 +81,7 @@ export function PropostaV3() {
   const principalRef = useRef<HTMLElement>(null)
   const andamentoRef = useRef<HTMLElement>(null)
   const [principalVisivel, setPrincipalVisivel] = useState(true)
+  const [andamentoVisivel, setAndamentoVisivel] = useState(false)
 
   // Vídeo do carro como na proposta final (imagem parada em rede ruim ou com movimento reduzido)
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
@@ -103,8 +111,17 @@ export function PropostaV3() {
     return () => io.disconnect()
   }, [])
 
+  // Com a folha da etapa do próximo passo na tela, a ação já está nela: a barra fixa sai para não cobrir o formulário
+  useEffect(() => {
+    const el = andamentoRef.current
+    if (!el) return
+    const io = new IntersectionObserver(([e]) => setAndamentoVisivel(e.isIntersecting), { threshold: 0 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   const aplicarCenario = useCallback((c: Cenario) => {
-    const novo = montarProposta(c)
+    const novo = montarProposta(c, new Date(), 'v3')
     setCenario(c)
     setP(novo)
     setSel(etapaEmFoco(etapas(novo)))
@@ -167,6 +184,7 @@ export function PropostaV3() {
 
   const agir = (a: NonNullable<Passo['acao']>) => {
     if (a.tipo === 'aceitar') return onAceitar()
+    if (a.tipo === 'distribuir') return irPara('vistoria')
     if (a.tipo === 'whatsapp') return void window.open(whatsapp, '_blank', 'noopener')
     if (a.tipo === 'pagar' && a.parcela) setParcelaAberta(a.parcela)
     irPara(passo.etapa)
@@ -201,6 +219,15 @@ export function PropostaV3() {
           setP(assinarAditivo(p))
           setToast('Aditivo assinado. A instalação foi agendada.')
         }}
+        onEnviarPontos={(pontos) => {
+          const enviada = p.vistoria.status === 'agendando'
+          setP(enviarPontos(p, pontos))
+          setToast(enviada ? 'Pontos atualizados.' : 'Pontos enviados. Vamos agendar a vistoria de cada um.')
+        }}
+        onSimularAgendamento={() => {
+          setP(agendarVistorias(p))
+          setToast('Vistorias agendadas. Avisamos você pelo WhatsApp.')
+        }}
       />
     ),
     instalacao: <FolhaInstalacao p={p} />,
@@ -210,7 +237,7 @@ export function PropostaV3() {
         onDoc={abrirDocEntrega}
         onAceite={() => {
           setP(aceitarEntrega(p))
-          setToast('Aceite registrado. Seu eletroposto está ativo.')
+          setToast(`Aceite registrado. ${(p.unidades?.length ?? 1) > 1 ? 'Seus eletropostos estão ativos' : 'Seu eletroposto está ativo'}.`)
         }}
       />
     ),
@@ -236,7 +263,7 @@ export function PropostaV3() {
       <div className={styles.demo}>
         <label htmlFor={`${id}-cenario`}>Prévia local. Ver a proposta em:</label>
         <select id={`${id}-cenario`} value={cenario} onChange={(e) => trocarCenario(e.target.value as Cenario)}>
-          {CENARIOS.map((c) => (
+          {CENARIOS_V3.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
             </option>
@@ -281,7 +308,9 @@ export function PropostaV3() {
             {p.produto.nome}
           </h2>
           <p className={styles.principalLocal}>
-            {p.carregadores[0].quantidade} eletroposto de {p.produto.potencia} em {p.local.cidade}/{p.local.uf}
+            {p.unidades
+              ? `${juntarNomes(p.unidades.map((u) => u.nome))} em ${p.local.cidade}/${p.local.uf}`
+              : `${p.carregadores[0].quantidade} eletroposto de ${p.produto.potencia} em ${p.local.cidade}/${p.local.uf}`}
           </p>
           <div className={styles.badges}>
             <span className={cn(styles.badge, styles[`badge_${situacao.tom}`])}>
@@ -401,7 +430,7 @@ export function PropostaV3() {
         </section>
       </div>
 
-      {(aguardando || passo.acao) && !principalVisivel ? (
+      {(aguardando || passo.acao) && !principalVisivel && !(andamentoVisivel && sel === passo.etapa) ? (
         <div className={styles.barra}>
           <p className={styles.barraTexto}>{passo.titulo}</p>
           {aguardando ? (
@@ -586,12 +615,21 @@ function RecusarModal({ open, onClose, onConfirmar, p }: { open: boolean; onClos
 function AditivoTexto({ p }: { p: Proposta }) {
   const ad = p.vistoria.aditivo
   if (!ad) return null
+  const i = p.pontos?.findIndex((pt) => pt.id === ad.ponto) ?? -1
   return (
     <article className={styles.texto}>
       <p className={styles.textoAviso}>Texto de exemplo para a prévia.</p>
       <h5>
         Aditivo nº {ad.numero} ao contrato nº {p.numero}
       </h5>
+      {p.pontos && i >= 0 ? (
+        <>
+          <h6>Ponto</h6>
+          <p>
+            {nomePonto(p.pontos[i], i)}: {enderecoCurto(p.pontos[i].endereco)}.
+          </p>
+        </>
+      ) : null}
       <h6>Motivo</h6>
       <p>{ad.motivo}</p>
       <h6>Alteração</h6>
@@ -607,14 +645,21 @@ function DocExemplo({ nome, p }: { nome: string; p: Proposta }) {
     <article className={styles.texto}>
       <p className={styles.textoAviso}>Documento de exemplo para a prévia.</p>
       <h5>{nome}</h5>
-      <p>
-        Eletroposto {p.produto.nome} ({p.produto.potencia}) em {p.local.endereco}, {p.local.cidade}/{p.local.uf}. Proposta nº {p.numero}.
-      </p>
+      {p.unidades && p.pontos?.length ? (
+        <p>
+          {p.produto.nome} ({juntarNomes(p.unidades.map((u) => u.nome))}) em {p.pontos.length} pontos:{' '}
+          {p.pontos.map((pt, i) => `${nomePonto(pt, i)} (${enderecoCurto(pt.endereco)})`).join('; ')}. Proposta nº {p.numero}.
+        </p>
+      ) : (
+        <p>
+          Eletroposto {p.produto.nome} ({p.produto.potencia}) em {p.local.endereco}, {p.local.cidade}/{p.local.uf}. Proposta nº {p.numero}.
+        </p>
+      )}
       <ul className={styles.marcadores}>
-        <li>Padrão de entrada {p.local.padrao} conferido</li>
+        <li>{p.unidades ? 'Padrão de entrada de cada ponto conferido' : `Padrão de entrada ${p.local.padrao} conferido`}</li>
         <li>Cabeamento instalado e testado</li>
-        <li>Carregador ativado na plataforma iGreen</li>
-        <li>Vaga pintada e sinalizada</li>
+        <li>{p.unidades ? 'Carregadores ativados' : 'Carregador ativado'} na plataforma iGreen</li>
+        <li>{p.unidades ? 'Vagas pintadas e sinalizadas' : 'Vaga pintada e sinalizada'}</li>
       </ul>
     </article>
   )

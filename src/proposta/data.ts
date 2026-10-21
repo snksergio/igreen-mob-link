@@ -4,9 +4,13 @@
  * Nomes e documentos são fictícios.
  */
 
-export type Cenario = 'nova' | 'contrato' | 'pagamento' | 'vistoria' | 'instalacao' | 'entrega' | 'recusada'
+import type { Address } from '../services/address'
+import { onlyDigits } from '../lib/format'
+import { isValidCep, isValidCnpj, isValidCpf, isValidEmail, isValidPhone } from '../lib/validators'
 
-/** Cenários da prévia (seletor de demonstração e `?cenario=` no endereço) */
+export type Cenario = 'nova' | 'contrato' | 'pagamento' | 'distribuir' | 'pontos' | 'vistoria' | 'instalacao' | 'entrega' | 'recusada'
+
+/** Cenários da prévia (seletor de demonstração e `?cenario=` no endereço) do primeiro modelo (#proposta-v2) */
 export const CENARIOS: { value: Cenario; label: string }[] = [
   { value: 'nova', label: 'Proposta enviada' },
   { value: 'contrato', label: 'Aceita, contrato para assinar' },
@@ -17,7 +21,15 @@ export const CENARIOS: { value: Cenario; label: string }[] = [
   { value: 'recusada', label: 'Proposta recusada' },
 ]
 
-export const isCenario = (v: string | null): v is Cenario => CENARIOS.some((c) => c.value === v)
+/** Versão 2 (#proposta-v3): compra com vários carregadores, distribuídos em pontos antes da vistoria */
+export const CENARIOS_V3: { value: Cenario; label: string }[] = [
+  ...CENARIOS.slice(0, 3),
+  { value: 'distribuir', label: 'Entrada paga, distribuir carregadores' },
+  { value: 'pontos', label: 'Pontos enviados, vistoria em agendamento' },
+  ...CENARIOS.slice(3),
+]
+
+export const isCenario = (v: string | null, lista = CENARIOS): v is Cenario => lista.some((c) => c.value === v)
 
 export type EtapaId = 'proposta' | 'contrato' | 'pagamento' | 'vistoria' | 'instalacao' | 'entrega'
 export const ETAPAS: EtapaId[] = ['proposta', 'contrato', 'pagamento', 'vistoria', 'instalacao', 'entrega']
@@ -40,7 +52,26 @@ export type Parcela = {
   boleto?: string
 }
 
-export type Aditivo = { numero: number; titulo: string; motivo: string; valor: number; status: 'aguardando' | 'assinado'; assinadoEm?: Date }
+/** `ponto`: em qual ponto a vistoria pediu o aditivo (versão com pontos) */
+export type Aditivo = { numero: number; titulo: string; motivo: string; valor: number; status: 'aguardando' | 'assinado'; assinadoEm?: Date; ponto?: string }
+
+/** Carregador comprado: vem da compra e é distribuído num ponto (local de instalação) */
+export type Unidade = { id: string; modelo: 'mob' | 'fast' | 'ultra'; nome: string; potencia: string; corrente: string; valor: number }
+
+export type ContatoPonto = { nome: string; telefone: string; email: string; documento: string }
+
+/**
+ * Ponto: um local de instalação com um ou mais carregadores. `contato: null` usa o contato da proposta.
+ * Cada ponto tem a sua vistoria.
+ */
+export type Ponto = {
+  id: string
+  nome: string
+  unidades: string[]
+  endereco: Address
+  contato: ContatoPonto | null
+  vistoria?: { status: 'agendando' | 'agendada' | 'concluida'; data?: Date }
+}
 
 export type Proposta = {
   numero: string
@@ -54,11 +85,18 @@ export type Proposta = {
   condicoes: { participacao: string; taxa: string }
   pagamento: { total: number; parcelas: Parcela[] }
   contrato: { status: 'bloqueado' | 'aguardando' | 'assinado'; assinadoEm?: Date }
-  vistoria: { status: 'aguardando' | 'agendada' | 'concluida'; data?: Date; aditivo?: Aditivo }
+  /**
+   * `distribuir`: entrada paga, falta dizer onde fica cada carregador; `agendando`: pontos enviados, datas a combinar
+   * (os dois só existem na versão com pontos)
+   */
+  vistoria: { status: 'aguardando' | 'distribuir' | 'agendando' | 'agendada' | 'concluida'; data?: Date; aditivo?: Aditivo }
   obra: { status: 'aguardando' | 'agendada' | 'concluida'; data?: Date }
   entrega: { status: 'aguardando' | 'pronta' | 'aceita'; aceitaEm?: Date }
-  investidor: { nome: string; documento: string; email: string }
+  investidor: { nome: string; documento: string; email: string; telefone: string }
   licenciado: { nome: string; telefone: string; whatsapp: string }
+  /** versão com pontos (#proposta-v3): carregadores comprados e os locais onde cada um vai */
+  unidades?: Unidade[]
+  pontos?: Ponto[]
 }
 
 /* ---------------- Datas ---------------- */
@@ -102,18 +140,53 @@ function gerarCobrancas(parcelas: Parcela[], hoje: Date) {
   })
 }
 
+/** Compra de exemplo da versão com pontos: um carregador de cada modelo */
+export const UNIDADES_EXEMPLO: Unidade[] = [
+  { id: 'u1', modelo: 'mob', nome: 'Mob', potencia: '7 kW', corrente: 'AC', valor: 9_997 },
+  { id: 'u2', modelo: 'fast', nome: 'Mob Fast', potencia: '7 + 40 kW', corrente: 'AC + DC', valor: 59_997 },
+  { id: 'u3', modelo: 'ultra', nome: 'Mob Ultra Fast', potencia: '80 kW', corrente: 'DC', valor: 129_900 },
+]
+
+const enderecoVazio = (): Address => ({ cep: '', logradouro: '', bairro: '', cidade: '', uf: '', numero: '', complemento: '' })
+
+/** Começo da distribuição: todos os carregadores no Ponto 1, sem endereço e com o contato da proposta */
+export const pontoInicial = (unidades: Unidade[]): Ponto => ({ id: 'pt1', nome: '', unidades: unidades.map((u) => u.id), endereco: enderecoVazio(), contato: null })
+
+/** Pontos já enviados no exemplo: a casa com o Mob e um posto com o Fast e o Ultra Fast */
+const pontosExemplo = (): Ponto[] => [
+  {
+    id: 'pt1',
+    nome: 'Casa',
+    unidades: ['u1'],
+    endereco: { cep: '38400-100', logradouro: 'Rua Tiradentes', bairro: 'Centro', cidade: 'Uberlândia', uf: 'MG', numero: '250', complemento: '' },
+    contato: null,
+  },
+  {
+    id: 'pt2',
+    nome: 'Posto da avenida',
+    unidades: ['u2', 'u3'],
+    endereco: { cep: '38408-100', logradouro: 'Avenida Rondon Pacheco', bairro: 'Tibery', cidade: 'Uberlândia', uf: 'MG', numero: '4600', complemento: 'Loja 2' },
+    contato: { nome: 'Marcos Andrade', telefone: '(34) 99123-4567', email: 'marcos@exemplo.com', documento: '' },
+  },
+]
+
 /**
  * Exemplo de proposta em cada cenário. Entrada fixa de R$ 9.997 na assinatura e o restante em 4 parcelas mensais;
  * cada cobrança é gerada 10 dias antes do vencimento.
+ * `versao: 'v3'`: compra com 3 carregadores (Mob, Mob Fast e Mob Ultra Fast) que a pessoa distribui em pontos depois da entrada.
  */
-export function montarProposta(cenario: Cenario, hoje = new Date()): Proposta {
+export function montarProposta(cenario: Cenario, hoje = new Date(), versao: 'v2' | 'v3' = 'v2'): Proposta {
+  const v3 = versao === 'v3'
+  // o primeiro modelo não tem a etapa de distribuição: os cenários dela viram "entrada em aberto"
+  if (!v3 && (cenario === 'distribuir' || cenario === 'pontos')) cenario = 'pagamento'
   const d = (n: number) => somaDias(hoje, n)
-  const total = 129_900
+  const unidades = v3 ? UNIDADES_EXEMPLO : undefined
+  const total = unidades ? unidades.reduce((s, u) => s + u.valor, 0) : 129_900
   const entrada = 9_997
   const parcela = (total - entrada) / 4
 
   // dia da assinatura em cada cenário (undefined = ainda não assinado)
-  const assinatura: Partial<Record<Cenario, number>> = { pagamento: -1, vistoria: -12, instalacao: -70, entrega: -118 }
+  const assinatura: Partial<Record<Cenario, number>> = { pagamento: -1, distribuir: -4, pontos: -6, vistoria: -12, instalacao: -70, entrega: -118 }
   const assinou = assinatura[cenario]
 
   const parcelas: Parcela[] = [
@@ -131,6 +204,8 @@ export function montarProposta(cenario: Cenario, hoje = new Date()): Proposta {
     const paga = (i: number, dia: number, com: Parcela['pagaCom'] = 'Pix') => Object.assign(parcelas[i], { status: 'paga', pagaEm: d(dia), pagaCom: com })
     const emAberto = (i: number) => Object.assign(parcelas[i], { status: 'aberta', pix: PIX, boleto: BOLETO })
     if (cenario === 'pagamento') emAberto(0)
+    if (cenario === 'distribuir') paga(0, -2)
+    if (cenario === 'pontos') paga(0, -4)
     if (cenario === 'vistoria') paga(0, -10)
     if (cenario === 'instalacao') {
       paga(0, -68)
@@ -156,36 +231,141 @@ export function montarProposta(cenario: Cenario, hoje = new Date()): Proposta {
   const aditivo: Aditivo = {
     numero: 1,
     titulo: 'Cabeamento adicional de 10 m',
-    motivo: 'Na vistoria, o padrão de entrada ficou a 20 m da vaga. A proposta inclui até 10 m de cabeamento.',
+    motivo: v3
+      ? 'No Posto da avenida, o padrão de entrada ficou a 20 m das vagas. A proposta inclui até 10 m de cabeamento por ponto.'
+      : 'Na vistoria, o padrão de entrada ficou a 20 m da vaga. A proposta inclui até 10 m de cabeamento.',
     valor: 1_850,
     status: cenario === 'vistoria' ? 'aguardando' : 'assinado',
     assinadoEm: cenario === 'vistoria' ? undefined : d((assinou ?? 0) + 12),
+    ...(v3 ? { ponto: 'pt2' } : null),
   }
+
+  const vistoriaFeitaEm = cenario === 'vistoria' ? -2 : (assinou ?? 0) + 10
+  const vistoria: Proposta['vistoria'] =
+    cenario === 'vistoria' || cenario === 'instalacao' || cenario === 'entrega'
+      ? { status: 'concluida', data: d(vistoriaFeitaEm), aditivo }
+      : cenario === 'distribuir'
+        ? { status: 'distribuir' }
+        : cenario === 'pontos'
+          ? { status: 'agendando' }
+          : { status: 'aguardando' }
+
+  // pontos da versão v3: o Ponto 1 com tudo para distribuir, depois os dois pontos enviados com a vistoria de cada um
+  const pontos = !unidades
+    ? undefined
+    : cenario === 'distribuir'
+      ? [pontoInicial(unidades)]
+      : cenario === 'pontos'
+        ? pontosExemplo().map((pt) => ({ ...pt, vistoria: { status: 'agendando' as const } }))
+        : vistoria.status === 'concluida'
+          ? pontosExemplo().map((pt, i) => ({ ...pt, vistoria: { status: 'concluida' as const, data: d(vistoriaFeitaEm - 1 + i) } }))
+          : []
 
   return {
     numero: '9E89C902',
     emitidaEm: d(cenario === 'nova' || cenario === 'contrato' || cenario === 'recusada' ? -2 : (assinou ?? 0) - 2),
     validaAte: d(cenario === 'nova' || cenario === 'contrato' || cenario === 'recusada' ? 12 : (assinou ?? 0) + 12),
     resposta,
-    produto: { nome: 'Carga ultra rápida', potencia: '80 kW' },
-    carregadores: [{ modelo: 'Carga ultra rápida', potencia: '80 kW', quantidade: 1, conectores: 2, vagas: 1 }],
-    local: { endereco: 'Av. Rondon Pacheco, 4600', cidade: 'Uberlândia', uf: 'MG', padrao: 'Bifásico, 63 A', distancia: 'até 10 m do padrão de entrada' },
+    produto: unidades ? { nome: `${unidades.length} eletropostos iGreen Mob`, potencia: unidades.map((u) => u.potencia).join(', ') } : { nome: 'Carga ultra rápida', potencia: '80 kW' },
+    carregadores: unidades
+      ? [
+          { modelo: 'Mob', potencia: '7 kW (AC)', quantidade: 1, conectores: 1, vagas: 1 },
+          { modelo: 'Mob Fast', potencia: '7 + 40 kW (AC + DC)', quantidade: 1, conectores: 2, vagas: 2 },
+          { modelo: 'Mob Ultra Fast', potencia: '80 kW (DC)', quantidade: 1, conectores: 2, vagas: 1 },
+        ]
+      : [{ modelo: 'Carga ultra rápida', potencia: '80 kW', quantidade: 1, conectores: 2, vagas: 1 }],
+    local: {
+      endereco: 'Av. Rondon Pacheco, 4600',
+      cidade: 'Uberlândia',
+      uf: 'MG',
+      padrao: 'Bifásico, 63 A',
+      distancia: v3 ? 'até 10 m do padrão de entrada, por ponto' : 'até 10 m do padrão de entrada',
+    },
     inclusos: ['Equipamento', 'Instalação elétrica', 'Pintura e sinalização da vaga', 'Licença iGreen e plataforma'],
-    condicoes: { participacao: '100% do resultado é seu', taxa: '14% do faturamento bruto' },
+    condicoes: {
+      participacao: v3 ? '100% seu no Mob; 80% seu e 20% iGreen no Fast e no Ultra Fast' : '100% do resultado é seu',
+      taxa: '14% do faturamento bruto',
+    },
     pagamento: { total, parcelas },
     contrato:
       cenario === 'nova' || cenario === 'recusada' ? { status: 'bloqueado' } : assinou == null ? { status: 'aguardando' } : { status: 'assinado', assinadoEm: d(assinou) },
-    vistoria:
-      cenario === 'vistoria'
-        ? { status: 'concluida', data: d(-2), aditivo }
-        : cenario === 'instalacao' || cenario === 'entrega'
-          ? { status: 'concluida', data: d((assinou ?? 0) + 10), aditivo }
-          : { status: 'aguardando' },
+    vistoria,
     obra: cenario === 'instalacao' ? { status: 'agendada', data: d(3) } : cenario === 'entrega' ? { status: 'concluida', data: d(-5) } : { status: 'aguardando' },
     entrega: cenario === 'entrega' ? { status: 'pronta' } : { status: 'aguardando' },
-    investidor: { nome: 'Rafael Mendes Costa', documento: '123.***.***-09', email: 'ra***@gmail.com' },
+    investidor: { nome: 'Rafael Mendes Costa', documento: '123.***.***-09', email: 'ra***@gmail.com', telefone: '(34) 9****-4321' },
     licenciado: { nome: 'Juliana Martins', telefone: '(34) 99876-5432', whatsapp: '5534998765432' },
+    ...(unidades ? { unidades, pontos } : null),
   }
+}
+
+/* ---------------- Pontos (versão com vários carregadores) ---------------- */
+
+export const unidadesDoPonto = (p: Proposta, pt: Ponto) => (p.unidades ?? []).filter((u) => pt.unidades.includes(u.id))
+
+/** "Mob, Mob Fast e Mob Ultra Fast" */
+export const juntarNomes = (nomes: string[]) => (nomes.length <= 1 ? (nomes[0] ?? '') : `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`)
+
+/** "Rua Tiradentes, 250, Centro, Uberlândia/MG" */
+export const enderecoCurto = (a: Address) =>
+  [[a.logradouro, a.numero, a.complemento].filter((x) => x.trim()).join(', '), a.bairro, a.cidade && `${a.cidade}/${a.uf}`].filter(Boolean).join(', ')
+
+export const nomePonto = (pt: Ponto, i: number) => pt.nome.trim() || `Ponto ${i + 1}`
+
+/** Carregadores que ainda não estão em nenhum ponto */
+export const semPonto = (unidades: Unidade[], pontos: Ponto[]) => unidades.filter((u) => !pontos.some((pt) => pt.unidades.includes(u.id)))
+
+/** Novo ponto vazio, com o próximo id livre */
+export function novoPonto(pontos: Ponto[]): Ponto {
+  let n = pontos.length + 1
+  while (pontos.some((pt) => pt.id === `pt${n}`)) n++
+  return { id: `pt${n}`, nome: '', unidades: [], endereco: enderecoVazio(), contato: null }
+}
+
+/** Marca ou desmarca um carregador no ponto. Marcar tira o carregador do ponto onde ele estava */
+export function alternarUnidade(pontos: Ponto[], pontoId: string, unidadeId: string): Ponto[] {
+  const tem = pontos.find((pt) => pt.id === pontoId)?.unidades.includes(unidadeId)
+  return pontos.map((pt) =>
+    pt.id === pontoId
+      ? { ...pt, unidades: tem ? pt.unidades.filter((u) => u !== unidadeId) : [...pt.unidades, unidadeId] }
+      : tem
+        ? pt
+        : { ...pt, unidades: pt.unidades.filter((u) => u !== unidadeId) },
+  )
+}
+
+export type ErrosPonto = Partial<Record<'unidades' | 'cep' | 'numero' | 'contatoNome' | 'contatoTelefone' | 'contatoEmail' | 'contatoDocumento', string>>
+
+/** O que falta em um ponto para enviar (nome é opcional; e-mail e documento do contato também, mas precisam ser válidos) */
+export function errosPonto(pt: Ponto): ErrosPonto {
+  const e: ErrosPonto = {}
+  const temEndereco = Boolean(pt.endereco.logradouro || pt.endereco.cidade)
+  if (!pt.unidades.length) e.unidades = 'Escolha ao menos um carregador'
+  if (!isValidCep(pt.endereco.cep) || !temEndereco) e.cep = pt.endereco.cep ? 'Confira o CEP' : 'Informe o CEP do ponto'
+  else if (!pt.endereco.numero.trim()) e.numero = 'Informe o número'
+  const c = pt.contato
+  if (c) {
+    if (c.nome.trim().split(/\s+/).filter(Boolean).length < 2) e.contatoNome = 'Informe nome e sobrenome'
+    if (!isValidPhone(c.telefone)) e.contatoTelefone = 'Informe um telefone com DDD'
+    if (c.email.trim() && !isValidEmail(c.email)) e.contatoEmail = 'E-mail inválido'
+    const doc = onlyDigits(c.documento)
+    if (doc && !(doc.length === 11 ? isValidCpf(doc) : doc.length === 14 ? isValidCnpj(doc) : false)) e.contatoDocumento = 'CPF com 11 ou CNPJ com 14 dígitos'
+  }
+  return e
+}
+
+/** O que falta para enviar, em trechos que completam "Para enviar, falta…" (ex.: "o endereço do Ponto 1") */
+export function pendencias(unidades: Unidade[], pontos: Ponto[]): string[] {
+  const lista: string[] = []
+  const soltos = semPonto(unidades, pontos)
+  if (soltos.length) lista.push(`um ponto para ${soltos.length > 1 ? 'os carregadores' : 'o'} ${juntarNomes(soltos.map((u) => u.nome))}`)
+  pontos.forEach((pt, i) => {
+    const e = errosPonto(pt)
+    const nome = nomePonto(pt, i)
+    if (e.unidades) lista.push(`um carregador no ${nome}`)
+    if (e.cep || e.numero) lista.push(`o endereço do ${nome}`)
+    else if (Object.keys(e).some((k) => k.startsWith('contato'))) lista.push(`o contato do ${nome}`)
+  })
+  return lista
 }
 
 /* ---------------- Andamento ---------------- */
@@ -240,7 +420,11 @@ export function etapas(p: Proposta, hoje = new Date()): Etapa[] {
           : { status: 'feito', resumo: `Feita em ${dataCurta(p.vistoria.data!)}` }
         : p.vistoria.status === 'agendada'
           ? { status: 'atual', resumo: `Em ${dataCurta(p.vistoria.data!)}` }
-          : { status: 'pendente', resumo: 'Depois da entrada' },
+          : p.vistoria.status === 'distribuir'
+            ? { status: 'atual', resumo: 'Indicar os pontos' }
+            : p.vistoria.status === 'agendando'
+              ? { status: 'andamento', resumo: 'Em agendamento', progresso: 0 }
+              : { status: 'pendente', resumo: 'Depois da entrada' },
     instalacao:
       p.obra.status === 'concluida'
         ? { status: 'feito', resumo: `Feita em ${dataCurta(p.obra.data!)}` }
@@ -266,7 +450,7 @@ export function etapaEmFoco(lista: Etapa[]): EtapaId {
 
 /* ---------------- Próximo passo ---------------- */
 
-export type Acao = 'aceitar' | 'assinar' | 'pagar' | 'aditivo' | 'aceite-entrega' | 'whatsapp' | 'ver'
+export type Acao = 'aceitar' | 'assinar' | 'pagar' | 'distribuir' | 'aditivo' | 'aceite-entrega' | 'whatsapp' | 'ver'
 
 export type Passo = { etapa: EtapaId; titulo: string; texto: string; acao?: { tipo: Acao; label: string; parcela?: string } }
 
@@ -304,6 +488,15 @@ export function proximoPasso(p: Proposta, hoje = new Date()): Passo {
       texto: 'Por Pix, boleto ou cartão. Com a entrada paga, agendamos a vistoria técnica.',
       acao: { tipo: 'pagar', label: 'Pagar entrada', parcela: 'entrada' },
     }
+  if (p.vistoria.status === 'distribuir') {
+    const n = p.unidades?.length ?? 1
+    return {
+      etapa: 'vistoria',
+      titulo: n > 1 ? `Distribua seus ${n} carregadores` : 'Diga onde fica o carregador',
+      texto: 'Diga onde fica cada carregador. A vistoria técnica é agendada por ponto.',
+      acao: { tipo: 'distribuir', label: n > 1 ? 'Distribuir carregadores' : 'Informar o local' },
+    }
+  }
   if (p.vistoria.aditivo?.status === 'aguardando')
     return {
       etapa: 'vistoria',
@@ -341,6 +534,12 @@ export function proximoPasso(p: Proposta, hoje = new Date()): Passo {
     }
   if (p.entrega.status === 'aceita')
     return { etapa: 'entrega', titulo: 'Seu eletroposto está ativo', texto: 'Tudo foi entregue e aceito. Os documentos ficam disponíveis aqui.' }
+  if (p.vistoria.status === 'agendando' && p.pontos?.length)
+    return {
+      etapa: 'vistoria',
+      titulo: 'Vistoria em agendamento',
+      texto: `Recebemos ${p.pontos.length === 1 ? 'o seu ponto' : `os seus ${p.pontos.length} pontos`}. Vamos combinar a data de cada vistoria pelo WhatsApp.`,
+    }
   return { etapa: 'vistoria', titulo: 'Vistoria em agendamento', texto: 'Vamos combinar a data da vistoria técnica com você pelo WhatsApp.' }
 }
 
@@ -370,13 +569,39 @@ export function assinarContrato(p: Proposta, hoje = new Date()): Proposta {
   return n
 }
 
-/** Pagamento confirmado (na prévia, simulado). Com a entrada paga, a vistoria é agendada */
+/**
+ * Pagamento confirmado (na prévia, simulado). Com a entrada paga, a vistoria é agendada; na versão com pontos,
+ * a pessoa primeiro diz onde fica cada carregador (todos começam no Ponto 1)
+ */
 export function pagar(p: Proposta, id: string, hoje = new Date()): Proposta {
   const n = copia(p)
   const parcela = n.pagamento.parcelas.find((x) => x.id === id)
   if (!parcela) return p
   Object.assign(parcela, { status: 'paga', pagaEm: hoje, pagaCom: 'Pix' })
-  if (id === 'entrada' && n.vistoria.status === 'aguardando') n.vistoria = { status: 'agendada', data: somaDias(hoje, 4) }
+  if (id === 'entrada' && n.vistoria.status === 'aguardando') {
+    if (n.unidades) {
+      n.vistoria = { status: 'distribuir' }
+      n.pontos = [pontoInicial(n.unidades)]
+    } else n.vistoria = { status: 'agendada', data: somaDias(hoje, 4) }
+  }
+  return n
+}
+
+/** Envia os pontos para a vistoria (só com todos os carregadores distribuídos e os pontos completos) */
+export function enviarPontos(p: Proposta, pontos: Ponto[]): Proposta {
+  if (!p.unidades || pendencias(p.unidades, pontos).length) return p
+  const n = copia(p)
+  n.pontos = structuredClone(pontos).map((pt) => ({ ...pt, vistoria: { status: 'agendando' as const } }))
+  n.vistoria = { ...n.vistoria, status: 'agendando' }
+  return n
+}
+
+/** Prévia: a equipe combinou as datas; cada ponto ganha a sua vistoria, em dias seguidos */
+export function agendarVistorias(p: Proposta, hoje = new Date()): Proposta {
+  if (!p.pontos?.length) return p
+  const n = copia(p)
+  n.pontos = n.pontos!.map((pt, i) => ({ ...pt, vistoria: { status: 'agendada' as const, data: somaDias(hoje, 3 + i * 2) } }))
+  n.vistoria = { ...n.vistoria, status: 'agendada', data: somaDias(hoje, 3) }
   return n
 }
 
@@ -433,12 +658,16 @@ const TEXTO_INSTITUCIONAL = 'O seu acesso oficial ao nosso mundo de soluções e
 
 /** Título institucional do topo: a estrutura é fixa e o destaque acompanha a etapa da proposta */
 export function chamada(p: Proposta): { linha: string; destaque: string; texto: string; tom: 'ok' | 'erro' } {
+  const varios = (p.unidades?.length ?? 1) > 1
+  const seu = varios ? 'Seus eletropostos' : 'Seu eletroposto'
+  const esta = (s: string) => `${varios ? 'estão' : 'está'} ${s}${varios ? 's' : ''}!`
   if (p.resposta.status === 'recusada')
     return { linha: 'Proposta', destaque: 'recusada', texto: 'Quando quiser retomar, sua licenciada pode preparar uma nova proposta.', tom: 'erro' }
-  if (p.entrega.status === 'aceita') return { linha: 'Seu eletroposto', destaque: 'está ativo!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
-  if (p.entrega.status === 'pronta') return { linha: 'Seu eletroposto', destaque: 'está pronto!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
+  if (p.entrega.status === 'aceita') return { linha: seu, destaque: esta('ativo'), texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
+  if (p.entrega.status === 'pronta') return { linha: seu, destaque: esta('pronto'), texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
+  if (p.vistoria.status === 'distribuir') return { linha: 'Entrada paga', destaque: 'com sucesso!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
   if (p.vistoria.status !== 'aguardando' || p.obra.status !== 'aguardando')
-    return { linha: 'Seu eletroposto', destaque: 'está a caminho!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
+    return { linha: seu, destaque: `${varios ? 'estão' : 'está'} a caminho!`, texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
   if (p.contrato.status === 'assinado') return { linha: 'Contrato assinado', destaque: 'com sucesso!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
   if (p.resposta.status === 'aceita') return { linha: 'Proposta aceita', destaque: 'com sucesso!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
   return { linha: 'Proposta gerada com', destaque: 'Sucesso!', texto: TEXTO_INSTITUCIONAL, tom: 'ok' }
