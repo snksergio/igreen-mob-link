@@ -639,12 +639,12 @@ function PontoEditor({
                       {g.qtd > 1 ? `${g.qtd}× ` : ''}
                       {g.nome}
                     </b>
-                    <small>{`${base.potencia} ${base.corrente}`.replace(/ \+ /g, '+')}</small>
+                    {/* a potência e, depois dela, o ponto onde ele já está */}
+                    <small className={v.usadoLinha} title={`Já está em ${onde}`}>
+                      {`${base.potencia} ${base.corrente}`.replace(/ \+ /g, '+')}, {onde}
+                    </small>
                   </span>
-                  <span className={v.usadoOnde} title={`Já está em ${onde}`}>
-                    <Icon src={ICONS.addressPin} size={11} />
-                    <span>{onde}</span>
-                  </span>
+                  <span className={v.usadoSelo}>Em uso</span>
                 </li>
               )
             })}

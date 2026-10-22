@@ -988,11 +988,11 @@
   color: var(--fg-warning);
 }
 
-/* Em outros pontos: mesma linha dos quadros de seleção, mas sem caixa e mais apagada (só informação) */
+/* Em outros pontos: mesma linha dos quadros de seleção, sem borda e mais apagada (só informação) */
 .usados {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1002,9 +1002,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 52px;
+  min-height: 50px;
   padding: 8px 10px 8px 12px;
-  border: 1px dashed var(--pv-line);
   border-radius: var(--radius-base);
   background: color-mix(in srgb, var(--p-card) 55%, transparent);
 }
@@ -1015,38 +1014,31 @@
 
 .usado .modeloTexto {
   flex: 1 1 auto;
+  min-width: 0;
 }
 
 .usado .modeloTexto b {
   color: var(--p-text);
+  white-space: nowrap;
 }
 
-/* no fim, onde ele já está */
-.usadoOnde {
-  display: inline-flex;
-  flex: 0 1 auto;
-  align-items: center;
-  gap: 4px;
-  max-width: 48%;
-  min-width: 0;
-  padding: 3px 9px 3px 7px;
+/* potência e ponto numa linha só; o nome do ponto termina em reticências se for longo */
+.usadoLinha {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* selo curto no fim */
+.usadoSelo {
+  flex: none;
+  padding: 2px 8px;
   border-radius: var(--radius-full);
-  background: var(--p-badge);
+  background: var(--bg-warning-subtle);
   font-weight: 600;
   font-size: 11px;
   line-height: 16px;
-  color: var(--fg-primary-strong);
-}
-
-.usadoOnde > :first-child {
-  flex: none;
-  background-color: currentColor;
-}
-
-.usadoOnde > span:last-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--fg-warning);
   white-space: nowrap;
 }
 
@@ -1054,19 +1046,4 @@
   .usado .modeloIcone {
     display: none;
   }
-}
-
-/* nome e potência numa linha só; quem cede espaço é o selo do ponto */
-.usado .modeloTexto {
-  flex: 1 0 auto;
-}
-
-.usado .modeloTexto b,
-.usado .modeloTexto small {
-  white-space: nowrap;
-}
-
-.usado .usadoOnde {
-  max-width: none;
-  flex: 0 1 auto;
 }
