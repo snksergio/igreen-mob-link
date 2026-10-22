@@ -618,19 +618,39 @@ function PontoEditor({
               {erros.unidades}
             </p>
           ) : null}
-          {/* os que já estão em outros pontos não entram na seleção: aparecem só como informação */}
-          {emOutros.length ? (
-            <div className={v.outros}>
-              <p className={v.outrosTitulo}>Em outros pontos</p>
-              <ul className={v.chipsFrota}>
-                {emOutros.map((g) => (
-                  <ChipGrupo key={`${g.modelo}-${g.ponto}`} g={g} pontos={pontos} />
-                ))}
-              </ul>
-            </div>
-          ) : null}
         </div>
       )}
+
+      {/* categoria própria: os que já estão em outros pontos não entram na seleção, aparecem só como informação */}
+      {!um && emOutros.length ? (
+        <div className={v.campo}>
+          <p className={v.rotulo} id={`${id}-outros`}>
+            Em outros pontos
+          </p>
+          <ul className={v.usados} aria-labelledby={`${id}-outros`}>
+            {emOutros.map((g) => {
+              const base = unidades.find((u) => u.modelo === g.modelo)!
+              const onde = nomePonto(pontos[g.ponto], g.ponto)
+              return (
+                <li key={`${g.modelo}-${g.ponto}`} className={v.usado}>
+                  <IconeModelo u={g} tamanho={30} />
+                  <span className={v.modeloTexto}>
+                    <b>
+                      {g.qtd > 1 ? `${g.qtd}× ` : ''}
+                      {g.nome}
+                    </b>
+                    <small>{`${base.potencia} ${base.corrente}`.replace(/ \+ /g, '+')}</small>
+                  </span>
+                  <span className={v.usadoOnde} title={`Já está em ${onde}`}>
+                    <Icon src={ICONS.addressPin} size={11} />
+                    <span>{onde}</span>
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      ) : null}
 
       <div className={v.campo}>
         <AddressSection
